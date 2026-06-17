@@ -1160,11 +1160,13 @@ function dssOkNoMes(m, mes){{ return contarDssMes(m, mes) >= 4; }}
 
 function agruparPorFilial(){{
   const mapa = {{}};
+  const mesAtual = MESES[new Date().getMonth()];
   motoristasDB.forEach(m => {{
     const f = (m.filial||'').toUpperCase().trim() || 'SEM FILIAL';
-    if(!mapa[f]) mapa[f] = {{ name:f, total:0, comDss:0, recOk:0, simOk:0, acid:0, multas:0, excVel:0 }};
+    if(!mapa[f]) mapa[f] = {{ name:f, total:0, comDss:0, dssMax:0, recOk:0, simOk:0, acid:0, multas:0, excVel:0 }};
     mapa[f].total++;
-    if(temDss(m)) mapa[f].comDss++;
+    mapa[f].comDss += contarDssMes(m, mesAtual);
+    mapa[f].dssMax += 4;
     if(m.reciclagem === 'OK') mapa[f].recOk++;
     if(m.simulador  === 'OK') mapa[f].simOk++;
     mapa[f].acid   += Math.max(0, parseInt(m.acidentes || 0));
@@ -1241,7 +1243,7 @@ function renderizarGridFiliais(filiais){{
         <div class="sbar neg"><span class="sbar-lbl">Acid</span><div class="sbar-track"><div class="sbar-fill" style="width:${{acidPct}}%;background:#dc2626"></div></div><span class="sbar-cnt">${{f.acid}}</span></div>
         <div class="sbar neg"><span class="sbar-lbl">Multas</span><div class="sbar-track"><div class="sbar-fill" style="width:${{multPct}}%;background:#dc2626"></div></div><span class="sbar-cnt">${{f.multas}}</span></div>
         <div class="sbar pend"><span class="sbar-lbl">Vel</span><div class="sbar-track"><div class="sbar-fill" style="width:${{velPct}}%;background:#d97706"></div></div><span class="sbar-cnt" style="color:#d97706">${{f.excVel}}</span></div>
-        <div class="sbar pend"><span class="sbar-lbl">DSS</span><div class="sbar-track" style="background:#dc2626;position:relative;overflow:hidden;"><div class="sbar-fill" style="width:${{f.total>0?Math.round(f.comDss/f.total*100):0}}%;background:#16a34a;position:absolute;left:0;top:0;height:100%;border-radius:3px;transition:width .3s;"></div></div><span class="sbar-cnt" style="color:${{f.comDss===f.total&&f.total>0?'#16a34a':'#dc2626'}};width:auto;min-width:36px;">${{f.comDss}}/${{f.total}}</span></div>
+        <div class="sbar pend"><span class="sbar-lbl">DSS</span><div class="sbar-track" style="background:#dc2626;position:relative;overflow:hidden;"><div class="sbar-fill" style="width:${{f.dssMax>0?Math.round(f.comDss/f.dssMax*100):0}}%;background:#16a34a;position:absolute;left:0;top:0;height:100%;border-radius:3px;transition:width .3s;"></div></div><span class="sbar-cnt" style="color:${{f.comDss===f.dssMax&&f.dssMax>0?'#16a34a':'#dc2626'}};width:auto;min-width:36px;">${{f.comDss}}/${{f.dssMax}}</span></div>
       </div>
       <button class="btn-zoom" onclick="expandirFilial('${{f.name}}')"><i class="fa-solid fa-maximize"></i> Ver Condutores</button>
     </div>`;
@@ -1332,10 +1334,25 @@ function renderizarGraficos(filiais){{
  filialChartInstance = new Chart(document.getElementById('filialChart'), {{
     type:'bar',
     data:{{ labels:filiais.map(f=>f.name), datasets:[
-      {{ label:'Com DSS',  data:filiais.map(f=>f.comDss),          backgroundColor:'#16a34a', borderRadius:3, borderSkipped:false }},
-      {{ label:'Sem DSS',  data:filiais.map(f=>f.total-f.comDss),  backgroundColor:'rgba(220,38,38,0.12)', borderColor:'rgba(220,38,38,0.3)', borderWidth:1, borderRadius:3, borderSkipped:false }}
+      {{ label:'Com DSS',  data:filiais.map(f=>f.comDss),             backgroundColor:'#16a34a', borderRadius:3, borderSkipped:false }},
+      {{ label:'Sem DSS',  data:filiais.map(f=>f.dssMax-f.comDss),   backgroundColor:'rgba(220,38,38,0.12)', borderColor:'rgba(220,38,38,0.3)', borderWidth:1, borderRadius:3, borderSkipped:false }}
     ]}},
-    options:{{ responsive:true, maintainAspectRatio:false, plugins:{{ legend:{{ display:false }} }},
+    options:{{ responsive:true, maintainAspectRatio:false, plugins:{{ legend:{{ display:false }},
+      tooltip:{{
+        callbacks:{{
+          title: items => items[0].label,
+          label: ctx => {{
+            const i    = ctx.dataIndex;
+            const real = filiais[i].comDss;
+            const max  = filiais[i].dssMax;
+            const pct  = max > 0 ? Math.round(real / max * 100) : 0;
+            return [` ${{real}} sessões realizadas de ${{max}}`, ` Adesão no mês: ${{pct}}%`];
+          }}
+        }},
+        backgroundColor:'#ffffff', borderColor:'#dde6f4', borderWidth:1,
+        titleColor:'#1a3a6b', bodyColor:'#5a6e8a', padding:10, cornerRadius:6
+      }}
+    }},
       scales:{{
         x:{{ stacked:true, ticks:{{ color:'#5a6e8a',font:{{ size:8 }},maxRotation:30,autoSkip:false }},grid:{{ color:'rgba(180,200,230,0.4)' }} }},
         y:{{ stacked:true, ticks:{{ color:'#5a6e8a',font:{{ size:9 }} }},grid:{{ color:'rgba(180,200,230,0.4)' }},min:0 }}
