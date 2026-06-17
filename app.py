@@ -148,7 +148,7 @@ def logo_b64():
 
 # ─── Streamlit page config ────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="LUFT Logistics — Controle de Motoristas",
+    page_title="LUFT Controle de Motoristas",
     page_icon=BASE_DIR / "luft1.png",
     layout="wide",
     initial_sidebar_state="collapsed",
