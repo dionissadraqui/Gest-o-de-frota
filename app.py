@@ -504,7 +504,7 @@ HTML = f"""<!DOCTYPE html>
 
 @media (max-width:768px){{
   .top-bar{{flex-wrap:wrap;gap:8px;padding:8px 10px}}
-  .luft-name{{font-size:20px}}
+  .luft-name{{font-size:20px;display:none}}
   .pct-val{{font-size:22px}}
   .kpi-row{{grid-template-columns:repeat(2,1fr);gap:8px}}
   .kpi-val{{font-size:36px}}
@@ -539,7 +539,7 @@ HTML = f"""<!DOCTYPE html>
   .kpi-row{{grid-template-columns:repeat(2,1fr);gap:6px}}
   .kpi-lbl{{font-size:10px;letter-spacing:.5px}}
   .kpi-sub{{font-size:10px}}
-  .luft-name{{font-size:16px}}
+  .luft-name{{font-size:16px;display:none}}
   .brand-logo{{padding:4px 8px}}
   .pct-box{{padding:4px 8px}}
   .pct-val{{font-size:18px}}
