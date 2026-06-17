@@ -1327,7 +1327,7 @@ function renderizarGraficos(filiais){{
         }}
       }},
       scales:{{
-        x:{{ ticks:{{ color:'#5a6e8a',font:{{ size:9 }},maxRotation:45,autoSkip:false, callback(val,i){{ const mi=Math.floor(i/4);const wi=i%4;const isCur=mi===mesAtualIdx&&wi===semAtualIdx;return isCur?'▶ '+this.getLabelForValue(val):this.getLabelForValue(val); }} }},grid:{{ color:'rgba(180,200,230,0.4)' }} }},
+        x:{{ ticks:{{ color:'#5a6e8a',font:{{ size:9 }},maxRotation:45,autoSkip:false, callback(val,i){{ const mi=Math.floor(i/4);const wi=i%4;const isCur=mi===mesAtualIdx&&wi===semAtualIdx;return isCur?'▶ '+this.getLabelForValue(val):this.getLabelForValue(val); }}, color: (ctx) => {{ const mi=Math.floor(ctx.index/4);const wi=ctx.index%4;const isCur=mi===mesAtualIdx&&wi===semAtualIdx;return isCur?'#1a3a6b':'#5a6e8a'; }}, font: (ctx) => {{ const mi=Math.floor(ctx.index/4);const wi=ctx.index%4;const isCur=mi===mesAtualIdx&&wi===semAtualIdx;return {{size:isCur?11:9,weight:isCur?'900':'400'}}; }} }},grid:{{ color:'rgba(180,200,230,0.4)' }} }},
         y:{{ ticks:{{ color:'#5a6e8a',font:{{ size:10 }},stepSize:yStep,callback:v=>Number.isInteger(v)?v:'' }},grid:{{ color:'rgba(180,200,230,0.4)' }},min:0,max:Math.ceil(maxVal*1.15)||1 }}
       }}
     }}
