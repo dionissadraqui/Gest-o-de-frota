@@ -350,7 +350,7 @@ HTML = f"""<!DOCTYPE html>
 .btn-close{{background:#7a1a1a;color:#ffffff;border:1px solid #5c1212;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}}
 .btn-close:hover{{background:#ff2222;color:#fff;border-color:#ff4444;box-shadow:0 0 10px rgba(255,50,50,0.7),0 0 20px rgba(255,50,50,0.4)}}
 .modal-split{{display:grid;grid-template-columns:280px 1fr;gap:14px;flex:1;overflow:hidden}}
-.modal-sidebar{{display:flex;flex-direction:column;gap:8px}}
+.modal-sidebar{{display:flex;flex-direction:column;gap:8px;overflow-y:auto;padding-right:4px}}
 .modal-kpi-card{{background:#f8fafd;border:1.5px solid #dde6f4;padding:14px;border-radius:8px;cursor:pointer;transition:border-color .15s,box-shadow .15s}}
 .modal-kpi-card:hover{{border-color:#3b7dd8;box-shadow:0 2px 12px rgba(59,125,216,0.18)}}
 .m-lbl{{font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:1px}}
