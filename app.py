@@ -849,6 +849,9 @@ HTML = f"""<!DOCTYPE html>
         <div class="modal-kpi-card" onclick="filtrarFilialPorIndicador('excesso')"><div class="m-lbl">Excesso Velocidade</div><div class="m-val" id="mExcVel" style="color:#dc2626">0</div></div>
         <div class="modal-kpi-card" onclick="filtrarFilialPorIndicador('multas')"><div class="m-lbl">Total Multas</div><div class="m-val" id="mMultas" style="color:#d97706">0</div></div>
         <div class="modal-kpi-card" onclick="filtrarFilialPorIndicador('acidentes')"><div class="m-lbl">Total Acidentes</div><div class="m-val" id="mAcidentes" style="color:#dc2626">0</div></div>
+        <div class="modal-kpi-card" onclick="filtrarFilialPorIndicador('examePeriodico')"><div class="m-lbl">Exame Periódico OK</div><div class="m-val" id="mExamePerOk" style="color:#7c3aed">0</div></div>
+        <div class="modal-kpi-card" onclick="filtrarFilialPorIndicador('exameToxicologico')"><div class="m-lbl">Exame Toxicológico OK</div><div class="m-val" id="mExameToxOk" style="color:#a78bfa">0</div></div>
+        <div class="modal-kpi-card" onclick="filtrarFilialPorIndicador('telefoneCorporativo')"><div class="m-lbl">Telefone Corporativo OK</div><div class="m-val" id="mTelCorpOk" style="color:#0e9cc0">0</div></div>
       </div>
       <div class="modal-main">
         <div style="padding:10px 14px;border-bottom:1px solid #dde6f4;background:#fff;flex-shrink:0;">
@@ -1570,6 +1573,9 @@ function expandirFilial(nomeFilial){{
   document.getElementById('mExcVel').textContent = listagem.reduce((acc,m) => acc + Math.max(0, parseInt(m.excesso)||0), 0);
   document.getElementById('mMultas').textContent = listagem.reduce((acc,m) => acc + Math.max(0, parseInt(m.multas)||0), 0);
   document.getElementById('mAcidentes').textContent = listagem.reduce((acc,m) => acc + Math.max(0, parseInt(m.acidentes)||0), 0);
+  document.getElementById('mExamePerOk').textContent = listagem.filter(m => m.examePeriodico).length;
+  document.getElementById('mExameToxOk').textContent = listagem.filter(m => m.exameToxicologico).length;
+  document.getElementById('mTelCorpOk').textContent = listagem.filter(m => m.telefoneCorporativo === 'SIM').length;
   const tbody = document.getElementById('mDriversTableBody');
   tbody.innerHTML = '';
   if(listagem.length === 0){{
@@ -1621,6 +1627,9 @@ function filtrarFilialPorIndicador(tipo){{
     if(tipo==='excesso')   return Math.max(0,parseInt(m.excesso)||0)   > 0;
     if(tipo==='multas')    return Math.max(0,parseInt(m.multas)||0)    > 0;
     if(tipo==='acidentes') return Math.max(0,parseInt(m.acidentes)||0) > 0;
+    if(tipo==='examePeriodico')      return !!m.examePeriodico;
+    if(tipo==='exameToxicologico')   return !!m.exameToxicologico;
+    if(tipo==='telefoneCorporativo') return m.telefoneCorporativo === 'SIM';
     return true;
   }});
   const cpfsFiltrados = new Set(filtrados.map(m => m.cpf));
