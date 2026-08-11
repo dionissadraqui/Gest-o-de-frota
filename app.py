@@ -50,7 +50,7 @@ for _mes in MESES:
 COLUNAS += [
     "exame_periodico", "exame_toxicologico", "pontuação_cnh",
     "vencimento_cnh_mopp", "entrega_de_uniforme",
-    "telefone_corporativo", "numero_linha",
+    "telefone_corporativo", "numero_linha", "modelo",
 ]
 
 SCOPES = [
@@ -112,6 +112,7 @@ def ler_todos_motoristas():
             "entregaUniforme":    str(row.get("entrega_de_uniforme", "PENDENTE")).strip() or "PENDENTE",
             "telefoneCorporativo": str(row.get("telefone_corporativo", "NÃO")).strip() or "NÃO",
             "numeroLinha":         str(row.get("numero_linha", "")).strip(),
+            "modelo":              str(row.get("modelo", "")).strip(),
             "dssAnual":      dss_anual,
         })
     return motoristas
@@ -139,6 +140,7 @@ def salvar_todos_motoristas(lista):
             m.get("pontuacaoCnh", 0), m.get("vencimentoCnhMopp", ""),
             m.get("entregaUniforme", "PENDENTE"),
             m.get("telefoneCorporativo", "NÃO"), m.get("numeroLinha", ""),
+            m.get("modelo", ""),
         ]
         all_rows.append(row_data)
     existing = ws.get_all_values()
@@ -946,7 +948,8 @@ function motoristasParaLinhas(lista){{
       m.examePeriodico||'', m.exameToxicologico||'',
       m.pontuacaoCnh||0, m.vencimentoCnhMopp||'',
       m.entregaUniforme||'PENDENTE',
-      m.telefoneCorporativo||'NÃO', m.numeroLinha||''
+      m.telefoneCorporativo||'NÃO', m.numeroLinha||'',
+      m.modelo||''
     );
     return row;
   }});
@@ -1539,7 +1542,7 @@ async function adicionarNovoMotorista(){{
     cnh:'', validadeCnh:'', admissao:'',
     examePeriodico:'', exameToxicologico:'',
     pontuacaoCnh:0, vencimentoCnhMopp:'', entregaUniforme:'PENDENTE',
-    telefoneCorporativo:'NÃO', numeroLinha:'',
+    telefoneCorporativo:'NÃO', numeroLinha:'', modelo:'',
     dssAnual: gerarMatrizDssEmBranco()
   }};
   mostrarSpinner(true);
@@ -1738,6 +1741,10 @@ function abrirFichaMotorista(cpf){{
               <label>Número da Linha <span id="numeroLinhaObrigatorio" style="color:#dc2626;${{m.telefoneCorporativo==='SIM'?'':'display:none;'}}">*obrigatório</span></label>
               <input type="text" id="editNumeroLinha" value="${{esc(m.numeroLinha)}}" placeholder="(00) 00000-0000" ${{m.telefoneCorporativo==='NÃO'?'disabled':''}} style="${{m.telefoneCorporativo==='NÃO'?'background:#eef1f5!important;color:#9aaabb!important;':''}}">
             </div>
+            <div class="meta-item">
+              <label>Modelo do Celular</label>
+              <input type="text" id="editModelo" value="${{esc(m.modelo)}}" placeholder="Ex: Samsung A54">
+            </div>
           </div>
         </div>
       </div>
@@ -1885,6 +1892,7 @@ async function confirmarEdicaoFicha(){{
     entregaUniforme:     document.getElementById('editEntregaUniforme').value,
     telefoneCorporativo: telCorp,
     numeroLinha:         telCorp === 'SIM' ? numLinha : '',
+    modelo:              document.getElementById('editModelo').value,
     reciclagem:    document.getElementById('editReciclagem').value,
     simulador:     document.getElementById('editSimulador').value,
     acidentes:     parseInt(document.getElementById('editAcidentes').value)||0,
