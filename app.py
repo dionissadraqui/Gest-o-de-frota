@@ -867,6 +867,7 @@ HTML = f"""<!DOCTYPE html>
                 <th style="text-align:center">Excesso Vel.</th>
                 <th style="text-align:center">Multas</th>
                 <th style="text-align:center">Acidentes</th>
+                <th>Exame Periódico</th><th>Exame Toxicológico</th><th>Tel. Corporativo</th>
               </tr>
             <tbody id="mDriversTableBody"></tbody>
           </table>
@@ -1600,6 +1601,9 @@ function expandirFilial(nomeFilial){{
         <td style="text-align:center"><span class="m-count-badge">${{m.excesso}}</span></td>
         <td style="text-align:center"><span class="m-count-badge">${{m.multas}}</span></td>
         <td style="text-align:center"><span class="m-count-badge">${{m.acidentes}}</span></td>
+        <td><span class="m-badge ${{m.examePeriodico?'ok':'pend'}}">${{m.examePeriodico?'OK':'PENDENTE'}}</span></td>
+        <td><span class="m-badge ${{m.exameToxicologico?'ok':'pend'}}">${{m.exameToxicologico?'OK':'PENDENTE'}}</span></td>
+        <td><span class="m-badge ${{m.telefoneCorporativo==='SIM'?'ok':'pend'}}">${{m.telefoneCorporativo||'NÃO'}}</span></td>
       </tr>`;
     }});
   }}
