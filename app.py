@@ -43,6 +43,8 @@ COLUNAS = [
     "excesso", "multas", "acidentes",
     "obsAcidente", "obsMultas", "obsGerais", "obsReciclagem", "obsSimulador",
     "cnh", "validadeCnh", "admissao",
+    "exame_periodico", "exame_toxicologico", "pontuação_cnh",
+    "vencimento_cnh_mopp", "entrega_de_uniforme",
 ]
 for _mes in MESES:
     for _s in range(1, 5):
@@ -100,10 +102,14 @@ def ler_todos_motoristas():
             "cnh":           str(row.get("cnh", "")).strip(),
             "validadeCnh":   str(row.get("validadeCnh", "")).strip(),
             "admissao":      str(row.get("admissao", "")).strip(),
+            "examePeriodico":     str(row.get("exame_periodico", "")).strip(),
+            "exameToxicologico":  str(row.get("exame_toxicologico", "")).strip(),
+            "pontuacaoCnh":       max(0, int(row.get("pontuação_cnh", 0) or 0)),
+            "vencimentoCnhMopp":  str(row.get("vencimento_cnh_mopp", "")).strip(),
+            "entregaUniforme":    str(row.get("entrega_de_uniforme", "PENDENTE")).strip() or "PENDENTE",
             "dssAnual":      dss_anual,
         })
     return motoristas
-
 
 def salvar_todos_motoristas(lista):
     ws = get_sheet()
@@ -117,6 +123,9 @@ def salvar_todos_motoristas(lista):
             m.get("obsAcidente", ""), m.get("obsMultas", ""), m.get("obsGerais", ""),
             m.get("obsReciclagem", ""), m.get("obsSimulador", ""),
             m.get("cnh", ""), m.get("validadeCnh", ""), m.get("admissao", ""),
+            m.get("examePeriodico", ""), m.get("exameToxicologico", ""),
+            m.get("pontuacaoCnh", 0), m.get("vencimentoCnhMopp", ""),
+            m.get("entregaUniforme", "PENDENTE"),
         ]
         dss = m.get("dssAnual", {})
         for mes in MESES:
@@ -397,6 +406,9 @@ HTML = f"""<!DOCTYPE html>
 .card-docs{{border-color:#5a5fe8}}
 .card-docs .card-stripe{{background:linear-gradient(90deg,#3a3ec8,#6c72f5)}}
 .card-docs .info-block-title{{color:#3a3ec8;background:linear-gradient(135deg,#eeeeff,#f4f4ff);margin:-14px -16px 12px;padding:10px 16px 8px;border-radius:0}}
+.card-exames{{border-color:#7c3aed}}
+.card-exames .card-stripe{{background:linear-gradient(90deg,#6d28d9,#a78bfa)}}
+.card-exames .info-block-title{{color:#6d28d9;background:linear-gradient(135deg,#f3f0ff,#f8f6ff);margin:-14px -16px 12px;padding:10px 16px 8px;border-radius:0}}
 .card-seguranca{{border-color:#d97706}}
 .card-seguranca .card-stripe{{background:linear-gradient(90deg,#b45309,#f59e0b)}}
 .card-seguranca .info-block-title{{color:#b45309;background:linear-gradient(135deg,#fef5e6,#fff8ed);margin:-14px -16px 12px;padding:10px 16px 8px;border-radius:0}}
@@ -910,7 +922,10 @@ function motoristasParaLinhas(lista){{
       m.excesso||0, m.multas||0, m.acidentes||0,
       m.obsAcidente||'', m.obsMultas||'', m.obsGerais||'',
       m.obsReciclagem||'', m.obsSimulador||'',
-      m.cnh||'', m.validadeCnh||'', m.admissao||''
+      m.cnh||'', m.validadeCnh||'', m.admissao||'',
+      m.examePeriodico||'', m.exameToxicologico||'',
+      m.pontuacaoCnh||0, m.vencimentoCnhMopp||'',
+      m.entregaUniforme||'PENDENTE'
     ];
     const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho",
                    "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
@@ -1498,6 +1513,8 @@ async function adicionarNovoMotorista(){{
     excesso:0, multas:0, acidentes:0,
     obsAcidente:'', obsMultas:'', obsGerais:'', obsReciclagem:'', obsSimulador:'',
     cnh:'', validadeCnh:'', admissao:'',
+    examePeriodico:'', exameToxicologico:'',
+    pontuacaoCnh:0, vencimentoCnhMopp:'', entregaUniforme:'PENDENTE',
     dssAnual: gerarMatrizDssEmBranco()
   }};
   mostrarSpinner(true);
@@ -1688,6 +1705,25 @@ function abrirFichaMotorista(cpf){{
           </div>
         </div>
       </div>
+      <div class="info-section-box card-exames">
+        <span class="card-stripe"></span>
+        <div class="card-body">
+          <div class="info-block-title"><i class="fa-solid fa-stethoscope"></i> Exames & Complementares</div>
+          <div class="meta-grid">
+            <div class="meta-item"><label>Exame Periódico</label><input type="date" id="editExamePeriodico" value="${{esc(m.examePeriodico)}}"></div>
+            <div class="meta-item"><label>Exame Toxicológico</label><input type="date" id="editExameToxicologico" value="${{esc(m.exameToxicologico)}}"></div>
+            <div class="meta-item"><label>Pontuação CNH</label><input type="number" id="editPontuacaoCnh" value="${{m.pontuacaoCnh||0}}"></div>
+            <div class="meta-item"><label>Vencimento CNH/MOPP</label><input type="date" id="editVencimentoCnhMopp" value="${{esc(m.vencimentoCnhMopp)}}"></div>
+            <div class="meta-item">
+              <label>Entrega de Uniforme</label>
+              <select id="editEntregaUniforme">
+                <option value="PENDENTE" ${{m.entregaUniforme==='PENDENTE'?'selected':''}}>PENDENTE</option>
+                <option value="OK" ${{m.entregaUniforme==='OK'?'selected':''}}>OK</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="info-section-box card-seguranca${{highlightSeg}}">
         <span class="card-stripe"></span>
         <div class="card-body">
@@ -1775,6 +1811,11 @@ async function confirmarEdicaoFicha(){{
     cnh:           document.getElementById('editCnh').value,
     validadeCnh:   document.getElementById('editValidadeCnh').value,
     admissao:      document.getElementById('editAdmissao').value,
+    examePeriodico:      document.getElementById('editExamePeriodico').value,
+    exameToxicologico:   document.getElementById('editExameToxicologico').value,
+    pontuacaoCnh:        parseInt(document.getElementById('editPontuacaoCnh').value)||0,
+    vencimentoCnhMopp:   document.getElementById('editVencimentoCnhMopp').value,
+    entregaUniforme:     document.getElementById('editEntregaUniforme').value,
     reciclagem:    document.getElementById('editReciclagem').value,
     simulador:     document.getElementById('editSimulador').value,
     acidentes:     parseInt(document.getElementById('editAcidentes').value)||0,
