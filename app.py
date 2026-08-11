@@ -992,6 +992,11 @@ function _comprimirBase64(base64, maxPx, qualidade){{
   }});
 }}
 
+function _sessaoExpirouRecarregar(){{
+  toast('Sessão de acesso ao Google Sheets expirou. Recarregando a página...', 'erro');
+  setTimeout(() => window.location.reload(), 2000);
+}}
+
 async function salvarTodosNaSheetsAPI(lista){{
   const auth = `Bearer ${{ACCESS_TOKEN}}`;
   const rangeBase = `${{SHEET_NAME_JS}}!A2:ZZ`;
@@ -1016,6 +1021,10 @@ async function salvarTodosNaSheetsAPI(lista){{
   );
   if(!clearResp.ok){{
     const err = await clearResp.text();
+    if(clearResp.status === 401 || err.includes('ACCESS_TOKEN_EXPIRED')){{
+      _sessaoExpirouRecarregar();
+      return {{ ok: false, erro: 'Sessão expirada. A página será recarregada automaticamente.' }};
+    }}
     return {{ ok: false, erro: 'Erro ao limpar planilha: ' + err }};
   }}
 
@@ -1032,6 +1041,10 @@ async function salvarTodosNaSheetsAPI(lista){{
   );
   if(!resp.ok){{
     const err = await resp.text();
+    if(resp.status === 401 || err.includes('ACCESS_TOKEN_EXPIRED')){{
+      _sessaoExpirouRecarregar();
+      return {{ ok: false, erro: 'Sessão expirada. A página será recarregada automaticamente.' }};
+    }}
     return {{ ok: false, erro: 'Erro ao salvar dados: ' + err }};
   }}
   return {{ ok: true }};
