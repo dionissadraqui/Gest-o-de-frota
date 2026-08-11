@@ -1011,7 +1011,7 @@ async function salvarTodosNaSheetsAPI(lista){{
 
   // 2. Escreve as novas linhas
   const resp = await fetch(
-    `${{SHEETS_BASE}}/${{SHEET_ID_JS}}/values/${{encodeURIComponent(rangeBase)}}?valueInputOption=USER_ENTERED`,
+    `${{SHEETS_BASE}}/${{SHEET_ID_JS}}/values/${{encodeURIComponent(rangeBase)}}?valueInputOption=RAW`,
     {{
       method: 'PUT',
       headers: {{ 'Authorization': auth, 'Content-Type': 'application/json' }},
