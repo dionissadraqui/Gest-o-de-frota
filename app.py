@@ -50,6 +50,7 @@ for _mes in MESES:
 COLUNAS += [
     "exame_periodico", "exame_toxicologico", "pontuação_cnh",
     "vencimento_cnh_mopp", "entrega_de_uniforme",
+    "telefone_corporativo", "numero_linha",
 ]
 
 SCOPES = [
@@ -109,6 +110,8 @@ def ler_todos_motoristas():
             "pontuacaoCnh":       max(0, int(row.get("pontuação_cnh", 0) or 0)),
             "vencimentoCnhMopp":  str(row.get("vencimento_cnh_mopp", "")).strip(),
             "entregaUniforme":    str(row.get("entrega_de_uniforme", "PENDENTE")).strip() or "PENDENTE",
+            "telefoneCorporativo": str(row.get("telefone_corporativo", "NÃO")).strip() or "NÃO",
+            "numeroLinha":         str(row.get("numero_linha", "")).strip(),
             "dssAnual":      dss_anual,
         })
     return motoristas
@@ -135,6 +138,7 @@ def salvar_todos_motoristas(lista):
             m.get("examePeriodico", ""), m.get("exameToxicologico", ""),
             m.get("pontuacaoCnh", 0), m.get("vencimentoCnhMopp", ""),
             m.get("entregaUniforme", "PENDENTE"),
+            m.get("telefoneCorporativo", "NÃO"), m.get("numeroLinha", ""),
         ]
         all_rows.append(row_data)
     existing = ws.get_all_values()
@@ -937,7 +941,8 @@ function motoristasParaLinhas(lista){{
     row.push(
       m.examePeriodico||'', m.exameToxicologico||'',
       m.pontuacaoCnh||0, m.vencimentoCnhMopp||'',
-      m.entregaUniforme||'PENDENTE'
+      m.entregaUniforme||'PENDENTE',
+      m.telefoneCorporativo||'NÃO', m.numeroLinha||''
     );
     return row;
   }});
@@ -1521,6 +1526,7 @@ async function adicionarNovoMotorista(){{
     cnh:'', validadeCnh:'', admissao:'',
     examePeriodico:'', exameToxicologico:'',
     pontuacaoCnh:0, vencimentoCnhMopp:'', entregaUniforme:'PENDENTE',
+    telefoneCorporativo:'NÃO', numeroLinha:'',
     dssAnual: gerarMatrizDssEmBranco()
   }};
   mostrarSpinner(true);
@@ -1698,6 +1704,19 @@ function abrirFichaMotorista(cpf){{
             <div class="meta-item"><label>Telefone / WhatsApp</label><input type="text" id="editTelefone" value="${{esc(m.telefone)}}" placeholder="(00) 00000-0000"></div>
             <div class="meta-item"><label>E-mail Corporativo</label><input type="email" id="editEmail" value="${{esc(m.email)}}" placeholder="nome@luft.com.br"></div>
           </div>
+          <div class="meta-grid" style="border-top:1px dashed #d0e4ec;padding-top:10px;margin-top:10px;">
+            <div class="meta-item">
+              <label>Possui Telefone Corporativo?</label>
+              <select id="editTelefoneCorporativo" onchange="toggleNumeroLinha()">
+                <option value="NÃO" ${{m.telefoneCorporativo==='NÃO'?'selected':''}}>NÃO</option>
+                <option value="SIM" ${{m.telefoneCorporativo==='SIM'?'selected':''}}>SIM</option>
+              </select>
+            </div>
+            <div class="meta-item">
+              <label>Número da Linha <span id="numeroLinhaObrigatorio" style="color:#dc2626;${{m.telefoneCorporativo==='SIM'?'':'display:none;'}}">*obrigatório</span></label>
+              <input type="text" id="editNumeroLinha" value="${{esc(m.numeroLinha)}}" placeholder="(00) 00000-0000" ${{m.telefoneCorporativo==='NÃO'?'disabled':''}} style="${{m.telefoneCorporativo==='NÃO'?'background:#eef1f5!important;color:#9aaabb!important;':''}}">
+            </div>
+          </div>
         </div>
       </div>
       <div class="info-section-box card-docs">
@@ -1781,6 +1800,18 @@ function abrirFichaMotorista(cpf){{
   if(fichaOrigemModal){{ btnVoltar.style.display = 'flex'; }} else {{ btnVoltar.style.display = 'none'; }}
 }}
 
+function toggleNumeroLinha(){{
+  const sel = document.getElementById('editTelefoneCorporativo');
+  const input = document.getElementById('editNumeroLinha');
+  const aviso = document.getElementById('numeroLinhaObrigatorio');
+  const ehSim = sel.value === 'SIM';
+  input.disabled = !ehSim;
+  input.style.background = ehSim ? '' : '#eef1f5';
+  input.style.color = ehSim ? '' : '#9aaabb';
+  aviso.style.display = ehSim ? 'inline' : 'none';
+  if(!ehSim) input.value = '';
+}}
+
 function dispararUploadFoto(){{ document.getElementById('hiddenPhotoInput').click(); }}
 function processarFotoCarregada(input){{
   if(input.files && input.files[0]){{
@@ -1801,6 +1832,14 @@ function processarFotoCarregada(input){{
 async function confirmarEdicaoFicha(){{
   const idx = motoristasDB.findIndex(x => x.cpf === motoristaEmEdicaoCpf);
   if(idx === -1) return;
+
+  const telCorp = document.getElementById('editTelefoneCorporativo').value;
+  const numLinha = document.getElementById('editNumeroLinha').value.trim();
+  if(telCorp === 'SIM' && !numLinha){{
+    toast('Informe o Número da Linha, pois o Telefone Corporativo está marcado como SIM.', 'erro');
+    return;
+  }}
+
   const dssAnual = {{}};
   MESES.forEach(mes => {{
     dssAnual[mes] = [0,1,2,3].map(i => {{
@@ -1822,6 +1861,8 @@ async function confirmarEdicaoFicha(){{
     pontuacaoCnh:        parseInt(document.getElementById('editPontuacaoCnh').value)||0,
     vencimentoCnhMopp:   document.getElementById('editVencimentoCnhMopp').value,
     entregaUniforme:     document.getElementById('editEntregaUniforme').value,
+    telefoneCorporativo: telCorp,
+    numeroLinha:         telCorp === 'SIM' ? numLinha : '',
     reciclagem:    document.getElementById('editReciclagem').value,
     simulador:     document.getElementById('editSimulador').value,
     acidentes:     parseInt(document.getElementById('editAcidentes').value)||0,
