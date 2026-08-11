@@ -2073,6 +2073,23 @@ function gerarFichaPdf(cpf){{
   </div>
 </div>
 
+<!-- DOCUMENTAÇÃO COMPLEMENTAR -->
+<div class="section">
+  <div class="section-head"><i>📋</i> Documentação Complementar & Equipamentos</div>
+  <div class="section-body">
+    <div class="info-grid" style="grid-template-columns:1fr 1fr 1fr;">
+      <div class="info-item"><label>Exame Periódico</label><span>${{m.examePeriodico ? new Date(m.examePeriodico+'T00:00:00').toLocaleDateString('pt-BR') : '—'}}</span></div>
+      <div class="info-item"><label>Exame Toxicológico</label><span>${{m.exameToxicologico ? new Date(m.exameToxicologico+'T00:00:00').toLocaleDateString('pt-BR') : '—'}}</span></div>
+      <div class="info-item"><label>Pontuação CNH</label><span>${{m.pontuacaoCnh||0}} pontos</span></div>
+      <div class="info-item"><label>Vencimento CNH/MOPP</label><span>${{m.vencimentoCnhMopp ? new Date(m.vencimentoCnhMopp+'T00:00:00').toLocaleDateString('pt-BR') : '—'}}</span></div>
+      <div class="info-item"><label>Entrega de Uniforme</label><span class="badge ${{m.entregaUniforme==='OK'?'badge-ok':'badge-pend'}}">${{m.entregaUniforme||'PENDENTE'}}</span></div>
+      <div class="info-item"><label>Telefone Corporativo</label><span class="badge ${{m.telefoneCorporativo==='SIM'?'badge-ok':'badge-pend'}}">${{m.telefoneCorporativo||'NÃO'}}</span></div>
+      <div class="info-item"><label>Número da Linha</label><span style="font-family:monospace">${{esc(m.numeroLinha)}}</span></div>
+      <div class="info-item"><label>Modelo do Celular</label><span>${{esc(m.modelo)}}</span></div>
+    </div>
+  </div>
+</div>
+
 <!-- INDICADORES -->
 <div class="section">
   <div class="section-head"><i>🛡</i> Indicadores de Segurança</div>
