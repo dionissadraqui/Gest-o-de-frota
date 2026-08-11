@@ -43,12 +43,14 @@ COLUNAS = [
     "excesso", "multas", "acidentes",
     "obsAcidente", "obsMultas", "obsGerais", "obsReciclagem", "obsSimulador",
     "cnh", "validadeCnh", "admissao",
-    "exame_periodico", "exame_toxicologico", "pontuação_cnh",
-    "vencimento_cnh_mopp", "entrega_de_uniforme",
 ]
 for _mes in MESES:
     for _s in range(1, 5):
         COLUNAS.append(f"dss_{_mes}_{_s}")
+COLUNAS += [
+    "exame_periodico", "exame_toxicologico", "pontuação_cnh",
+    "vencimento_cnh_mopp", "entrega_de_uniforme",
+]
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -123,15 +125,17 @@ def salvar_todos_motoristas(lista):
             m.get("obsAcidente", ""), m.get("obsMultas", ""), m.get("obsGerais", ""),
             m.get("obsReciclagem", ""), m.get("obsSimulador", ""),
             m.get("cnh", ""), m.get("validadeCnh", ""), m.get("admissao", ""),
-            m.get("examePeriodico", ""), m.get("exameToxicologico", ""),
-            m.get("pontuacaoCnh", 0), m.get("vencimentoCnhMopp", ""),
-            m.get("entregaUniforme", "PENDENTE"),
         ]
         dss = m.get("dssAnual", {})
         for mes in MESES:
             semanas = dss.get(mes, [False] * 4)
             for s in range(4):
                 row_data.append(1 if (len(semanas) > s and semanas[s]) else 0)
+        row_data += [
+            m.get("examePeriodico", ""), m.get("exameToxicologico", ""),
+            m.get("pontuacaoCnh", 0), m.get("vencimentoCnhMopp", ""),
+            m.get("entregaUniforme", "PENDENTE"),
+        ]
         all_rows.append(row_data)
     existing = ws.get_all_values()
     if len(existing) > 1:
@@ -922,10 +926,7 @@ function motoristasParaLinhas(lista){{
       m.excesso||0, m.multas||0, m.acidentes||0,
       m.obsAcidente||'', m.obsMultas||'', m.obsGerais||'',
       m.obsReciclagem||'', m.obsSimulador||'',
-      m.cnh||'', m.validadeCnh||'', m.admissao||'',
-      m.examePeriodico||'', m.exameToxicologico||'',
-      m.pontuacaoCnh||0, m.vencimentoCnhMopp||'',
-      m.entregaUniforme||'PENDENTE'
+      m.cnh||'', m.validadeCnh||'', m.admissao||''
     ];
     const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho",
                    "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
@@ -933,6 +934,11 @@ function motoristasParaLinhas(lista){{
       const sems = m.dssAnual?.[mes] || [false,false,false,false];
       for(let s=0;s<4;s++) row.push(sems[s] ? 1 : 0);
     }});
+    row.push(
+      m.examePeriodico||'', m.exameToxicologico||'',
+      m.pontuacaoCnh||0, m.vencimentoCnhMopp||'',
+      m.entregaUniforme||'PENDENTE'
+    );
     return row;
   }});
 }}
