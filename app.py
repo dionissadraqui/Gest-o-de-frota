@@ -9,7 +9,7 @@ Coloque na mesma pasta:
 Execute com:
   streamlit run app.py
 """
-#  python3 -m streamlit run app.py
+#  python -m streamlit run app.py
 
 
 import json
@@ -296,12 +296,16 @@ HTML = f"""<!DOCTYPE html>
 .kpi.green{{background:#f0fef4;border-color:#22cc88;box-shadow:0 0 10px rgba(34,204,136,0.35),inset 0 0 6px rgba(34,204,136,0.06)}}
 .kpi.amber{{background:#fffbeb;border-color:#ffaa00;box-shadow:0 0 10px rgba(255,170,0,0.35),inset 0 0 6px rgba(255,170,0,0.06)}}
 .kpi.blue{{background:#f0f6ff;border-color:#3b7dd8;box-shadow:0 0 10px rgba(59,125,216,0.35),inset 0 0 6px rgba(59,125,216,0.06)}}
+.kpi.teal{{background:#f0fbfd;border-color:#0e9cc0;box-shadow:0 0 10px rgba(14,156,192,0.35),inset 0 0 6px rgba(14,156,192,0.06)}}
+.kpi.purple{{background:#f5f0ff;border-color:#7c3aed;box-shadow:0 0 10px rgba(124,58,237,0.35),inset 0 0 6px rgba(124,58,237,0.06)}}
 .kpi-lbl{{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#5a6e8a;margin-bottom:6px;font-weight:700}}
 .kpi-val{{font-size:52px;font-weight:900;line-height:1}}
 .kpi.red .kpi-val{{color:#dc2626}}
 .kpi.green .kpi-val{{color:#16a34a}}
 .kpi.amber .kpi-val{{color:#d97706}}
 .kpi.blue .kpi-val{{color:#1a4fa0}}
+.kpi.teal .kpi-val{{color:#0a7a9a}}
+.kpi.purple .kpi-val{{color:#6d28d9}}
 .kpi-sub{{font-size:12px;color:#3b7dd8;margin-top:8px;text-transform:uppercase;letter-spacing:1px;font-weight:600}}
 
 /* ── PAINEL / SEÇÕES ── */
@@ -508,6 +512,26 @@ HTML = f"""<!DOCTYPE html>
 .dmc-inf-label{{font-size:9px;color:#5a6e8a;text-transform:uppercase;letter-spacing:1px;font-weight:700}}
 .dmc-inf-val{{font-size:28px;font-weight:900;line-height:1;margin-top:1px}}
 .dmc-inf-val.vel{{color:#dc2626}}.dmc-inf-val.mul{{color:#d97706}}.dmc-inf-val.acid{{color:#be185d}}
+
+/* ── Card Prontuário ── */
+.dmc-top-center{{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px}}
+.dmc-top-center .dmc-avatar{{width:56px;height:56px;font-size:22px}}
+.dmc-top-center .dmc-nome{{font-size:15px;white-space:normal;overflow:visible;text-overflow:unset;margin-bottom:0}}
+.dmc-top-center .dmc-filial{{margin-bottom:0}}
+.dmc-top-center .dmc-cpf{{font-size:12px}}
+.dmc-pront-grid{{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px;background:#f8fafd;border:1px solid #eef3fb;border-radius:8px;padding:10px 12px}}
+.dmc-pront-item{{display:flex;flex-direction:column;gap:2px;min-width:0}}
+.dmc-pront-item.full{{grid-column:1/-1}}
+.dmc-pront-lbl{{font-size:9px;color:#8899aa;text-transform:uppercase;letter-spacing:.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+.dmc-pront-val{{font-size:13px;font-weight:700;color:#1a3a6b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+.dmc-status-row{{display:grid;grid-template-columns:1fr 1fr;gap:8px}}
+.dmc-status-pill{{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 6px;border-radius:8px;border:1.5px solid}}
+.dmc-status-pill.ok{{background:rgba(22,163,74,0.08);border-color:rgba(22,163,74,0.35)}}
+.dmc-status-pill.pend{{background:rgba(217,119,6,0.08);border-color:rgba(217,119,6,0.35)}}
+.dmc-status-pill-lbl{{font-size:9px;text-transform:uppercase;letter-spacing:.5px;font-weight:700;color:#5a6e8a}}
+.dmc-status-pill-val{{font-size:13px;font-weight:800}}
+.dmc-status-pill.ok .dmc-status-pill-val{{color:#16a34a}}
+.dmc-status-pill.pend .dmc-status-pill-val{{color:#d97706}}
 .kpi-empty{{grid-column:1/-1;text-align:center;padding:40px;color:#9aaabb;font-size:12px}}
 .kpi-empty i{{font-size:32px;margin-bottom:10px;display:block;color:#c4d0e4}}
 .empty-state{{text-align:center;padding:40px;color:#9aaabb}}
@@ -749,6 +773,54 @@ HTML = f"""<!DOCTYPE html>
         </div>
       </div>
       <div class="kpi-sub">Total Ocorrências</div>
+    </div>
+
+    <div class="kpi green" onclick="abrirKpiModal('reciclagemOk')" title="Ver motoristas com reciclagem OK">
+      <div class="kpi-lbl">Reciclagem OK</div>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;">
+        <div class="kpi-val" id="kpiReciclagemOk">—</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
+          <div style="font-size:8px;color:#16a34a;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">motoristas</div>
+          <div id="kpiReciclagemOkPct" style="font-size:17px;font-weight:900;color:#16a34a;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(34,204,136,0.5);">—</div>
+        </div>
+      </div>
+      <div class="kpi-sub">Cursos realizados</div>
+    </div>
+
+    <div class="kpi amber" onclick="abrirKpiModal('reciclagemPend')" title="Ver motoristas com reciclagem pendente">
+      <div class="kpi-lbl">Reciclagem Pendente</div>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;">
+        <div class="kpi-val" id="kpiReciclagemPend">—</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
+          <div style="font-size:8px;color:#d97706;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">motoristas</div>
+          <div id="kpiReciclagemPendPct" style="font-size:17px;font-weight:900;color:#d97706;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(255,170,0,0.5);">—</div>
+        </div>
+      </div>
+      <div class="kpi-sub">Cursos pendentes</div>
+    </div>
+
+    <div class="kpi teal" onclick="abrirKpiModal('telCorp')" title="Ver motoristas com celular corporativo">
+      <div class="kpi-lbl">Celulares Corporativos</div>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;">
+        <div class="kpi-val" id="kpiTelCorp">—</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
+          <div style="font-size:8px;color:#0e9cc0;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">com linha SIM</div>
+          <div id="kpiTelCorpPct" style="font-size:17px;font-weight:900;color:#0e9cc0;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(14,156,192,0.5);">—</div>
+        </div>
+      </div>
+      <div class="kpi-sub">Telefone Corporativo = SIM</div>
+    </div>
+
+    <div class="kpi purple" onclick="abrirKpiModal('prontuario')" title="Ver prontuário de exames dos motoristas">
+      <div class="kpi-lbl">Prontuário</div>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;">
+        <div class="kpi-val" id="kpiProntuario">—</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
+          <div style="font-size:8px;color:#7c3aed;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">exames ok</div>
+          <div id="kpiProntuarioOk" style="font-size:17px;font-weight:900;color:#7c3aed;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(124,58,237,0.5);">—</div>
+        </div>
+      </div>
+      <div class="kpi-sub">Exames &amp; Complementares</div>
     </div>
   </div>
 
@@ -1057,6 +1129,10 @@ const KPI_CONFIG = {{
   excesso:  {{ label:'Com Excesso de Velocidade',   icon:'fa-gauge-high',        cor:'#ff6666', bg:'rgba(255,68,68,0.15)',  filtro: m => Math.max(0, parseInt(m.excesso)   || 0) > 0 }},
   multas:   {{ label:'Com Multas Registradas',      icon:'fa-file-circle-xmark', cor:'#ff6666', bg:'rgba(255,68,68,0.15)',  filtro: m => Math.max(0, parseInt(m.multas)    || 0) > 0 }},
   acidentes:{{ label:'Com Acidentes Registrados',   icon:'fa-car-burst',         cor:'#ff6666', bg:'rgba(255,68,68,0.15)',  filtro: m => Math.max(0, parseInt(m.acidentes) || 0) > 0 }},
+  reciclagemOk: {{ label:'Reciclagem OK',            icon:'fa-recycle',           cor:'#16a34a', bg:'rgba(22,163,74,0.15)',  filtro: m => m.reciclagem === 'OK' }},
+  reciclagemPend: {{ label:'Reciclagem Pendente',    icon:'fa-clock',             cor:'#d97706', bg:'rgba(217,119,6,0.15)',  filtro: m => m.reciclagem === 'PENDENTE' }},
+  telCorp:  {{ label:'Celulares Corporativos',      icon:'fa-mobile-screen-button', cor:'#0eb8e0', bg:'rgba(14,156,192,0.15)', filtro: m => m.telefoneCorporativo === 'SIM' }},
+  prontuario:{{ label:'Prontuário — Exames & Complementares', icon:'fa-file-medical', cor:'#a78bfa', bg:'rgba(124,58,237,0.15)', filtro: m => true }},
 }};
 
 let kpiListaAtual = [];
@@ -1124,16 +1200,77 @@ function renderizarCardsKpi(lista){{
   const grid = document.getElementById('kpiCardsGrid');
   if(lista.length === 0){{ grid.innerHTML = `<div class="kpi-empty"><i class="fa-solid fa-magnifying-glass"></i>Nenhum motorista encontrado.</div>`; return; }}
   const cfg = kpiTipoAtual ? KPI_CONFIG[kpiTipoAtual] : null;
-  const isDssModal  = cfg && cfg.dssModal;
-  const isExcesso   = kpiTipoAtual === 'excesso';
-  const isMultas    = kpiTipoAtual === 'multas';
-  const isAcidentes = kpiTipoAtual === 'acidentes';
-  const isInfracao  = isExcesso || isMultas || isAcidentes;
+  const isDssModal   = cfg && cfg.dssModal;
+  const isExcesso    = kpiTipoAtual === 'excesso';
+  const isMultas     = kpiTipoAtual === 'multas';
+  const isAcidentes  = kpiTipoAtual === 'acidentes';
+  const isInfracao   = isExcesso || isMultas || isAcidentes;
+  const isTelCorp    = kpiTipoAtual === 'telCorp';
+  const isProntuario = kpiTipoAtual === 'prontuario';
+  const isReciclagemOk = kpiTipoAtual === 'reciclagemOk';
+  const isReciclagemPend = kpiTipoAtual === 'reciclagemPend';
   grid.innerHTML = lista.map(m => {{
     const avatar = m.foto ? `<img src="${{m.foto}}" alt="">` : `<i class="fa-solid fa-user-tie"></i>`;
     const nExc   = Math.max(0, parseInt(m.excesso)   || 0);
     const nMul   = Math.max(0, parseInt(m.multas)    || 0);
     const nAcid  = Math.max(0, parseInt(m.acidentes) || 0);
+    if(isTelCorp){{
+      return `<div class="driver-mini-card card-ok" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
+        <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
+        <div class="dmc-cpf">${{m.cpf}}</div>
+        <div class="dmc-infracao"><i class="fa-solid fa-mobile-screen-button dmc-inf-icon" style="color:#0e9cc0"></i>
+          <div class="dmc-inf-body"><div class="dmc-inf-label">Número da Linha</div><div class="dmc-inf-val" style="color:#0e9cc0;font-size:17px;">${{m.numeroLinha || 'Não informado'}}</div></div>
+        </div>
+        <div class="dmc-badges"><span class="dmc-badge ok"><i class="fa-solid fa-mobile"></i> ${{m.modelo || 'Modelo não informado'}}</span></div>
+      </div>`;
+    }}
+    if(isProntuario){{
+      const exPerOk = !!m.examePeriodico;
+      const exToxOk = !!m.exameToxicologico;
+      const recOk   = m.reciclagem === 'OK';
+      const simOk   = m.simulador === 'OK';
+      const uniOk   = m.entregaUniforme === 'OK';
+      const fmtData = d => d ? new Date(d+'T00:00:00').toLocaleDateString('pt-BR') : 'PENDENTE';
+      return `<div class="driver-mini-card ${{(exPerOk && exToxOk) ? 'card-ok' : 'card-pend'}}" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
+        <div class="dmc-top-center">
+          <div class="dmc-avatar">${{avatar}}</div>
+          <div class="dmc-nome">${{m.nome}}</div>
+          <div class="dmc-filial">${{m.filial||'—'}}</div>
+          <div class="dmc-cpf">${{m.cpf}}</div>
+        </div>
+        <div class="dmc-pront-grid">
+          <div class="dmc-pront-item"><span class="dmc-pront-lbl">Exame Periódico</span><span class="dmc-pront-val" style="color:${{exPerOk?'#16a34a':'#dc2626'}}">${{fmtData(m.examePeriodico)}}</span></div>
+          <div class="dmc-pront-item"><span class="dmc-pront-lbl">Exame Toxicológico</span><span class="dmc-pront-val" style="color:${{exToxOk?'#16a34a':'#dc2626'}}">${{fmtData(m.exameToxicologico)}}</span></div>
+          <div class="dmc-pront-item"><span class="dmc-pront-lbl">Venc. MOPP</span><span class="dmc-pront-val">${{fmtData(m.vencimentoCnhMopp)}}</span></div>
+          <div class="dmc-pront-item"><span class="dmc-pront-lbl">Pontuação CNH</span><span class="dmc-pront-val">${{m.pontuacaoCnh||0}} pts</span></div>
+          <div class="dmc-pront-item full"><span class="dmc-pront-lbl">Entrega de Uniforme</span><span class="dmc-pront-val" style="color:${{uniOk?'#16a34a':'#dc2626'}}">${{m.entregaUniforme||'PENDENTE'}}</span></div>
+        </div>
+        <div class="dmc-status-row">
+          <div class="dmc-status-pill ${{recOk?'ok':'pend'}}">
+            <span class="dmc-status-pill-lbl"><i class="fa-solid fa-recycle"></i> Reciclagem</span>
+            <span class="dmc-status-pill-val">${{m.reciclagem||'PENDENTE'}}</span>
+          </div>
+          <div class="dmc-status-pill ${{simOk?'ok':'pend'}}">
+            <span class="dmc-status-pill-lbl"><i class="fa-solid fa-car-side"></i> Simulador</span>
+            <span class="dmc-status-pill-val">${{m.simulador||'PENDENTE'}}</span>
+          </div>
+        </div>
+      </div>`;
+    }}
+    if(isReciclagemOk){{
+      return `<div class="driver-mini-card card-ok" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
+        <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
+        <div class="dmc-cpf">${{m.cpf}}</div>
+        <div class="dmc-badges"><span class="dmc-badge ok"><i class="fa-solid fa-recycle"></i> Reciclagem OK</span></div>
+      </div>`;
+    }}
+    if(isReciclagemPend){{
+      return `<div class="driver-mini-card card-pend" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
+        <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
+        <div class="dmc-cpf">${{m.cpf}}</div>
+        <div class="dmc-badges"><span class="dmc-badge pend"><i class="fa-solid fa-clock"></i> Reciclagem Pendente</span></div>
+      </div>`;
+    }}
     if(isInfracao){{
       let infVal, infCls, infIcon, infLabel;
       if(isExcesso)   {{ infVal=nExc;  infCls='vel';  infIcon='fa-gauge-high';          infLabel='Excessos de Velocidade'; }}
@@ -1266,6 +1403,20 @@ function atualizarDashboardCompleto(){{
   _s('kpiExcessoMot',   motExcesso);
   _s('kpiMultasMot',    motMultas);
   _s('kpiAcidentesMot', motAcident);
+
+  const totalTelCorp      = motoristasDB.filter(m => m.telefoneCorporativo === 'SIM').length;
+  const totalProntuarioOk = motoristasDB.filter(m => m.examePeriodico && m.exameToxicologico).length;
+  _s('kpiTelCorp',     totalTelCorp);
+  _s('kpiTelCorpPct',  totalM > 0 ? Math.round(totalTelCorp/totalM*100) + '%' : '—');
+  _s('kpiProntuario',  totalM);
+  _s('kpiProntuarioOk',totalProntuarioOk);
+
+  const totalRecOk  = motoristasDB.filter(m => m.reciclagem === 'OK').length;
+  const totalRecPend = motoristasDB.filter(m => m.reciclagem === 'PENDENTE').length;
+  _s('kpiReciclagemOk', totalRecOk);
+  _s('kpiReciclagemOkPct', totalM > 0 ? Math.round(totalRecOk/totalM*100) + '%' : '—');
+  _s('kpiReciclagemPend', totalRecPend);
+  _s('kpiReciclagemPendPct', totalM > 0 ? Math.round(totalRecPend/totalM*100) + '%' : '—');
 
   renderizarGridFiliais(filiais);
   renderizarGraficos(filiais);
