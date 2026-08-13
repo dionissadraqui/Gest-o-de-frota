@@ -54,6 +54,7 @@ COLUNAS += [
     "reciclagem_data", "reciclagem_validade_anos",
     "simulador_data", "simulador_validade_anos",
     "exame_periodico_validade_anos", "exame_toxicologico_validade_anos",
+    "gestime", "obsGestime", "gestime_data", "gestime_validade_anos",
 ]
 
 SCOPES = [
@@ -122,6 +123,10 @@ def ler_todos_motoristas():
             "simuladorValidadeAnos": max(0, int(row.get("simulador_validade_anos", 0) or 0)),
             "examePeriodicoValidadeAnos": max(0, int(row.get("exame_periodico_validade_anos", 0) or 0)),
             "exameToxicologicoValidadeAnos": max(0, int(row.get("exame_toxicologico_validade_anos", 0) or 0)),
+            "gestime":        str(row.get("gestime", "PENDENTE")).strip() or "PENDENTE",
+            "obsGestime":     str(row.get("obsGestime", "")).strip(),
+            "gestimeData":    str(row.get("gestime_data", "")).strip(),
+            "gestimeValidadeAnos": max(0, int(row.get("gestime_validade_anos", 0) or 0)),
             "dssAnual":      dss_anual,
         })
     return motoristas
@@ -153,6 +158,8 @@ def salvar_todos_motoristas(lista):
             m.get("reciclagemData", ""), m.get("reciclagemValidadeAnos", 0),
             m.get("simuladorData", ""), m.get("simuladorValidadeAnos", 0),
             m.get("examePeriodicoValidadeAnos", 0), m.get("exameToxicologicoValidadeAnos", 0),
+            m.get("gestime", "PENDENTE"), m.get("obsGestime", ""),
+            m.get("gestimeData", ""), m.get("gestimeValidadeAnos", 0),
         ]
         all_rows.append(row_data)
     existing = ws.get_all_values()
@@ -728,28 +735,16 @@ HTML = f"""<!DOCTYPE html>
       <div class="kpi-sub">Todas as filiais</div>
     </div>
 
-    <div class="kpi green" onclick="abrirKpiModal('comDss')" title="Ver motoristas com DSS ok no mês">
-      <div class="kpi-lbl">Com DSS ok</div>
+    <div class="kpi green" onclick="abrirCursosMenu()" title="Ver DSS e Reciclagem por categoria">
+      <div class="kpi-lbl">Cursos</div>
       <div style="display:flex;align-items:flex-end;justify-content:space-between;">
-        <div class="kpi-val" id="kpiRecOk">—</div>
+        <div class="kpi-val" id="kpiCursosTotal">—</div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
-          <div style="font-size:8px;color:#16a34a;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">sessões/ano</div>
-          <div id="kpiRecOkAnual" style="font-size:17px;font-weight:900;color:#16a34a;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(34,204,136,0.5);">—</div>
+          <div style="font-size:8px;color:#16a34a;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">regularidade DSS</div>
+          <div id="kpiCursosSubPct" style="font-size:17px;font-weight:900;color:#16a34a;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(34,204,136,0.5);">—</div>
         </div>
       </div>
-      <div class="kpi-sub" id="kpiDssSub">Mês atual — 4/4 semanas</div>
-    </div>
-
-    <div class="kpi amber" onclick="abrirKpiModal('semDss')" title="Ver motoristas pendentes no mês">
-      <div class="kpi-lbl">Pendentes DSS</div>
-      <div style="display:flex;align-items:flex-end;justify-content:space-between;">
-        <div class="kpi-val" id="kpiSimOk">—</div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
-          <div style="font-size:8px;color:#d97706;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">em falta/ano</div>
-          <div id="kpiPendAnual" style="font-size:17px;font-weight:900;color:#d97706;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(255,170,0,0.5);">—</div>
-        </div>
-      </div>
-      <div class="kpi-sub" id="kpiPendSub">Mês atual — menos de 4</div>
+      <div class="kpi-sub">DSS · Reciclagem</div>
     </div>
 
     <div class="kpi red" onclick="abrirKpiModal('excesso')" title="Ver motoristas com excesso de velocidade">
@@ -786,30 +781,6 @@ HTML = f"""<!DOCTYPE html>
         </div>
       </div>
       <div class="kpi-sub">Total Ocorrências</div>
-    </div>
-
-    <div class="kpi green" onclick="abrirKpiModal('reciclagemOk')" title="Ver motoristas com reciclagem OK">
-      <div class="kpi-lbl">Reciclagem OK</div>
-      <div style="display:flex;align-items:flex-end;justify-content:space-between;">
-        <div class="kpi-val" id="kpiReciclagemOk">—</div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
-          <div style="font-size:8px;color:#16a34a;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">motoristas</div>
-          <div id="kpiReciclagemOkPct" style="font-size:17px;font-weight:900;color:#16a34a;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(34,204,136,0.5);">—</div>
-        </div>
-      </div>
-      <div class="kpi-sub">Cursos realizados</div>
-    </div>
-
-    <div class="kpi amber" onclick="abrirKpiModal('reciclagemPend')" title="Ver motoristas com reciclagem pendente">
-      <div class="kpi-lbl">Reciclagem Pendente</div>
-      <div style="display:flex;align-items:flex-end;justify-content:space-between;">
-        <div class="kpi-val" id="kpiReciclagemPend">—</div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
-          <div style="font-size:8px;color:#d97706;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">motoristas</div>
-          <div id="kpiReciclagemPendPct" style="font-size:17px;font-weight:900;color:#d97706;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(255,170,0,0.5);">—</div>
-        </div>
-      </div>
-      <div class="kpi-sub">Cursos pendentes</div>
     </div>
 
     <div class="kpi teal" onclick="abrirKpiModal('telCorp')" title="Ver motoristas com celular corporativo">
@@ -908,6 +879,7 @@ HTML = f"""<!DOCTYPE html>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
+        <button id="btnVoltarCursos" style="display:none;background:transparent;color:#3b7dd8;border:1.5px solid #3b7dd8;padding:5px 14px;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;border-radius:5px;cursor:pointer;align-items:center;gap:6px;" onclick="abrirCursosMenu()"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
         <button id="btnBaixarPdfPendentes" style="display:none;background:transparent;color:#22cc88;border:1.5px solid #22cc88;padding:5px 14px;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;border-radius:5px;cursor:pointer;align-items:center;gap:6px;" onmouseover="this.style.color='#ff4444';this.style.borderColor='#ff4444'" onmouseout="this.style.color='#22cc88';this.style.borderColor='#22cc88'"><i class="fa-solid fa-file-pdf"></i> Baixar PDF</button>
         <button class="kpi-modal-close" onclick="fecharKpiModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
@@ -1037,7 +1009,9 @@ function motoristasParaLinhas(lista){{
       m.modelo||'',
       m.reciclagemData||'', m.reciclagemValidadeAnos||0,
       m.simuladorData||'', m.simuladorValidadeAnos||0,
-      m.examePeriodicoValidadeAnos||0, m.exameToxicologicoValidadeAnos||0
+      m.examePeriodicoValidadeAnos||0, m.exameToxicologicoValidadeAnos||0,
+      m.gestime||'PENDENTE', m.obsGestime||'',
+      m.gestimeData||'', m.gestimeValidadeAnos||0
     );
     return row;
   }});
@@ -1147,6 +1121,10 @@ const KPI_CONFIG = {{
   acidentes:{{ label:'Com Acidentes Registrados',   icon:'fa-car-burst',         cor:'#ff6666', bg:'rgba(255,68,68,0.15)',  filtro: m => Math.max(0, parseInt(m.acidentes) || 0) > 0 }},
   reciclagemOk: {{ label:'Reciclagem OK',            icon:'fa-recycle',           cor:'#16a34a', bg:'rgba(22,163,74,0.15)',  filtro: m => m.reciclagem === 'OK' }},
   reciclagemPend: {{ label:'Reciclagem Pendente',    icon:'fa-clock',             cor:'#d97706', bg:'rgba(217,119,6,0.15)',  filtro: m => m.reciclagem === 'PENDENTE' }},
+  simuladorOk: {{ label:'Simulador SEST SENAT OK',      icon:'fa-car-side',       cor:'#16a34a', bg:'rgba(22,163,74,0.15)',  filtro: m => m.simulador === 'OK' }},
+  simuladorPend: {{ label:'Simulador SEST SENAT Pendente', icon:'fa-clock',       cor:'#d97706', bg:'rgba(217,119,6,0.15)',  filtro: m => m.simulador === 'PENDENTE' }},
+  gestimeOk: {{ label:'Gestime OK',                     icon:'fa-clipboard-check', cor:'#16a34a', bg:'rgba(22,163,74,0.15)',  filtro: m => m.gestime === 'OK' }},
+  gestimePend: {{ label:'Gestime Pendente',             icon:'fa-clock',            cor:'#d97706', bg:'rgba(217,119,6,0.15)',  filtro: m => m.gestime === 'PENDENTE' }},
   telCorp:  {{ label:'Celulares Corporativos',      icon:'fa-mobile-screen-button', cor:'#0eb8e0', bg:'rgba(14,156,192,0.15)', filtro: m => m.telefoneCorporativo === 'SIM' }},
   prontuario:{{ label:'Prontuário — Exames & Complementares', icon:'fa-file-medical', cor:'#a78bfa', bg:'rgba(124,58,237,0.15)', filtro: m => true }},
 }};
@@ -1154,14 +1132,71 @@ const KPI_CONFIG = {{
 let kpiListaAtual = [];
 let kpiMesAtual   = null;
 let kpiTipoAtual  = null;
+let kpiOrigemCursos = false;
 
 function mesCorrente(){{ return MESES[new Date().getMonth()]; }}
+
+function abrirCategoriaCursos(tipo){{
+  kpiOrigemCursos = true;
+  abrirKpiModal(tipo);
+}}
+
+function abrirCursosMenu(){{
+  kpiOrigemCursos = false;
+  const btnVoltarCursos = document.getElementById('btnVoltarCursos');
+  if(btnVoltarCursos) btnVoltarCursos.style.display = 'none';
+  kpiTipoAtual = 'cursos';
+  kpiMesAtual  = null;
+  document.getElementById('kpiModalIcon').innerHTML = `<i class="fa-solid fa-graduation-cap" style="color:#16a34a"></i>`;
+  document.getElementById('kpiModalIcon').style.background = 'rgba(22,163,74,0.15)';
+  document.getElementById('kpiModalLabel').textContent = 'Cursos';
+  document.getElementById('kpiModalCount').textContent = 'Selecione uma categoria';
+  document.getElementById('kpiSearchInput').value = '';
+  document.getElementById('kpiMesFiltro').classList.remove('visible');
+  document.getElementById('kpiMesFiltro').innerHTML = '';
+  const btnPdf = document.getElementById('btnBaixarPdfPendentes');
+  if(btnPdf) btnPdf.style.display = 'none';
+
+  const _mes    = mesCorrente();
+  const totalM  = motoristasDB.length;
+  const nComDss = motoristasDB.filter(m => dssOkNoMes(m, _mes)).length;
+  const nSemDss = totalM - nComDss;
+  const nRecOk  = motoristasDB.filter(m => m.reciclagem === 'OK').length;
+  const nRecPend= totalM - nRecOk;
+  const nSimOk  = motoristasDB.filter(m => m.simulador === 'OK').length;
+  const nSimPend= totalM - nSimOk;
+  const nGestOk  = motoristasDB.filter(m => m.gestime === 'OK').length;
+  const nGestPend= totalM - nGestOk;
+
+  const cats = [
+    {{ tipo:'comDss',        label:'Com DSS Ok',                    icon:'fa-circle-check', cor:'#16a34a', bg:'rgba(22,163,74,0.10)',  count:nComDss  }},
+    {{ tipo:'semDss',        label:'Pendentes DSS',                 icon:'fa-clock',        cor:'#d97706', bg:'rgba(217,119,6,0.10)',  count:nSemDss  }},
+    {{ tipo:'reciclagemOk',  label:'Reciclagem OK',                 icon:'fa-recycle',      cor:'#16a34a', bg:'rgba(22,163,74,0.10)',  count:nRecOk   }},
+    {{ tipo:'reciclagemPend',label:'Reciclagem Pendente',           icon:'fa-clock',        cor:'#d97706', bg:'rgba(217,119,6,0.10)',  count:nRecPend }},
+    {{ tipo:'simuladorOk',   label:'Simulador SEST SENAT OK',       icon:'fa-car-side',     cor:'#16a34a', bg:'rgba(22,163,74,0.10)',  count:nSimOk   }},
+    {{ tipo:'simuladorPend', label:'Simulador SEST SENAT Pendente', icon:'fa-clock',        cor:'#d97706', bg:'rgba(217,119,6,0.10)',  count:nSimPend }},
+    {{ tipo:'gestimeOk',     label:'Gestime OK',                    icon:'fa-clipboard-check', cor:'#16a34a', bg:'rgba(22,163,74,0.10)', count:nGestOk  }},
+    {{ tipo:'gestimePend',   label:'Gestime Pendente',              icon:'fa-clock',        cor:'#d97706', bg:'rgba(217,119,6,0.10)',  count:nGestPend }},
+  ];
+
+  document.getElementById('kpiCardsGrid').innerHTML = cats.map(c => `
+    <div class="driver-mini-card" onclick="abrirCategoriaCursos('${{c.tipo}}')" style="cursor:pointer;align-items:center;text-align:center;">
+      <div class="dmc-avatar" style="width:56px;height:56px;margin:0 auto;background:${{c.bg}};color:${{c.cor}};font-size:24px;"><i class="fa-solid ${{c.icon}}"></i></div>
+      <div class="dmc-nome" style="text-align:center;white-space:normal;">${{c.label}}</div>
+      <div style="font-size:32px;font-weight:900;color:${{c.cor}};text-align:center;">${{c.count}}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('kpiModal').classList.add('show');
+}}
 
 function abrirKpiModal(tipo, mes){{
   kpiTipoAtual = tipo;
   const cfg = KPI_CONFIG[tipo];
   if(!mes) mes = cfg.dssModal ? mesCorrente() : null;
   kpiMesAtual = mes;
+  const btnVoltarCursos = document.getElementById('btnVoltarCursos');
+  if(btnVoltarCursos) btnVoltarCursos.style.display = kpiOrigemCursos ? 'flex' : 'none';
   _aplicarFiltroKpi();
   document.getElementById('kpiModalIcon').innerHTML  = `<i class="fa-solid ${{cfg.icon}}" style="color:${{cfg.cor}}"></i>`;
   document.getElementById('kpiModalIcon').style.background = cfg.bg;
@@ -1225,6 +1260,10 @@ function renderizarCardsKpi(lista){{
   const isProntuario = kpiTipoAtual === 'prontuario';
   const isReciclagemOk = kpiTipoAtual === 'reciclagemOk';
   const isReciclagemPend = kpiTipoAtual === 'reciclagemPend';
+  const isSimuladorOk = kpiTipoAtual === 'simuladorOk';
+  const isSimuladorPend = kpiTipoAtual === 'simuladorPend';
+  const isGestimeOk = kpiTipoAtual === 'gestimeOk';
+  const isGestimePend = kpiTipoAtual === 'gestimePend';
   grid.innerHTML = lista.map(m => {{
     const avatar = m.foto ? `<img src="${{m.foto}}" alt="">` : `<i class="fa-solid fa-user-tie"></i>`;
     const nExc   = Math.max(0, parseInt(m.excesso)   || 0);
@@ -1295,6 +1334,42 @@ function renderizarCardsKpi(lista){{
         <div style="font-size:11px;font-weight:700;color:${{svR.cor}}">${{svR.label}}</div>
       </div>`;
     }}
+    if(isSimuladorOk){{
+      const svS = statusVencimento(m.simuladorData, m.simuladorValidadeAnos);
+      return `<div class="driver-mini-card card-ok" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
+        <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
+        <div class="dmc-cpf">${{m.cpf}}</div>
+        <div class="dmc-badges"><span class="dmc-badge ok"><i class="fa-solid fa-car-side"></i> Simulador OK</span></div>
+        <div style="font-size:11px;font-weight:700;color:${{svS.cor}}">${{svS.label}}</div>
+      </div>`;
+    }}
+    if(isSimuladorPend){{
+      const svS = statusVencimento(m.simuladorData, m.simuladorValidadeAnos);
+      return `<div class="driver-mini-card card-pend" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
+        <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
+        <div class="dmc-cpf">${{m.cpf}}</div>
+        <div class="dmc-badges"><span class="dmc-badge pend"><i class="fa-solid fa-clock"></i> Simulador Pendente</span></div>
+        <div style="font-size:11px;font-weight:700;color:${{svS.cor}}">${{svS.label}}</div>
+      </div>`;
+    }}
+    if(isGestimeOk){{
+      const svG = statusVencimento(m.gestimeData, m.gestimeValidadeAnos);
+      return `<div class="driver-mini-card card-ok" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
+        <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
+        <div class="dmc-cpf">${{m.cpf}}</div>
+        <div class="dmc-badges"><span class="dmc-badge ok"><i class="fa-solid fa-clipboard-check"></i> Gestime OK</span></div>
+        <div style="font-size:11px;font-weight:700;color:${{svG.cor}}">${{svG.label}}</div>
+      </div>`;
+    }}
+    if(isGestimePend){{
+      const svG = statusVencimento(m.gestimeData, m.gestimeValidadeAnos);
+      return `<div class="driver-mini-card card-pend" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
+        <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
+        <div class="dmc-cpf">${{m.cpf}}</div>
+        <div class="dmc-badges"><span class="dmc-badge pend"><i class="fa-solid fa-clock"></i> Gestime Pendente</span></div>
+        <div style="font-size:11px;font-weight:700;color:${{svG.cor}}">${{svG.label}}</div>
+      </div>`;
+    }}
     if(isInfracao){{
       let infVal, infCls, infIcon, infLabel;
       if(isExcesso)   {{ infVal=nExc;  infCls='vel';  infIcon='fa-gauge-high';          infLabel='Excessos de Velocidade'; }}
@@ -1333,7 +1408,12 @@ function renderizarCardsKpi(lista){{
 }}
 
 function irParaFichaViaKpi(cpf){{ fichaOrigemModal='kpi'; fecharKpiModal(); setTimeout(()=>abrirFichaMotorista(cpf),120); }}
-function fecharKpiModal(){{ document.getElementById('kpiModal').classList.remove('show'); }}
+function fecharKpiModal(){{
+  document.getElementById('kpiModal').classList.remove('show');
+  kpiOrigemCursos = false;
+  const btnVoltarCursos = document.getElementById('btnVoltarCursos');
+  if(btnVoltarCursos) btnVoltarCursos.style.display = 'none';
+}}
 document.addEventListener('click', e => {{ if(e.target === document.getElementById('kpiModal')) fecharKpiModal(); }});
 
 function toggleFormulario(){{
@@ -1423,18 +1503,15 @@ function atualizarDashboardCompleto(){{
   const totalMul   = motoristasDB.reduce((acc,m) => acc + Math.max(0, parseInt(m.multas)    || 0), 0);
   const totalAcid  = motoristasDB.reduce((acc,m) => acc + Math.max(0, parseInt(m.acidentes) || 0), 0);
   document.getElementById('kpiTotal').textContent    = totalM;
-  document.getElementById('kpiRecOk').textContent    = totalComDss;
-  document.getElementById('kpiSimOk').textContent    = totalPend;
   document.getElementById('kpiExcesso').textContent  = totalExc;
   document.getElementById('kpiMultas').textContent   = totalMul;
   document.getElementById('kpiAcidentes').textContent= totalAcid;
   const pct = totalM > 0 ? ((totalComDss / totalM)*100).toFixed(1) + '%' : '—';
-  const _mesLabel = _mesDash.substring(0,3).toUpperCase();
-  const subDss  = document.getElementById('kpiDssSub');
-  const subPend = document.getElementById('kpiPendSub');
-  if(subDss)  subDss.textContent  = _mesLabel + ' — 4/4 semanas';
-  if(subPend) subPend.textContent = _mesLabel + ' — menos de 4';
   document.getElementById('macroPctDss').textContent = pct;
+  const cursosTotalEl = document.getElementById('kpiCursosTotal');
+  const cursosSubEl   = document.getElementById('kpiCursosSubPct');
+  if(cursosTotalEl) cursosTotalEl.textContent = totalM;
+  if(cursosSubEl)   cursosSubEl.textContent   = pct;
 
   const totalDssAnual = motoristasDB.reduce((acc, m) => {{
     MESES.forEach(mes => {{
@@ -1891,6 +1968,7 @@ function abrirFichaMotorista(cpf){{
   const svSim   = statusVencimento(m.simuladorData, m.simuladorValidadeAnos);
   const svExPer = statusVencimento(m.examePeriodico, m.examePeriodicoValidadeAnos);
   const svExTox = statusVencimento(m.exameToxicologico, m.exameToxicologicoValidadeAnos);
+  const svGest  = statusVencimento(m.gestimeData, m.gestimeValidadeAnos);
   let highlightSeg='', highlightDss='', badgeSegHtml='', badgeDssHtml='';
   if(fichaOrigemModal === 'kpi'){{
     if(kpiTipoAtual==='excesso')  {{ highlightSeg=' card-highlight-vel';  badgeSegHtml='<span style="margin-left:auto;font-size:8px;font-weight:800;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;padding:2px 8px;border-radius:20px;"><i class=\\"fa-solid fa-gauge-high\\" style=\\"margin-right:3px\\"></i>Excesso de Velocidade</span>'; }}
@@ -1927,6 +2005,10 @@ function abrirFichaMotorista(cpf){{
             <div style="background:${{m.simulador==='OK'?'#f0fef4':'#fff5f5'}};border:1.5px solid ${{m.simulador==='OK'?'#86efac':'#fca5a5'}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
               <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-car-side" style="color:${{m.simulador==='OK'?'#16a34a':'#dc2626'}};margin-right:6px"></i>Simulador</span>
               <span style="font-size:18px;font-weight:900;color:${{m.simulador==='OK'?'#16a34a':'#dc2626'}};line-height:1;">${{m.simulador}}</span>
+            </div>
+            <div style="background:${{m.gestime==='OK'?'#f0fef4':'#fff5f5'}};border:1.5px solid ${{m.gestime==='OK'?'#86efac':'#fca5a5'}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-clipboard-check" style="color:${{m.gestime==='OK'?'#16a34a':'#dc2626'}};margin-right:6px"></i>Gestime</span>
+              <span style="font-size:18px;font-weight:900;color:${{m.gestime==='OK'?'#16a34a':'#dc2626'}};line-height:1;">${{m.gestime}}</span>
             </div>
           </div>
         </div>
@@ -2055,6 +2137,19 @@ function abrirFichaMotorista(cpf){{
               <div style="font-size:10px;font-weight:700;color:${{svRec.cor}};margin-bottom:4px;">${{svRec.label}}</div>
               <input type="text" id="editObsReciclagem" class="obs-input" value="${{esc(m.obsReciclagem)}}" placeholder="Obs de Reciclagem">
             </div>
+            <div class="meta-item">
+              <label>Gestime</label>
+              <select id="editGestime" style="margin-bottom:4px;">
+                <option value="PENDENTE" ${{m.gestime==='PENDENTE'?'selected':''}}>PENDENTE</option>
+                <option value="OK" ${{m.gestime==='OK'?'selected':''}}>OK</option>
+              </select>
+              <div style="display:flex;gap:4px;margin-bottom:4px;">
+                <input type="date" id="editGestimeData" value="${{esc(m.gestimeData)}}" style="flex:1;" title="Data de realização" oninput="checarCamposValidade('editGestimeData','editGestimeValidadeAnos')">
+                <input type="number" id="editGestimeValidadeAnos" value="${{m.gestimeValidadeAnos||0}}" min="0" style="width:52px;" title="Válido por (anos)" oninput="checarCamposValidade('editGestimeData','editGestimeValidadeAnos')">
+              </div>
+              <div style="font-size:10px;font-weight:700;color:${{svGest.cor}};margin-bottom:4px;">${{svGest.label}}</div>
+              <input type="text" id="editObsGestime" class="obs-input" value="${{esc(m.obsGestime)}}" placeholder="Obs de Gestime">
+            </div>
           </div>
         </div>
       </div>
@@ -2070,6 +2165,7 @@ function abrirFichaMotorista(cpf){{
   checarCamposValidade('editSimuladorData','editSimuladorValidadeAnos');
   checarCamposValidade('editExamePeriodico','editExamePeriodicoValidadeAnos');
   checarCamposValidade('editExameToxicologico','editExameToxicologicoValidadeAnos');
+  checarCamposValidade('editGestimeData','editGestimeValidadeAnos');
   document.getElementById('driverModal').style.display = 'flex';
   const btnVoltar = document.getElementById('btnVoltarFicha');
   if(fichaOrigemModal){{ btnVoltar.style.display = 'flex'; }} else {{ btnVoltar.style.display = 'none'; }}
@@ -2141,6 +2237,13 @@ async function confirmarEdicaoFicha(){{
     toast('Informe a Validade (anos) do Exame Toxicológico.', 'erro');
     return;
   }}
+  const gestSelVal = document.getElementById('editGestime').value;
+  const gestData   = document.getElementById('editGestimeData').value;
+  const gestAnos   = parseInt(document.getElementById('editGestimeValidadeAnos').value) || 0;
+  if(gestSelVal === 'OK' && (!gestData || gestAnos <= 0)){{
+    toast('Para marcar Gestime como OK, preencha a Data de Realização e a Validade (anos).', 'erro');
+    return;
+  }}
 
   const dssAnual = {{}};
   MESES.forEach(mes => {{
@@ -2174,6 +2277,10 @@ async function confirmarEdicaoFicha(){{
     simuladorValidadeAnos: parseInt(document.getElementById('editSimuladorValidadeAnos').value)||0,
     examePeriodicoValidadeAnos: parseInt(document.getElementById('editExamePeriodicoValidadeAnos').value)||0,
     exameToxicologicoValidadeAnos: parseInt(document.getElementById('editExameToxicologicoValidadeAnos').value)||0,
+    gestime:        document.getElementById('editGestime').value,
+    gestimeData:    document.getElementById('editGestimeData').value,
+    gestimeValidadeAnos: parseInt(document.getElementById('editGestimeValidadeAnos').value)||0,
+    obsGestime:     document.getElementById('editObsGestime').value,
     acidentes:     parseInt(document.getElementById('editAcidentes').value)||0,
     multas:        parseInt(document.getElementById('editMultas').value)||0,
     excesso:       parseInt(document.getElementById('editExcesso').value)||0,
