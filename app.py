@@ -51,6 +51,9 @@ COLUNAS += [
     "exame_periodico", "exame_toxicologico", "pontuação_cnh",
     "vencimento_cnh_mopp", "entrega_de_uniforme",
     "telefone_corporativo", "numero_linha", "modelo",
+    "reciclagem_data", "reciclagem_validade_anos",
+    "simulador_data", "simulador_validade_anos",
+    "exame_periodico_validade_anos", "exame_toxicologico_validade_anos",
 ]
 
 SCOPES = [
@@ -113,6 +116,12 @@ def ler_todos_motoristas():
             "telefoneCorporativo": str(row.get("telefone_corporativo", "NÃO")).strip() or "NÃO",
             "numeroLinha":         str(row.get("numero_linha", "")).strip(),
             "modelo":              str(row.get("modelo", "")).strip(),
+            "reciclagemData":       str(row.get("reciclagem_data", "")).strip(),
+            "reciclagemValidadeAnos": max(0, int(row.get("reciclagem_validade_anos", 0) or 0)),
+            "simuladorData":        str(row.get("simulador_data", "")).strip(),
+            "simuladorValidadeAnos": max(0, int(row.get("simulador_validade_anos", 0) or 0)),
+            "examePeriodicoValidadeAnos": max(0, int(row.get("exame_periodico_validade_anos", 0) or 0)),
+            "exameToxicologicoValidadeAnos": max(0, int(row.get("exame_toxicologico_validade_anos", 0) or 0)),
             "dssAnual":      dss_anual,
         })
     return motoristas
@@ -141,6 +150,9 @@ def salvar_todos_motoristas(lista):
             m.get("entregaUniforme", "PENDENTE"),
             m.get("telefoneCorporativo", "NÃO"), m.get("numeroLinha", ""),
             m.get("modelo", ""),
+            m.get("reciclagemData", ""), m.get("reciclagemValidadeAnos", 0),
+            m.get("simuladorData", ""), m.get("simuladorValidadeAnos", 0),
+            m.get("examePeriodicoValidadeAnos", 0), m.get("exameToxicologicoValidadeAnos", 0),
         ]
         all_rows.append(row_data)
     existing = ws.get_all_values()
@@ -450,6 +462,7 @@ HTML = f"""<!DOCTYPE html>
 .card-seguranca .meta-item input:focus,.card-seguranca .meta-item select:focus{{border-color:#d97706;box-shadow:0 0 0 2px rgba(217,119,6,.12)}}
 .card-dss .meta-item input:focus,.card-dss .meta-item select:focus{{border-color:#16a34a;box-shadow:0 0 0 2px rgba(22,163,74,.12)}}
 .obs-input{{background:#f9fafd!important;border:1px solid #d0daea!important;color:#3a4a62!important;font-size:11px!important;font-style:italic}}
+.campo-valido{{border-color:#16a34a!important;background:#f0fef4!important;box-shadow:0 0 0 1px rgba(22,163,74,.25)!important}}
 .dss-matrix-container{{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}}
 .month-dss-box{{background:#f0faf4;border:1px solid #bbddc8;border-radius:7px;padding:7px}}
 .month-name-lbl{{font-size:12px;font-weight:800;color:#15803d;text-transform:uppercase;margin-bottom:4px;text-align:center;border-bottom:1px solid #c8e8d4;padding-bottom:3px}}
@@ -1021,7 +1034,10 @@ function motoristasParaLinhas(lista){{
       m.pontuacaoCnh||0, m.vencimentoCnhMopp||'',
       m.entregaUniforme||'PENDENTE',
       m.telefoneCorporativo||'NÃO', m.numeroLinha||'',
-      m.modelo||''
+      m.modelo||'',
+      m.reciclagemData||'', m.reciclagemValidadeAnos||0,
+      m.simuladorData||'', m.simuladorValidadeAnos||0,
+      m.examePeriodicoValidadeAnos||0, m.exameToxicologicoValidadeAnos||0
     );
     return row;
   }});
@@ -1227,6 +1243,8 @@ function renderizarCardsKpi(lista){{
     if(isProntuario){{
       const exPerOk = !!m.examePeriodico;
       const exToxOk = !!m.exameToxicologico;
+      const svExPerK = statusVencimento(m.examePeriodico, m.examePeriodicoValidadeAnos);
+      const svExToxK = statusVencimento(m.exameToxicologico, m.exameToxicologicoValidadeAnos);
       const recOk   = m.reciclagem === 'OK';
       const simOk   = m.simulador === 'OK';
       const uniOk   = m.entregaUniforme === 'OK';
@@ -1240,7 +1258,9 @@ function renderizarCardsKpi(lista){{
         </div>
         <div class="dmc-pront-grid">
           <div class="dmc-pront-item"><span class="dmc-pront-lbl">Exame Periódico</span><span class="dmc-pront-val" style="color:${{exPerOk?'#16a34a':'#dc2626'}}">${{fmtData(m.examePeriodico)}}</span></div>
+          <div class="dmc-pront-item"><span class="dmc-pront-lbl">Venc. Periódico</span><span class="dmc-pront-val" style="color:${{svExPerK.cor}}">${{svExPerK.label}}</span></div>
           <div class="dmc-pront-item"><span class="dmc-pront-lbl">Exame Toxicológico</span><span class="dmc-pront-val" style="color:${{exToxOk?'#16a34a':'#dc2626'}}">${{fmtData(m.exameToxicologico)}}</span></div>
+          <div class="dmc-pront-item"><span class="dmc-pront-lbl">Venc. Toxicológico</span><span class="dmc-pront-val" style="color:${{svExToxK.cor}}">${{svExToxK.label}}</span></div>
           <div class="dmc-pront-item"><span class="dmc-pront-lbl">Venc. MOPP</span><span class="dmc-pront-val">${{fmtData(m.vencimentoCnhMopp)}}</span></div>
           <div class="dmc-pront-item"><span class="dmc-pront-lbl">Pontuação CNH</span><span class="dmc-pront-val">${{m.pontuacaoCnh||0}} pts</span></div>
           <div class="dmc-pront-item full"><span class="dmc-pront-lbl">Entrega de Uniforme</span><span class="dmc-pront-val" style="color:${{uniOk?'#16a34a':'#dc2626'}}">${{m.entregaUniforme||'PENDENTE'}}</span></div>
@@ -1258,17 +1278,21 @@ function renderizarCardsKpi(lista){{
       </div>`;
     }}
     if(isReciclagemOk){{
+      const svR = statusVencimento(m.reciclagemData, m.reciclagemValidadeAnos);
       return `<div class="driver-mini-card card-ok" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
         <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
         <div class="dmc-cpf">${{m.cpf}}</div>
         <div class="dmc-badges"><span class="dmc-badge ok"><i class="fa-solid fa-recycle"></i> Reciclagem OK</span></div>
+        <div style="font-size:11px;font-weight:700;color:${{svR.cor}}">${{svR.label}}</div>
       </div>`;
     }}
     if(isReciclagemPend){{
+      const svR = statusVencimento(m.reciclagemData, m.reciclagemValidadeAnos);
       return `<div class="driver-mini-card card-pend" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
         <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
         <div class="dmc-cpf">${{m.cpf}}</div>
         <div class="dmc-badges"><span class="dmc-badge pend"><i class="fa-solid fa-clock"></i> Reciclagem Pendente</span></div>
+        <div style="font-size:11px;font-weight:700;color:${{svR.cor}}">${{svR.label}}</div>
       </div>`;
     }}
     if(isInfracao){{
@@ -1340,6 +1364,32 @@ function contarDssSessoes(m){{ let t=0; MESES.forEach(mes=>{{ if(m.dssAnual[mes]
 function dssDoMes(m, mes){{ return m.dssAnual && m.dssAnual[mes] ? m.dssAnual[mes] : [false,false,false,false]; }}
 function contarDssMes(m, mes){{ return dssDoMes(m, mes).filter(Boolean).length; }}
 function dssOkNoMes(m, mes){{ return contarDssMes(m, mes) >= 4; }}
+
+function calcularVencimento(dataStr, anos){{
+  if(!dataStr || !anos) return null;
+  const d = new Date(dataStr+'T00:00:00');
+  if(isNaN(d)) return null;
+  d.setFullYear(d.getFullYear() + parseInt(anos));
+  return d;
+}}
+function statusVencimento(dataStr, anos){{
+  const venc = calcularVencimento(dataStr, anos);
+  if(!venc) return {{ label:'Sem data/validade definida', cor:'#9aaabb', venc:null }};
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const diffDias = Math.floor((venc - hoje) / 86400000);
+  if(diffDias < 0)   return {{ label:'VENCIDO em ' + venc.toLocaleDateString('pt-BR'), cor:'#dc2626', venc }};
+  if(diffDias <= 60) return {{ label:'Vence em ' + venc.toLocaleDateString('pt-BR'), cor:'#d97706', venc }};
+  return {{ label:'' + venc.toLocaleDateString('pt-BR'), cor:'#16a34a', venc }};
+}}
+
+function checarCamposValidade(dataId, anosId){{
+  const dataEl = document.getElementById(dataId);
+  const anosEl = document.getElementById(anosId);
+  if(!dataEl || !anosEl) return;
+  const completo = !!dataEl.value && parseInt(anosEl.value) > 0;
+  dataEl.classList.toggle('campo-valido', completo);
+  anosEl.classList.toggle('campo-valido', completo);
+}}
 
 function agruparPorFilial(){{
   const mapa = {{}};
@@ -1837,6 +1887,10 @@ function abrirFichaMotorista(cpf){{
       </div></div>`;
   }});
   const esc = s => (s||'').replace(/"/g,'&quot;');
+  const svRec   = statusVencimento(m.reciclagemData, m.reciclagemValidadeAnos);
+  const svSim   = statusVencimento(m.simuladorData, m.simuladorValidadeAnos);
+  const svExPer = statusVencimento(m.examePeriodico, m.examePeriodicoValidadeAnos);
+  const svExTox = statusVencimento(m.exameToxicologico, m.exameToxicologicoValidadeAnos);
   let highlightSeg='', highlightDss='', badgeSegHtml='', badgeDssHtml='';
   if(fichaOrigemModal === 'kpi'){{
     if(kpiTipoAtual==='excesso')  {{ highlightSeg=' card-highlight-vel';  badgeSegHtml='<span style="margin-left:auto;font-size:8px;font-weight:800;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;padding:2px 8px;border-radius:20px;"><i class=\\"fa-solid fa-gauge-high\\" style=\\"margin-right:3px\\"></i>Excesso de Velocidade</span>'; }}
@@ -1928,8 +1982,22 @@ function abrirFichaMotorista(cpf){{
         <div class="card-body">
           <div class="info-block-title"><i class="fa-solid fa-stethoscope"></i> Exames & Complementares</div>
           <div class="meta-grid">
-            <div class="meta-item"><label>Exame Periódico</label><input type="date" id="editExamePeriodico" value="${{esc(m.examePeriodico)}}"></div>
-            <div class="meta-item"><label>Exame Toxicológico</label><input type="date" id="editExameToxicologico" value="${{esc(m.exameToxicologico)}}"></div>
+            <div class="meta-item">
+              <label>Exame Periódico</label>
+              <div style="display:flex;gap:4px;">
+                <input type="date" id="editExamePeriodico" value="${{esc(m.examePeriodico)}}" style="flex:1;" oninput="checarCamposValidade('editExamePeriodico','editExamePeriodicoValidadeAnos')">
+                <input type="number" id="editExamePeriodicoValidadeAnos" value="${{m.examePeriodicoValidadeAnos||0}}" min="0" style="width:52px;" title="Válido por (anos)" oninput="checarCamposValidade('editExamePeriodico','editExamePeriodicoValidadeAnos')">
+              </div>
+              <div style="font-size:10px;font-weight:700;color:${{svExPer.cor}};margin-top:2px;">${{svExPer.label}}</div>
+            </div>
+            <div class="meta-item">
+              <label>Exame Toxicológico</label>
+              <div style="display:flex;gap:4px;">
+                <input type="date" id="editExameToxicologico" value="${{esc(m.exameToxicologico)}}" style="flex:1;" oninput="checarCamposValidade('editExameToxicologico','editExameToxicologicoValidadeAnos')">
+                <input type="number" id="editExameToxicologicoValidadeAnos" value="${{m.exameToxicologicoValidadeAnos||0}}" min="0" style="width:52px;" title="Válido por (anos)" oninput="checarCamposValidade('editExameToxicologico','editExameToxicologicoValidadeAnos')">
+              </div>
+              <div style="font-size:10px;font-weight:700;color:${{svExTox.cor}};margin-top:2px;">${{svExTox.label}}</div>
+            </div>
             <div class="meta-item"><label>Pontuação CNH</label><input type="number" id="editPontuacaoCnh" value="${{m.pontuacaoCnh||0}}"></div>
             <div class="meta-item"><label>Vencimento CNH/MOPP</label><input type="date" id="editVencimentoCnhMopp" value="${{esc(m.vencimentoCnhMopp)}}"></div>
             <div class="meta-item">
@@ -1967,6 +2035,11 @@ function abrirFichaMotorista(cpf){{
                 <option value="PENDENTE" ${{m.simulador==='PENDENTE'?'selected':''}}>PENDENTE</option>
                 <option value="OK" ${{m.simulador==='OK'?'selected':''}}>OK</option>
               </select>
+              <div style="display:flex;gap:4px;margin-bottom:4px;">
+                <input type="date" id="editSimuladorData" value="${{esc(m.simuladorData)}}" style="flex:1;" title="Data de realização" oninput="checarCamposValidade('editSimuladorData','editSimuladorValidadeAnos')">
+                <input type="number" id="editSimuladorValidadeAnos" value="${{m.simuladorValidadeAnos||0}}" min="0" style="width:52px;" title="Válido por (anos)" oninput="checarCamposValidade('editSimuladorData','editSimuladorValidadeAnos')">
+              </div>
+              <div style="font-size:10px;font-weight:700;color:${{svSim.cor}};margin-bottom:4px;">${{svSim.label}}</div>
               <input type="text" id="editObsSimulador" class="obs-input" value="${{esc(m.obsSimulador)}}" placeholder="Obs do Simulador">
             </div>
             <div class="meta-item">
@@ -1975,6 +2048,11 @@ function abrirFichaMotorista(cpf){{
                 <option value="PENDENTE" ${{m.reciclagem==='PENDENTE'?'selected':''}}>PENDENTE</option>
                 <option value="OK" ${{m.reciclagem==='OK'?'selected':''}}>OK</option>
               </select>
+              <div style="display:flex;gap:4px;margin-bottom:4px;">
+                <input type="date" id="editReciclagemData" value="${{esc(m.reciclagemData)}}" style="flex:1;" title="Data de realização" oninput="checarCamposValidade('editReciclagemData','editReciclagemValidadeAnos')">
+                <input type="number" id="editReciclagemValidadeAnos" value="${{m.reciclagemValidadeAnos||0}}" min="0" style="width:52px;" title="Válido por (anos)" oninput="checarCamposValidade('editReciclagemData','editReciclagemValidadeAnos')">
+              </div>
+              <div style="font-size:10px;font-weight:700;color:${{svRec.cor}};margin-bottom:4px;">${{svRec.label}}</div>
               <input type="text" id="editObsReciclagem" class="obs-input" value="${{esc(m.obsReciclagem)}}" placeholder="Obs de Reciclagem">
             </div>
           </div>
@@ -1988,6 +2066,10 @@ function abrirFichaMotorista(cpf){{
         </div>
       </div>
     </div>`;
+  checarCamposValidade('editReciclagemData','editReciclagemValidadeAnos');
+  checarCamposValidade('editSimuladorData','editSimuladorValidadeAnos');
+  checarCamposValidade('editExamePeriodico','editExamePeriodicoValidadeAnos');
+  checarCamposValidade('editExameToxicologico','editExameToxicologicoValidadeAnos');
   document.getElementById('driverModal').style.display = 'flex';
   const btnVoltar = document.getElementById('btnVoltarFicha');
   if(fichaOrigemModal){{ btnVoltar.style.display = 'flex'; }} else {{ btnVoltar.style.display = 'none'; }}
@@ -2033,6 +2115,33 @@ async function confirmarEdicaoFicha(){{
     return;
   }}
 
+  const recSelVal = document.getElementById('editReciclagem').value;
+  const recData   = document.getElementById('editReciclagemData').value;
+  const recAnos   = parseInt(document.getElementById('editReciclagemValidadeAnos').value) || 0;
+  if(recSelVal === 'OK' && (!recData || recAnos <= 0)){{
+    toast('Para marcar Reciclagem como OK, preencha a Data de Realização e a Validade (anos).', 'erro');
+    return;
+  }}
+  const simSelVal = document.getElementById('editSimulador').value;
+  const simData   = document.getElementById('editSimuladorData').value;
+  const simAnos   = parseInt(document.getElementById('editSimuladorValidadeAnos').value) || 0;
+  if(simSelVal === 'OK' && (!simData || simAnos <= 0)){{
+    toast('Para marcar Simulador como OK, preencha a Data de Realização e a Validade (anos).', 'erro');
+    return;
+  }}
+  const exPerData = document.getElementById('editExamePeriodico').value;
+  const exPerAnos = parseInt(document.getElementById('editExamePeriodicoValidadeAnos').value) || 0;
+  if(exPerData && exPerAnos <= 0){{
+    toast('Informe a Validade (anos) do Exame Periódico.', 'erro');
+    return;
+  }}
+  const exToxData = document.getElementById('editExameToxicologico').value;
+  const exToxAnos = parseInt(document.getElementById('editExameToxicologicoValidadeAnos').value) || 0;
+  if(exToxData && exToxAnos <= 0){{
+    toast('Informe a Validade (anos) do Exame Toxicológico.', 'erro');
+    return;
+  }}
+
   const dssAnual = {{}};
   MESES.forEach(mes => {{
     dssAnual[mes] = [0,1,2,3].map(i => {{
@@ -2058,7 +2167,13 @@ async function confirmarEdicaoFicha(){{
     numeroLinha:         telCorp === 'SIM' ? numLinha : '',
     modelo:              document.getElementById('editModelo').value,
     reciclagem:    document.getElementById('editReciclagem').value,
+    reciclagemData: document.getElementById('editReciclagemData').value,
+    reciclagemValidadeAnos: parseInt(document.getElementById('editReciclagemValidadeAnos').value)||0,
     simulador:     document.getElementById('editSimulador').value,
+    simuladorData: document.getElementById('editSimuladorData').value,
+    simuladorValidadeAnos: parseInt(document.getElementById('editSimuladorValidadeAnos').value)||0,
+    examePeriodicoValidadeAnos: parseInt(document.getElementById('editExamePeriodicoValidadeAnos').value)||0,
+    exameToxicologicoValidadeAnos: parseInt(document.getElementById('editExameToxicologicoValidadeAnos').value)||0,
     acidentes:     parseInt(document.getElementById('editAcidentes').value)||0,
     multas:        parseInt(document.getElementById('editMultas').value)||0,
     excesso:       parseInt(document.getElementById('editExcesso').value)||0,
