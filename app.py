@@ -510,9 +510,25 @@ HTML = f"""<!DOCTYPE html>
 .dmc-sem-dot{{width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900}}
 .dmc-sem-dot.ok{{background:rgba(22,163,74,0.15);color:#16a34a;border:1px solid rgba(22,163,74,0.35)}}
 .dmc-sem-dot.pend{{background:rgba(220,38,38,0.08);color:#dc2626;border:1px solid rgba(220,38,38,0.2)}}
-.kpi-cards-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;padding:20px 24px;overflow-y:auto;flex:1;align-content:start;background:#f0f4fa}}
+
+.driver-mini-card.card-ok{{border-color:rgba(22,163,74,0.45);background:#f0fef4}}.kpi-cards-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;padding:20px 24px;overflow-y:auto;flex:1;align-content:start;background:#f0f4fa}}
+.categoria-glass-panel{{background:rgba(255,255,255,0.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1.5px solid rgba(196,208,228,0.6);border-radius:16px;padding:16px;cursor:pointer;transition:transform .18s,box-shadow .18s,border-color .18s;box-shadow:0 4px 18px rgba(20,50,120,0.08);display:flex;flex-direction:column;gap:12px}}
+.categoria-glass-panel:hover{{transform:translateY(-3px);box-shadow:0 10px 30px rgba(20,50,120,0.16);border-color:#3b7dd8}}
+.cgp-header{{display:flex;align-items:center;gap:10px}}
+.cgp-icon{{width:38px;height:38px;border-radius:10px;background:rgba(22,163,74,0.12);color:#16a34a;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}}
+.cgp-titulo{{font-size:15px;font-weight:800;color:#1a3a6b;letter-spacing:.3px}}
+.cgp-stats{{display:grid;grid-template-columns:1fr 1fr;gap:8px}}
+.cgp-stat{{border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s;border:1.5px solid}}
+.cgp-stat:hover{{transform:translateY(-2px)}}
+.cgp-stat.ok{{background:rgba(22,163,74,0.08);border-color:rgba(22,163,74,0.35)}}
+.cgp-stat.pend{{background:rgba(217,119,6,0.08);border-color:rgba(217,119,6,0.35)}}
+.cgp-stat-val{{font-size:26px;font-weight:900;line-height:1}}
+.cgp-stat.ok .cgp-stat-val{{color:#16a34a}}
+.cgp-stat.pend .cgp-stat-val{{color:#d97706}}
+.cgp-stat-lbl{{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:4px}}
+.cgp-stat.ok .cgp-stat-lbl{{color:#16a34a}}
+.cgp-stat.pend .cgp-stat-lbl{{color:#d97706}}
 .driver-mini-card{{background:#ffffff;border:1.5px solid #dde6f4;border-radius:10px;padding:14px;cursor:pointer;transition:border-color .15s,transform .15s,box-shadow .15s;display:flex;flex-direction:column;gap:10px;box-shadow:0 2px 6px rgba(20,50,120,0.06)}}
-.driver-mini-card.card-ok{{border-color:rgba(22,163,74,0.45);background:#f0fef4}}
 .driver-mini-card.card-pend{{border-color:rgba(217,119,6,0.45);background:#fffbeb}}
 .driver-mini-card:hover{{border-color:#3b7dd8;transform:translateY(-2px);box-shadow:0 8px 24px rgba(20,50,120,0.14)}}
 .dmc-top{{display:flex;align-items:center;gap:10px}}
@@ -736,7 +752,7 @@ HTML = f"""<!DOCTYPE html>
     </div>
 
     <div class="kpi green" onclick="abrirCursosMenu()" title="Ver DSS e Reciclagem por categoria">
-      <div class="kpi-lbl">Cursos</div>
+      <div class="kpi-lbl">Treinamentos</div>
       <div style="display:flex;align-items:flex-end;justify-content:space-between;">
         <div class="kpi-val" id="kpiCursosTotal">—</div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
@@ -1125,6 +1141,10 @@ const KPI_CONFIG = {{
   simuladorPend: {{ label:'Simulador SEST SENAT Pendente', icon:'fa-clock',       cor:'#d97706', bg:'rgba(217,119,6,0.15)',  filtro: m => m.simulador === 'PENDENTE' }},
   gestimeOk: {{ label:'Gestime OK',                     icon:'fa-clipboard-check', cor:'#16a34a', bg:'rgba(22,163,74,0.15)',  filtro: m => m.gestime === 'OK' }},
   gestimePend: {{ label:'Gestime Pendente',             icon:'fa-clock',            cor:'#d97706', bg:'rgba(217,119,6,0.15)',  filtro: m => m.gestime === 'PENDENTE' }},
+  dssTodos:        {{ label:'DSS Mensal — Status Geral',       icon:'fa-calendar-check',  cor:'#16a34a', bg:'rgba(22,163,74,0.15)', filtro: m => true, dssModal:true }},
+  reciclagemTodos: {{ label:'Reciclagem — Status Geral',       icon:'fa-recycle',         cor:'#16a34a', bg:'rgba(22,163,74,0.15)', filtro: m => true }},
+  simuladorTodos:  {{ label:'Simulador SEST SENAT — Status Geral', icon:'fa-car-side',    cor:'#16a34a', bg:'rgba(22,163,74,0.15)', filtro: m => true }},
+  gestimeTodos:    {{ label:'Gestime — Status Geral',          icon:'fa-clipboard-check', cor:'#16a34a', bg:'rgba(22,163,74,0.15)', filtro: m => true }},
   telCorp:  {{ label:'Celulares Corporativos',      icon:'fa-mobile-screen-button', cor:'#0eb8e0', bg:'rgba(14,156,192,0.15)', filtro: m => m.telefoneCorporativo === 'SIM' }},
   prontuario:{{ label:'Prontuário — Exames & Complementares', icon:'fa-file-medical', cor:'#a78bfa', bg:'rgba(124,58,237,0.15)', filtro: m => true }},
 }};
@@ -1149,7 +1169,7 @@ function abrirCursosMenu(){{
   kpiMesAtual  = null;
   document.getElementById('kpiModalIcon').innerHTML = `<i class="fa-solid fa-graduation-cap" style="color:#16a34a"></i>`;
   document.getElementById('kpiModalIcon').style.background = 'rgba(22,163,74,0.15)';
-  document.getElementById('kpiModalLabel').textContent = 'Cursos';
+  document.getElementById('kpiModalLabel').textContent = 'Treinamentos';
   document.getElementById('kpiModalCount').textContent = 'Selecione uma categoria';
   document.getElementById('kpiSearchInput').value = '';
   document.getElementById('kpiMesFiltro').classList.remove('visible');
@@ -1168,22 +1188,29 @@ function abrirCursosMenu(){{
   const nGestOk  = motoristasDB.filter(m => m.gestime === 'OK').length;
   const nGestPend= totalM - nGestOk;
 
-  const cats = [
-    {{ tipo:'comDss',        label:'Com DSS Ok',                    icon:'fa-circle-check', cor:'#16a34a', bg:'rgba(22,163,74,0.10)',  count:nComDss  }},
-    {{ tipo:'semDss',        label:'Pendentes DSS',                 icon:'fa-clock',        cor:'#d97706', bg:'rgba(217,119,6,0.10)',  count:nSemDss  }},
-    {{ tipo:'reciclagemOk',  label:'Reciclagem OK',                 icon:'fa-recycle',      cor:'#16a34a', bg:'rgba(22,163,74,0.10)',  count:nRecOk   }},
-    {{ tipo:'reciclagemPend',label:'Reciclagem Pendente',           icon:'fa-clock',        cor:'#d97706', bg:'rgba(217,119,6,0.10)',  count:nRecPend }},
-    {{ tipo:'simuladorOk',   label:'Simulador SEST SENAT OK',       icon:'fa-car-side',     cor:'#16a34a', bg:'rgba(22,163,74,0.10)',  count:nSimOk   }},
-    {{ tipo:'simuladorPend', label:'Simulador SEST SENAT Pendente', icon:'fa-clock',        cor:'#d97706', bg:'rgba(217,119,6,0.10)',  count:nSimPend }},
-    {{ tipo:'gestimeOk',     label:'Gestime OK',                    icon:'fa-clipboard-check', cor:'#16a34a', bg:'rgba(22,163,74,0.10)', count:nGestOk  }},
-    {{ tipo:'gestimePend',   label:'Gestime Pendente',              icon:'fa-clock',        cor:'#d97706', bg:'rgba(217,119,6,0.10)',  count:nGestPend }},
+  const grupos = [
+    {{ titulo:'DSS Mensal',              icon:'fa-calendar-check',  tipoOk:'comDss',        tipoPend:'semDss',        tipoTodos:'dssTodos',        ok:nComDss, pend:nSemDss }},
+    {{ titulo:'Reciclagem',              icon:'fa-recycle',         tipoOk:'reciclagemOk',  tipoPend:'reciclagemPend',tipoTodos:'reciclagemTodos', ok:nRecOk,  pend:nRecPend }},
+    {{ titulo:'Simulador SEST SENAT',    icon:'fa-car-side',        tipoOk:'simuladorOk',   tipoPend:'simuladorPend', tipoTodos:'simuladorTodos',  ok:nSimOk,  pend:nSimPend }},
+    {{ titulo:'Gestime',                 icon:'fa-clipboard-check', tipoOk:'gestimeOk',     tipoPend:'gestimePend',   tipoTodos:'gestimeTodos',    ok:nGestOk, pend:nGestPend }},
   ];
 
-  document.getElementById('kpiCardsGrid').innerHTML = cats.map(c => `
-    <div class="driver-mini-card" onclick="abrirCategoriaCursos('${{c.tipo}}')" style="cursor:pointer;align-items:center;text-align:center;">
-      <div class="dmc-avatar" style="width:56px;height:56px;margin:0 auto;background:${{c.bg}};color:${{c.cor}};font-size:24px;"><i class="fa-solid ${{c.icon}}"></i></div>
-      <div class="dmc-nome" style="text-align:center;white-space:normal;">${{c.label}}</div>
-      <div style="font-size:32px;font-weight:900;color:${{c.cor}};text-align:center;">${{c.count}}</div>
+  document.getElementById('kpiCardsGrid').innerHTML = grupos.map(g => `
+    <div class="categoria-glass-panel" onclick="abrirCategoriaCursos('${{g.tipoTodos}}')">
+      <div class="cgp-header">
+        <div class="cgp-icon"><i class="fa-solid ${{g.icon}}"></i></div>
+        <div class="cgp-titulo">${{g.titulo}}</div>
+      </div>
+      <div class="cgp-stats">
+        <div class="cgp-stat ok" onclick="event.stopPropagation(); abrirCategoriaCursos('${{g.tipoOk}}')">
+          <div class="cgp-stat-val">${{g.ok}}</div>
+          <div class="cgp-stat-lbl"><i class="fa-solid fa-check"></i> OK</div>
+        </div>
+        <div class="cgp-stat pend" onclick="event.stopPropagation(); abrirCategoriaCursos('${{g.tipoPend}}')">
+          <div class="cgp-stat-val">${{g.pend}}</div>
+          <div class="cgp-stat-lbl"><i class="fa-solid fa-clock"></i> Pendente</div>
+        </div>
+      </div>
     </div>
   `).join('');
 
@@ -1264,6 +1291,9 @@ function renderizarCardsKpi(lista){{
   const isSimuladorPend = kpiTipoAtual === 'simuladorPend';
   const isGestimeOk = kpiTipoAtual === 'gestimeOk';
   const isGestimePend = kpiTipoAtual === 'gestimePend';
+  const isReciclagemTodos = kpiTipoAtual === 'reciclagemTodos';
+  const isSimuladorTodos  = kpiTipoAtual === 'simuladorTodos';
+  const isGestimeTodos    = kpiTipoAtual === 'gestimeTodos';
   grid.innerHTML = lista.map(m => {{
     const avatar = m.foto ? `<img src="${{m.foto}}" alt="">` : `<i class="fa-solid fa-user-tie"></i>`;
     const nExc   = Math.max(0, parseInt(m.excesso)   || 0);
@@ -1367,6 +1397,36 @@ function renderizarCardsKpi(lista){{
         <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
         <div class="dmc-cpf">${{m.cpf}}</div>
         <div class="dmc-badges"><span class="dmc-badge pend"><i class="fa-solid fa-clock"></i> Gestime Pendente</span></div>
+        <div style="font-size:11px;font-weight:700;color:${{svG.cor}}">${{svG.label}}</div>
+      </div>`;
+    }}
+    if(isReciclagemTodos){{
+      const ok = m.reciclagem === 'OK';
+      const svR = statusVencimento(m.reciclagemData, m.reciclagemValidadeAnos);
+      return `<div class="driver-mini-card ${{ok?'card-ok':'card-pend'}}" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
+        <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
+        <div class="dmc-cpf">${{m.cpf}}</div>
+        <div class="dmc-badges"><span class="dmc-badge ${{ok?'ok':'pend'}}"><i class="fa-solid ${{ok?'fa-recycle':'fa-clock'}}"></i> Reciclagem ${{ok?'OK':'Pendente'}}</span></div>
+        <div style="font-size:11px;font-weight:700;color:${{svR.cor}}">${{svR.label}}</div>
+      </div>`;
+    }}
+    if(isSimuladorTodos){{
+      const ok = m.simulador === 'OK';
+      const svS = statusVencimento(m.simuladorData, m.simuladorValidadeAnos);
+      return `<div class="driver-mini-card ${{ok?'card-ok':'card-pend'}}" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
+        <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
+        <div class="dmc-cpf">${{m.cpf}}</div>
+        <div class="dmc-badges"><span class="dmc-badge ${{ok?'ok':'pend'}}"><i class="fa-solid ${{ok?'fa-car-side':'fa-clock'}}"></i> Simulador ${{ok?'OK':'Pendente'}}</span></div>
+        <div style="font-size:11px;font-weight:700;color:${{svS.cor}}">${{svS.label}}</div>
+      </div>`;
+    }}
+    if(isGestimeTodos){{
+      const ok = m.gestime === 'OK';
+      const svG = statusVencimento(m.gestimeData, m.gestimeValidadeAnos);
+      return `<div class="driver-mini-card ${{ok?'card-ok':'card-pend'}}" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
+        <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
+        <div class="dmc-cpf">${{m.cpf}}</div>
+        <div class="dmc-badges"><span class="dmc-badge ${{ok?'ok':'pend'}}"><i class="fa-solid ${{ok?'fa-clipboard-check':'fa-clock'}}"></i> Gestime ${{ok?'OK':'Pendente'}}</span></div>
         <div style="font-size:11px;font-weight:700;color:${{svG.cor}}">${{svG.label}}</div>
       </div>`;
     }}
