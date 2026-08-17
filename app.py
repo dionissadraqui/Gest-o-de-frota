@@ -51,10 +51,10 @@ COLUNAS += [
     "exame_periodico", "exame_toxicologico", "pontuação_cnh",
     "vencimento_cnh_mopp", "entrega_de_uniforme",
     "telefone_corporativo", "numero_linha", "modelo",
-    "reciclagem_data", "reciclagem_validade_anos",
-    "simulador_data", "simulador_validade_anos",
-    "exame_periodico_validade_anos", "exame_toxicologico_validade_anos",
-    "gestime", "obsGestime", "gestime_data", "gestime_validade_anos",
+    "reciclagem_data", "reciclagem_validade_meses",
+    "simulador_data", "simulador_validade_meses",
+    "exame_periodico_validade_meses", "exame_toxicologico_validade_meses",
+    "gestime", "obsGestime", "gestime_data", "gestime_validade_meses",
 ]
 
 SCOPES = [
@@ -118,15 +118,15 @@ def ler_todos_motoristas():
             "numeroLinha":         str(row.get("numero_linha", "")).strip(),
             "modelo":              str(row.get("modelo", "")).strip(),
             "reciclagemData":       str(row.get("reciclagem_data", "")).strip(),
-            "reciclagemValidadeAnos": max(0, int(row.get("reciclagem_validade_anos", 0) or 0)),
+            "reciclagemValidadeMeses": max(0, int(row.get("reciclagem_validade_meses", 0) or 0)),
             "simuladorData":        str(row.get("simulador_data", "")).strip(),
-            "simuladorValidadeAnos": max(0, int(row.get("simulador_validade_anos", 0) or 0)),
-            "examePeriodicoValidadeAnos": max(0, int(row.get("exame_periodico_validade_anos", 0) or 0)),
-            "exameToxicologicoValidadeAnos": max(0, int(row.get("exame_toxicologico_validade_anos", 0) or 0)),
+            "simuladorValidadeMeses": max(0, int(row.get("simulador_validade_meses", 0) or 0)),
+            "examePeriodicoValidadeMeses": max(0, int(row.get("exame_periodico_validade_meses", 0) or 0)),
+            "exameToxicologicoValidadeMeses": max(0, int(row.get("exame_toxicologico_validade_meses", 0) or 0)),
             "gestime":        str(row.get("gestime", "PENDENTE")).strip() or "PENDENTE",
             "obsGestime":     str(row.get("obsGestime", "")).strip(),
             "gestimeData":    str(row.get("gestime_data", "")).strip(),
-            "gestimeValidadeAnos": max(0, int(row.get("gestime_validade_anos", 0) or 0)),
+            "gestimeValidadeMeses": max(0, int(row.get("gestime_validade_meses", 0) or 0)),
             "dssAnual":      dss_anual,
         })
     return motoristas
@@ -155,11 +155,11 @@ def salvar_todos_motoristas(lista):
             m.get("entregaUniforme", "PENDENTE"),
             m.get("telefoneCorporativo", "NÃO"), m.get("numeroLinha", ""),
             m.get("modelo", ""),
-            m.get("reciclagemData", ""), m.get("reciclagemValidadeAnos", 0),
-            m.get("simuladorData", ""), m.get("simuladorValidadeAnos", 0),
-            m.get("examePeriodicoValidadeAnos", 0), m.get("exameToxicologicoValidadeAnos", 0),
+            m.get("reciclagemData", ""), m.get("reciclagemValidadeMeses", 0),
+            m.get("simuladorData", ""), m.get("simuladorValidadeMeses", 0),
+            m.get("examePeriodicoValidadeMeses", 0), m.get("exameToxicologicoValidadeMeses", 0),
             m.get("gestime", "PENDENTE"), m.get("obsGestime", ""),
-            m.get("gestimeData", ""), m.get("gestimeValidadeAnos", 0),
+            m.get("gestimeData", ""), m.get("gestimeValidadeMeses", 0),
         ]
         all_rows.append(row_data)
     existing = ws.get_all_values()
@@ -212,6 +212,14 @@ _LOGO_CSS  = (
     "background:linear-gradient(135deg,#0a1440 0%,#1a3a6b 100%);"
 )
 _ACCESS_TOKEN = get_access_token()
+
+# Credenciais de login (usuário/senha) — vêm do secrets.toml,
+# nunca ficam escritas no código-fonte do app.py
+_LOGIN_USERS_RAW = st.secrets.get("auth", {}).get("usuarios", [])
+CREDENCIAIS_LOGIN = [
+    {"usuario": u["usuario"], "senha": u["senha"], "nome": u["nome"]}
+    for u in _LOGIN_USERS_RAW
+]
 
 HTML = f"""<!DOCTYPE html>
 <html lang="pt-BR">
@@ -822,6 +830,18 @@ HTML = f"""<!DOCTYPE html>
       </div>
       <div class="kpi-sub">Exames &amp; Complementares</div>
     </div>
+
+    <div class="kpi amber" onclick="abrirVencimentoMenu('alerta')" title="Ver categorias com vencimento em até 30 dias" style="background:#fefce8;border-color:#eab308;box-shadow:0 0 10px rgba(234,179,8,0.35),inset 0 0 6px rgba(234,179,8,0.06);">
+      <div class="kpi-lbl" style="color:#a16207;">Alertas de Vencimento</div>
+      <div class="kpi-val" style="color:#eab308;font-size:34px;">ALERTA</div>
+      <div class="kpi-sub" style="color:#ca8a04;">Vencendo em até 30 dias</div>
+    </div>
+
+    <div class="kpi amber" onclick="abrirVencimentoMenu('vencido')" title="Ver categorias já vencidas">
+      <div class="kpi-lbl">Itens Vencidos</div>
+      <div class="kpi-val" style="color:#dc2626;font-size:34px;">VENCIDOS</div>
+      <div class="kpi-sub">Prazo já expirado</div>
+    </div>
   </div>
 
  <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px;width:100%;min-width:0;" class="charts-row">
@@ -895,7 +915,7 @@ HTML = f"""<!DOCTYPE html>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
-        <button id="btnVoltarCursos" style="display:none;background:transparent;color:#3b7dd8;border:1.5px solid #3b7dd8;padding:5px 14px;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;border-radius:5px;cursor:pointer;align-items:center;gap:6px;" onclick="abrirCursosMenu()"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
+        <button id="btnVoltarCursos" style="display:none;background:transparent;color:#3b7dd8;border:1.5px solid #3b7dd8;padding:5px 14px;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;border-radius:5px;cursor:pointer;align-items:center;gap:6px;"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
         <button id="btnBaixarPdfPendentes" style="display:none;background:transparent;color:#22cc88;border:1.5px solid #22cc88;padding:5px 14px;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;border-radius:5px;cursor:pointer;align-items:center;gap:6px;" onmouseover="this.style.color='#ff4444';this.style.borderColor='#ff4444'" onmouseout="this.style.color='#22cc88';this.style.borderColor='#22cc88'"><i class="fa-solid fa-file-pdf"></i> Baixar PDF</button>
         <button class="kpi-modal-close" onclick="fecharKpiModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
@@ -979,6 +999,7 @@ const SHEET_ID_JS  = '{SHEET_ID}';
 const SHEET_NAME_JS= '{SHEET_NAME}';
 const SHEETS_BASE  = 'https://sheets.googleapis.com/v4/spreadsheets';
 const DADOS_INICIAIS = {json.dumps(ler_todos_motoristas(), ensure_ascii=False)};
+const CREDENCIAIS     = {json.dumps(CREDENCIAIS_LOGIN, ensure_ascii=False)};
 const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho",
                "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 
@@ -1023,11 +1044,11 @@ function motoristasParaLinhas(lista){{
       m.entregaUniforme||'PENDENTE',
       m.telefoneCorporativo||'NÃO', m.numeroLinha||'',
       m.modelo||'',
-      m.reciclagemData||'', m.reciclagemValidadeAnos||0,
-      m.simuladorData||'', m.simuladorValidadeAnos||0,
-      m.examePeriodicoValidadeAnos||0, m.exameToxicologicoValidadeAnos||0,
+      m.reciclagemData||'', m.reciclagemValidadeMeses||0,
+      m.simuladorData||'', m.simuladorValidadeMeses||0,
+      m.examePeriodicoValidadeMeses||0, m.exameToxicologicoValidadeMeses||0,
       m.gestime||'PENDENTE', m.obsGestime||'',
-      m.gestimeData||'', m.gestimeValidadeAnos||0
+      m.gestimeData||'', m.gestimeValidadeMeses||0
     );
     return row;
   }});
@@ -1135,12 +1156,12 @@ const KPI_CONFIG = {{
   excesso:  {{ label:'Com Excesso de Velocidade',   icon:'fa-gauge-high',        cor:'#ff6666', bg:'rgba(255,68,68,0.15)',  filtro: m => Math.max(0, parseInt(m.excesso)   || 0) > 0 }},
   multas:   {{ label:'Com Multas Registradas',      icon:'fa-file-circle-xmark', cor:'#ff6666', bg:'rgba(255,68,68,0.15)',  filtro: m => Math.max(0, parseInt(m.multas)    || 0) > 0 }},
   acidentes:{{ label:'Com Acidentes Registrados',   icon:'fa-car-burst',         cor:'#ff6666', bg:'rgba(255,68,68,0.15)',  filtro: m => Math.max(0, parseInt(m.acidentes) || 0) > 0 }},
-  reciclagemOk: {{ label:'Reciclagem OK',            icon:'fa-recycle',           cor:'#16a34a', bg:'rgba(22,163,74,0.15)',  filtro: m => m.reciclagem === 'OK' }},
-  reciclagemPend: {{ label:'Reciclagem Pendente',    icon:'fa-clock',             cor:'#d97706', bg:'rgba(217,119,6,0.15)',  filtro: m => m.reciclagem === 'PENDENTE' }},
-  simuladorOk: {{ label:'Simulador SEST SENAT OK',      icon:'fa-car-side',       cor:'#16a34a', bg:'rgba(22,163,74,0.15)',  filtro: m => m.simulador === 'OK' }},
-  simuladorPend: {{ label:'Simulador SEST SENAT Pendente', icon:'fa-clock',       cor:'#d97706', bg:'rgba(217,119,6,0.15)',  filtro: m => m.simulador === 'PENDENTE' }},
-  gestimeOk: {{ label:'Gestime OK',                     icon:'fa-clipboard-check', cor:'#16a34a', bg:'rgba(22,163,74,0.15)',  filtro: m => m.gestime === 'OK' }},
-  gestimePend: {{ label:'Gestime Pendente',             icon:'fa-clock',            cor:'#d97706', bg:'rgba(217,119,6,0.15)',  filtro: m => m.gestime === 'PENDENTE' }},
+  reciclagemOk: {{ label:'Reciclagem OK',            icon:'fa-recycle',           cor:'#16a34a', bg:'rgba(22,163,74,0.15)',  filtro: m => reciclagemStatus(m) === 'OK' }},
+  reciclagemPend: {{ label:'Reciclagem Pendente',    icon:'fa-clock',             cor:'#d97706', bg:'rgba(217,119,6,0.15)',  filtro: m => reciclagemStatus(m) === 'PENDENTE' }},
+  simuladorOk: {{ label:'Simulador SEST SENAT OK',      icon:'fa-car-side',       cor:'#16a34a', bg:'rgba(22,163,74,0.15)',  filtro: m => simuladorStatus(m) === 'OK' }},
+  simuladorPend: {{ label:'Simulador SEST SENAT Pendente', icon:'fa-clock',       cor:'#d97706', bg:'rgba(217,119,6,0.15)',  filtro: m => simuladorStatus(m) === 'PENDENTE' }},
+  gestimeOk: {{ label:'Gestime OK',                     icon:'fa-clipboard-check', cor:'#16a34a', bg:'rgba(22,163,74,0.15)',  filtro: m => gestimeStatus(m) === 'OK' }},
+  gestimePend: {{ label:'Gestime Pendente',             icon:'fa-clock',            cor:'#d97706', bg:'rgba(217,119,6,0.15)',  filtro: m => gestimeStatus(m) === 'PENDENTE' }},
   dssTodos:        {{ label:'DSS Mensal — Status Geral',       icon:'fa-calendar-check',  cor:'#16a34a', bg:'rgba(22,163,74,0.15)', filtro: m => true, dssModal:true }},
   reciclagemTodos: {{ label:'Reciclagem — Status Geral',       icon:'fa-recycle',         cor:'#16a34a', bg:'rgba(22,163,74,0.15)', filtro: m => true }},
   simuladorTodos:  {{ label:'Simulador SEST SENAT — Status Geral', icon:'fa-car-side',    cor:'#16a34a', bg:'rgba(22,163,74,0.15)', filtro: m => true }},
@@ -1154,7 +1175,119 @@ let kpiMesAtual   = null;
 let kpiTipoAtual  = null;
 let kpiOrigemCursos = false;
 
+// ── Vencimentos (Alerta 30 dias / Vencidos) ──
+const VENCIMENTO_CATEGORIAS = {{
+  reciclagem:        {{ label:'Reciclagem',            icon:'fa-recycle',           dataCampo:'reciclagemData',        mesesCampo:'reciclagemValidadeMeses' }},
+  simulador:          {{ label:'Simulador SEST SENAT',  icon:'fa-car-side',          dataCampo:'simuladorData',         mesesCampo:'simuladorValidadeMeses' }},
+  gestime:             {{ label:'Gestime',               icon:'fa-clipboard-check',   dataCampo:'gestimeData',           mesesCampo:'gestimeValidadeMeses' }},
+  examePeriodico:      {{ label:'Exame Periódico',       icon:'fa-stethoscope',       dataCampo:'examePeriodico',        mesesCampo:'examePeriodicoValidadeMeses' }},
+  exameToxicologico:   {{ label:'Exame Toxicológico',    icon:'fa-vial',              dataCampo:'exameToxicologico',     mesesCampo:'exameToxicologicoValidadeMeses' }},
+  cnh:                 {{ label:'Validade CNH',          icon:'fa-id-card',           dataDireta:'validadeCnh' }},
+  mopp:                {{ label:'Vencimento MOPP',       icon:'fa-id-card-clip',      dataDireta:'vencimentoCnhMopp' }},
+}};
+
+function diasParaVencerCategoria(m, catKey){{
+  const cat = VENCIMENTO_CATEGORIAS[catKey];
+  let venc;
+  if(cat.dataDireta){{
+    if(!m[cat.dataDireta]) return null;
+    venc = new Date(m[cat.dataDireta] + 'T00:00:00');
+  }} else {{
+    venc = calcularVencimento(m[cat.dataCampo], m[cat.mesesCampo]);
+  }}
+  if(!venc || isNaN(venc)) return null;
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  return Math.floor((venc - hoje) / 86400000);
+}}
+
+function categoriaEmAlerta30(m, catKey){{ const d = diasParaVencerCategoria(m, catKey); return d !== null && d >= 0 && d <= 30; }}
+function categoriaVencida(m, catKey){{ const d = diasParaVencerCategoria(m, catKey); return d !== null && d < 0; }}
+function motoristaTemAlerta30(m){{ return Object.keys(VENCIMENTO_CATEGORIAS).some(k => categoriaEmAlerta30(m, k)); }}
+function motoristaTemVencido(m){{ return Object.keys(VENCIMENTO_CATEGORIAS).some(k => categoriaVencida(m, k)); }}
+
+let kpiVoltarFn = null; // função a chamar ao clicar em "Voltar"
+let kpiCategoriaVencAtual = null;
+let kpiTipoVencAtual = null;
+
 function mesCorrente(){{ return MESES[new Date().getMonth()]; }}
+
+function abrirVencimentoMenu(tipo){{ // tipo: 'alerta' | 'vencido'
+  kpiOrigemCursos = false;
+  kpiVoltarFn = null;
+  const btnVoltarCursos = document.getElementById('btnVoltarCursos');
+  if(btnVoltarCursos) btnVoltarCursos.style.display = 'none';
+
+  kpiTipoAtual = 'vencimentoMenu';
+  kpiMesAtual  = null;
+
+  const isAlerta = tipo === 'alerta';
+  const cor   = isAlerta ? '#eab308' : '#dc2626';
+  const bg    = isAlerta ? 'rgba(234,179,8,0.15)' : 'rgba(220,38,38,0.15)';
+  const icone = isAlerta ? 'fa-triangle-exclamation' : 'fa-circle-exclamation';
+  const titulo= isAlerta ? 'Alertas de Vencimento (30 dias)' : 'Itens Vencidos';
+
+  document.getElementById('kpiModalIcon').innerHTML = `<i class="fa-solid ${{icone}}" style="color:${{cor}}"></i>`;
+  document.getElementById('kpiModalIcon').style.background = bg;
+  document.getElementById('kpiModalLabel').textContent = titulo;
+  document.getElementById('kpiModalCount').textContent = 'Selecione uma categoria';
+  document.getElementById('kpiSearchInput').value = '';
+  document.getElementById('kpiMesFiltro').classList.remove('visible');
+  document.getElementById('kpiMesFiltro').innerHTML = '';
+  const btnPdf = document.getElementById('btnBaixarPdfPendentes');
+  if(btnPdf) btnPdf.style.display = 'none';
+
+  const grid = document.getElementById('kpiCardsGrid');
+  grid.innerHTML = Object.keys(VENCIMENTO_CATEGORIAS).map(catKey => {{
+    const cat = VENCIMENTO_CATEGORIAS[catKey];
+    const qtd = motoristasDB.filter(m => isAlerta ? categoriaEmAlerta30(m, catKey) : categoriaVencida(m, catKey)).length;
+    return `<div class="categoria-glass-panel" onclick="abrirVencimentoCategoria('${{catKey}}','${{tipo}}')">
+      <div class="cgp-header">
+        <div class="cgp-icon" style="background:${{bg}};color:${{cor}}"><i class="fa-solid ${{cat.icon}}"></i></div>
+        <div class="cgp-titulo">${{cat.label}}</div>
+      </div>
+      <div class="cgp-stats" style="grid-template-columns:1fr;">
+        <div class="cgp-stat ${{isAlerta ? '' : ''}}" style="background:${{bg}};border-color:${{cor}}55;">
+          <div class="cgp-stat-val" style="color:${{cor}}">${{qtd}}</div>
+          <div class="cgp-stat-lbl" style="color:${{cor}}"><i class="fa-solid ${{icone}}"></i> ${{isAlerta ? 'a vencer' : 'vencidos'}}</div>
+        </div>
+      </div>
+    </div>`;
+  }}).join('');
+
+  document.getElementById('kpiModal').classList.add('show');
+}}
+
+function abrirVencimentoCategoria(catKey, tipo){{
+  const isAlerta = tipo === 'alerta';
+  const cat = VENCIMENTO_CATEGORIAS[catKey];
+  const cor   = isAlerta ? '#eab308' : '#dc2626';
+  const bg    = isAlerta ? 'rgba(234,179,8,0.15)' : 'rgba(220,38,38,0.15)';
+  const icone = isAlerta ? 'fa-triangle-exclamation' : 'fa-circle-exclamation';
+
+  kpiTipoAtual = 'vencimentoCategoria';
+  kpiCategoriaVencAtual = catKey;
+  kpiTipoVencAtual = tipo;
+  kpiMesAtual = null;
+
+  kpiListaAtual = motoristasDB.filter(m => isAlerta ? categoriaEmAlerta30(m, catKey) : categoriaVencida(m, catKey));
+
+  document.getElementById('kpiModalIcon').innerHTML = `<i class="fa-solid ${{cat.icon}}" style="color:${{cor}}"></i>`;
+  document.getElementById('kpiModalIcon').style.background = bg;
+  document.getElementById('kpiModalLabel').textContent = `${{cat.label}} — ${{isAlerta ? 'A vencer (30 dias)' : 'Vencidos'}}`;
+  document.getElementById('kpiModalCount').textContent = `${{kpiListaAtual.length}} motorista${{kpiListaAtual.length !== 1 ? 's' : ''}}`;
+  document.getElementById('kpiSearchInput').value = '';
+  document.getElementById('kpiMesFiltro').classList.remove('visible');
+  document.getElementById('kpiMesFiltro').innerHTML = '';
+  const btnPdf = document.getElementById('btnBaixarPdfPendentes');
+  if(btnPdf) btnPdf.style.display = 'none';
+
+  kpiVoltarFn = () => abrirVencimentoMenu(tipo);
+  const btnVoltarCursos = document.getElementById('btnVoltarCursos');
+  if(btnVoltarCursos){{ btnVoltarCursos.style.display = 'flex'; btnVoltarCursos.onclick = () => kpiVoltarFn && kpiVoltarFn(); }}
+
+  renderizarCardsKpi(kpiListaAtual);
+  document.getElementById('kpiModal').classList.add('show');
+}}
 
 function abrirCategoriaCursos(tipo){{
   kpiOrigemCursos = true;
@@ -1163,6 +1296,7 @@ function abrirCategoriaCursos(tipo){{
 
 function abrirCursosMenu(){{
   kpiOrigemCursos = false;
+  kpiVoltarFn = null;
   const btnVoltarCursos = document.getElementById('btnVoltarCursos');
   if(btnVoltarCursos) btnVoltarCursos.style.display = 'none';
   kpiTipoAtual = 'cursos';
@@ -1181,11 +1315,11 @@ function abrirCursosMenu(){{
   const totalM  = motoristasDB.length;
   const nComDss = motoristasDB.filter(m => dssOkNoMes(m, _mes)).length;
   const nSemDss = totalM - nComDss;
-  const nRecOk  = motoristasDB.filter(m => m.reciclagem === 'OK').length;
+  const nRecOk  = motoristasDB.filter(m => reciclagemStatus(m) === 'OK').length;
   const nRecPend= totalM - nRecOk;
-  const nSimOk  = motoristasDB.filter(m => m.simulador === 'OK').length;
+  const nSimOk  = motoristasDB.filter(m => simuladorStatus(m) === 'OK').length;
   const nSimPend= totalM - nSimOk;
-  const nGestOk  = motoristasDB.filter(m => m.gestime === 'OK').length;
+  const nGestOk  = motoristasDB.filter(m => gestimeStatus(m) === 'OK').length;
   const nGestPend= totalM - nGestOk;
 
   const grupos = [
@@ -1223,7 +1357,13 @@ function abrirKpiModal(tipo, mes){{
   if(!mes) mes = cfg.dssModal ? mesCorrente() : null;
   kpiMesAtual = mes;
   const btnVoltarCursos = document.getElementById('btnVoltarCursos');
-  if(btnVoltarCursos) btnVoltarCursos.style.display = kpiOrigemCursos ? 'flex' : 'none';
+  if(kpiOrigemCursos){{
+    kpiVoltarFn = abrirCursosMenu;
+    if(btnVoltarCursos){{ btnVoltarCursos.style.display = 'flex'; btnVoltarCursos.onclick = () => kpiVoltarFn && kpiVoltarFn(); }}
+  }} else {{
+    kpiVoltarFn = null;
+    if(btnVoltarCursos) btnVoltarCursos.style.display = 'none';
+  }}
   _aplicarFiltroKpi();
   document.getElementById('kpiModalIcon').innerHTML  = `<i class="fa-solid ${{cfg.icon}}" style="color:${{cfg.cor}}"></i>`;
   document.getElementById('kpiModalIcon').style.background = cfg.bg;
@@ -1277,6 +1417,24 @@ function filtrarCardsKpi(){{
 function renderizarCardsKpi(lista){{
   const grid = document.getElementById('kpiCardsGrid');
   if(lista.length === 0){{ grid.innerHTML = `<div class="kpi-empty"><i class="fa-solid fa-magnifying-glass"></i>Nenhum motorista encontrado.</div>`; return; }}
+
+  if(kpiTipoAtual === 'vencimentoCategoria'){{
+    const isAlerta = kpiTipoVencAtual === 'alerta';
+    const cor = isAlerta ? '#eab308' : '#dc2626';
+    const bg  = isAlerta ? '#fefce8' : '#fff5f5';
+    grid.innerHTML = lista.map(m => {{
+      const avatar = m.foto ? `<img src="${{m.foto}}" alt="">` : `<i class="fa-solid fa-user-tie"></i>`;
+      const d = diasParaVencerCategoria(m, kpiCategoriaVencAtual);
+      const prazoTxt = isAlerta ? `Vence em ${{d}} dia${{d===1?'':'s'}}` : `Vencido há ${{Math.abs(d)}} dia${{Math.abs(d)===1?'':'s'}}`;
+      return `<div class="driver-mini-card" style="border-color:${{cor}}55;background:${{bg}};" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
+        <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
+        <div class="dmc-cpf">${{m.cpf}}</div>
+        <div class="dmc-badges"><span class="dmc-badge" style="background:${{cor}}22;color:${{cor}};border:1px solid ${{cor}}55;"><i class="fa-solid ${{isAlerta?'fa-triangle-exclamation':'fa-circle-exclamation'}}"></i> ${{prazoTxt}}</span></div>
+      </div>`;
+    }}).join('');
+    return;
+  }}
+
   const cfg = kpiTipoAtual ? KPI_CONFIG[kpiTipoAtual] : null;
   const isDssModal   = cfg && cfg.dssModal;
   const isExcesso    = kpiTipoAtual === 'excesso';
@@ -1310,13 +1468,15 @@ function renderizarCardsKpi(lista){{
       </div>`;
     }}
     if(isProntuario){{
-      const exPerOk = !!m.examePeriodico;
-      const exToxOk = !!m.exameToxicologico;
-      const svExPerK = statusVencimento(m.examePeriodico, m.examePeriodicoValidadeAnos);
-      const svExToxK = statusVencimento(m.exameToxicologico, m.exameToxicologicoValidadeAnos);
-      const recOk   = m.reciclagem === 'OK';
-      const simOk   = m.simulador === 'OK';
+      const exPerOk = exameOk(m.examePeriodico, m.examePeriodicoValidadeMeses);
+      const exToxOk = exameOk(m.exameToxicologico, m.exameToxicologicoValidadeMeses);
+      const svExPerK = statusVencimentoProntuario(m.examePeriodico, m.examePeriodicoValidadeMeses);
+      const svExToxK = statusVencimentoProntuario(m.exameToxicologico, m.exameToxicologicoValidadeMeses);
+      const recOk   = reciclagemStatus(m) === 'OK';
+      const simOk   = simuladorStatus(m) === 'OK';
       const uniOk   = m.entregaUniforme === 'OK';
+      const svCnhK  = statusVencimentoData(m.validadeCnh);
+      const svMoppK = statusVencimentoData(m.vencimentoCnhMopp);
       const fmtData = d => d ? new Date(d+'T00:00:00').toLocaleDateString('pt-BR') : 'PENDENTE';
       return `<div class="driver-mini-card ${{(exPerOk && exToxOk) ? 'card-ok' : 'card-pend'}}" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
         <div class="dmc-top-center">
@@ -1330,24 +1490,25 @@ function renderizarCardsKpi(lista){{
           <div class="dmc-pront-item"><span class="dmc-pront-lbl">Venc. Periódico</span><span class="dmc-pront-val" style="color:${{svExPerK.cor}}">${{svExPerK.label}}</span></div>
           <div class="dmc-pront-item"><span class="dmc-pront-lbl">Exame Toxicológico</span><span class="dmc-pront-val" style="color:${{exToxOk?'#16a34a':'#dc2626'}}">${{fmtData(m.exameToxicologico)}}</span></div>
           <div class="dmc-pront-item"><span class="dmc-pront-lbl">Venc. Toxicológico</span><span class="dmc-pront-val" style="color:${{svExToxK.cor}}">${{svExToxK.label}}</span></div>
-          <div class="dmc-pront-item"><span class="dmc-pront-lbl">Venc. MOPP</span><span class="dmc-pront-val">${{fmtData(m.vencimentoCnhMopp)}}</span></div>
+          <div class="dmc-pront-item"><span class="dmc-pront-lbl">Validade CNH</span><span class="dmc-pront-val" style="color:${{svCnhK.cor}}">${{svCnhK.label}}</span></div>
+          <div class="dmc-pront-item"><span class="dmc-pront-lbl">Validade MOPP</span><span class="dmc-pront-val" style="color:${{svMoppK.cor}}">${{svMoppK.label}}</span></div>
           <div class="dmc-pront-item"><span class="dmc-pront-lbl">Pontuação CNH</span><span class="dmc-pront-val">${{m.pontuacaoCnh||0}} pts</span></div>
           <div class="dmc-pront-item full"><span class="dmc-pront-lbl">Entrega de Uniforme</span><span class="dmc-pront-val" style="color:${{uniOk?'#16a34a':'#dc2626'}}">${{m.entregaUniforme||'PENDENTE'}}</span></div>
         </div>
         <div class="dmc-status-row">
           <div class="dmc-status-pill ${{recOk?'ok':'pend'}}">
             <span class="dmc-status-pill-lbl"><i class="fa-solid fa-recycle"></i> Reciclagem</span>
-            <span class="dmc-status-pill-val">${{m.reciclagem||'PENDENTE'}}</span>
+            <span class="dmc-status-pill-val">${{recOk?'OK':'PENDENTE'}}</span>
           </div>
           <div class="dmc-status-pill ${{simOk?'ok':'pend'}}">
             <span class="dmc-status-pill-lbl"><i class="fa-solid fa-car-side"></i> Simulador</span>
-            <span class="dmc-status-pill-val">${{m.simulador||'PENDENTE'}}</span>
+            <span class="dmc-status-pill-val">${{simOk?'OK':'PENDENTE'}}</span>
           </div>
         </div>
       </div>`;
     }}
     if(isReciclagemOk){{
-      const svR = statusVencimento(m.reciclagemData, m.reciclagemValidadeAnos);
+      const svR = statusVencimento(m.reciclagemData, m.reciclagemValidadeMeses);
       return `<div class="driver-mini-card card-ok" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
         <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
         <div class="dmc-cpf">${{m.cpf}}</div>
@@ -1356,7 +1517,7 @@ function renderizarCardsKpi(lista){{
       </div>`;
     }}
     if(isReciclagemPend){{
-      const svR = statusVencimento(m.reciclagemData, m.reciclagemValidadeAnos);
+      const svR = statusVencimento(m.reciclagemData, m.reciclagemValidadeMeses);
       return `<div class="driver-mini-card card-pend" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
         <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
         <div class="dmc-cpf">${{m.cpf}}</div>
@@ -1365,7 +1526,7 @@ function renderizarCardsKpi(lista){{
       </div>`;
     }}
     if(isSimuladorOk){{
-      const svS = statusVencimento(m.simuladorData, m.simuladorValidadeAnos);
+      const svS = statusVencimento(m.simuladorData, m.simuladorValidadeMeses);
       return `<div class="driver-mini-card card-ok" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
         <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
         <div class="dmc-cpf">${{m.cpf}}</div>
@@ -1374,7 +1535,7 @@ function renderizarCardsKpi(lista){{
       </div>`;
     }}
     if(isSimuladorPend){{
-      const svS = statusVencimento(m.simuladorData, m.simuladorValidadeAnos);
+      const svS = statusVencimento(m.simuladorData, m.simuladorValidadeMeses);
       return `<div class="driver-mini-card card-pend" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
         <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
         <div class="dmc-cpf">${{m.cpf}}</div>
@@ -1383,7 +1544,7 @@ function renderizarCardsKpi(lista){{
       </div>`;
     }}
     if(isGestimeOk){{
-      const svG = statusVencimento(m.gestimeData, m.gestimeValidadeAnos);
+      const svG = statusVencimento(m.gestimeData, m.gestimeValidadeMeses);
       return `<div class="driver-mini-card card-ok" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
         <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
         <div class="dmc-cpf">${{m.cpf}}</div>
@@ -1392,7 +1553,7 @@ function renderizarCardsKpi(lista){{
       </div>`;
     }}
     if(isGestimePend){{
-      const svG = statusVencimento(m.gestimeData, m.gestimeValidadeAnos);
+      const svG = statusVencimento(m.gestimeData, m.gestimeValidadeMeses);
       return `<div class="driver-mini-card card-pend" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
         <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
         <div class="dmc-cpf">${{m.cpf}}</div>
@@ -1401,8 +1562,8 @@ function renderizarCardsKpi(lista){{
       </div>`;
     }}
     if(isReciclagemTodos){{
-      const ok = m.reciclagem === 'OK';
-      const svR = statusVencimento(m.reciclagemData, m.reciclagemValidadeAnos);
+      const ok = reciclagemStatus(m) === 'OK';
+      const svR = statusVencimento(m.reciclagemData, m.reciclagemValidadeMeses);
       return `<div class="driver-mini-card ${{ok?'card-ok':'card-pend'}}" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
         <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
         <div class="dmc-cpf">${{m.cpf}}</div>
@@ -1411,8 +1572,8 @@ function renderizarCardsKpi(lista){{
       </div>`;
     }}
     if(isSimuladorTodos){{
-      const ok = m.simulador === 'OK';
-      const svS = statusVencimento(m.simuladorData, m.simuladorValidadeAnos);
+      const ok = simuladorStatus(m) === 'OK';
+      const svS = statusVencimento(m.simuladorData, m.simuladorValidadeMeses);
       return `<div class="driver-mini-card ${{ok?'card-ok':'card-pend'}}" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
         <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
         <div class="dmc-cpf">${{m.cpf}}</div>
@@ -1421,8 +1582,8 @@ function renderizarCardsKpi(lista){{
       </div>`;
     }}
     if(isGestimeTodos){{
-      const ok = m.gestime === 'OK';
-      const svG = statusVencimento(m.gestimeData, m.gestimeValidadeAnos);
+      const ok = gestimeStatus(m) === 'OK';
+      const svG = statusVencimento(m.gestimeData, m.gestimeValidadeMeses);
       return `<div class="driver-mini-card ${{ok?'card-ok':'card-pend'}}" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
         <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
         <div class="dmc-cpf">${{m.cpf}}</div>
@@ -1471,6 +1632,9 @@ function irParaFichaViaKpi(cpf){{ fichaOrigemModal='kpi'; fecharKpiModal(); setT
 function fecharKpiModal(){{
   document.getElementById('kpiModal').classList.remove('show');
   kpiOrigemCursos = false;
+  kpiVoltarFn = null;
+  kpiCategoriaVencAtual = null;
+  kpiTipoVencAtual = null;
   const btnVoltarCursos = document.getElementById('btnVoltarCursos');
   if(btnVoltarCursos) btnVoltarCursos.style.display = 'none';
 }}
@@ -1505,21 +1669,73 @@ function dssDoMes(m, mes){{ return m.dssAnual && m.dssAnual[mes] ? m.dssAnual[me
 function contarDssMes(m, mes){{ return dssDoMes(m, mes).filter(Boolean).length; }}
 function dssOkNoMes(m, mes){{ return contarDssMes(m, mes) >= 4; }}
 
-function calcularVencimento(dataStr, anos){{
-  if(!dataStr || !anos) return null;
+function calcularVencimento(dataStr, meses){{
+  if(!dataStr || !meses) return null;
   const d = new Date(dataStr+'T00:00:00');
   if(isNaN(d)) return null;
-  d.setFullYear(d.getFullYear() + parseInt(anos));
+  d.setMonth(d.getMonth() + parseInt(meses));
   return d;
 }}
-function statusVencimento(dataStr, anos){{
-  const venc = calcularVencimento(dataStr, anos);
+function statusVencimento(dataStr, meses){{
+  const venc = calcularVencimento(dataStr, meses);
   if(!venc) return {{ label:'Sem data/validade definida', cor:'#9aaabb', venc:null }};
   const hoje = new Date(); hoje.setHours(0,0,0,0);
   const diffDias = Math.floor((venc - hoje) / 86400000);
   if(diffDias < 0)   return {{ label:'VENCIDO em ' + venc.toLocaleDateString('pt-BR'), cor:'#dc2626', venc }};
   if(diffDias <= 60) return {{ label:'Vence em ' + venc.toLocaleDateString('pt-BR'), cor:'#d97706', venc }};
-  return {{ label:'' + venc.toLocaleDateString('pt-BR'), cor:'#16a34a', venc }};
+  return {{ label:'Válido até ' + venc.toLocaleDateString('pt-BR'), cor:'#16a34a', venc }};
+}}
+
+function statusVencimentoProntuario(dataStr, meses){{
+  const venc = calcularVencimento(dataStr, meses);
+  if(!venc) return {{ label:'Sem data/validade definida', cor:'#9aaabb', venc:null }};
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const diffDias = Math.floor((venc - hoje) / 86400000);
+  if(diffDias < 0) return {{ label:'VENCIDO em ' + venc.toLocaleDateString('pt-BR'), cor:'#dc2626', venc }};
+  const cor = diffDias <= 60 ? '#d97706' : '#16a34a';
+  return {{ label: venc.toLocaleDateString('pt-BR'), cor, venc }};
+}}
+
+// Retorna true se a validade já passou (curso vencido)
+function estaVencido(dataStr, meses){{
+  const venc = calcularVencimento(dataStr, meses);
+  if(!venc) return false; // sem data/validade definida -> não força vencimento
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  return venc < hoje;
+}}
+
+// Status EFETIVO do curso: se está "OK" mas a validade venceu,
+// ele volta automaticamente para PENDENTE (a data NÃO é apagada em nenhum momento)
+function statusEfetivo(campoStatus, dataStr, meses){{
+  if(campoStatus !== 'OK') return 'PENDENTE';
+  return estaVencido(dataStr, meses) ? 'PENDENTE' : 'OK';
+}}
+
+function reciclagemStatus(m){{ return statusEfetivo(m.reciclagem, m.reciclagemData, m.reciclagemValidadeMeses); }}
+function simuladorStatus(m){{  return statusEfetivo(m.simulador,  m.simuladorData,  m.simuladorValidadeMeses); }}
+function gestimeStatus(m){{    return statusEfetivo(m.gestime,    m.gestimeData,    m.gestimeValidadeMeses); }}
+// Exame: considerado OK só se tem data preenchida E não está vencido.
+// A data continua salva mesmo depois de vencer — só o status calculado muda.
+function exameOk(dataStr, meses){{
+  if(!dataStr) return false;
+  return !estaVencido(dataStr, meses);
+}}
+
+// ── Validade CNH ──
+// Diferente de reciclagem/exames: aqui a própria data preenchida É o vencimento
+// (não soma meses). Se a data já passou, a CNH conta como VENCIDA.
+function statusVencimentoData(dataStr){{
+  if(!dataStr) return {{ label:'Sem data definida', cor:'#9aaabb', venc:null, vencida:false }};
+  const venc = new Date(dataStr+'T00:00:00');
+  if(isNaN(venc)) return {{ label:'Data inválida', cor:'#9aaabb', venc:null, vencida:false }};
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const diffDias = Math.floor((venc - hoje) / 86400000);
+  if(diffDias < 0)   return {{ label:'VENCIDA em ' + venc.toLocaleDateString('pt-BR'), cor:'#dc2626', venc, vencida:true }};
+  if(diffDias <= 60) return {{ label:'Vence em ' + venc.toLocaleDateString('pt-BR'), cor:'#d97706', venc, vencida:false }};
+  return {{ label:'' + venc.toLocaleDateString('pt-BR'), cor:'#16a34a', venc, vencida:false }};
+}}
+function cnhVencida(m){{
+  return statusVencimentoData(m.validadeCnh).vencida;
 }}
 
 function checarCamposValidade(dataId, anosId){{
@@ -1541,13 +1757,13 @@ function agruparPorFilial(){{
     mapa[f].total++;
     mapa[f].comDss += (m.dssAnual && m.dssAnual[mesAtual] && m.dssAnual[mesAtual][semAtual]) ? 1 : 0;
     mapa[f].dssMax += 1;
-    if(m.reciclagem === 'OK') mapa[f].recOk++;
-    if(m.simulador  === 'OK') mapa[f].simOk++;
+    if(reciclagemStatus(m) === 'OK') mapa[f].recOk++;
+    if(simuladorStatus(m)  === 'OK') mapa[f].simOk++;
     mapa[f].acid   += Math.max(0, parseInt(m.acidentes || 0));
     mapa[f].multas += Math.max(0, parseInt(m.multas    || 0));
     mapa[f].excVel += Math.max(0, parseInt(m.excesso   || 0));
-    if(m.examePeriodico)                mapa[f].examePerOk++;
-    if(m.exameToxicologico)             mapa[f].exameToxOk++;
+    if(exameOk(m.examePeriodico, m.examePeriodicoValidadeMeses))       mapa[f].examePerOk++;
+    if(exameOk(m.exameToxicologico, m.exameToxicologicoValidadeMeses)) mapa[f].exameToxOk++;
     if(m.telefoneCorporativo === 'SIM') mapa[f].telCorpOk++;
   }});
   return Object.values(mapa).sort((a,b) => b.total - a.total);
@@ -1592,14 +1808,17 @@ function atualizarDashboardCompleto(){{
   _s('kpiAcidentesMot', motAcident);
 
   const totalTelCorp      = motoristasDB.filter(m => m.telefoneCorporativo === 'SIM').length;
-  const totalProntuarioOk = motoristasDB.filter(m => m.examePeriodico && m.exameToxicologico).length;
+  const totalProntuarioOk = motoristasDB.filter(m =>
+    exameOk(m.examePeriodico, m.examePeriodicoValidadeMeses) &&
+    exameOk(m.exameToxicologico, m.exameToxicologicoValidadeMeses)
+  ).length;
   _s('kpiTelCorp',     totalTelCorp);
   _s('kpiTelCorpPct',  totalM > 0 ? Math.round(totalTelCorp/totalM*100) + '%' : '—');
   _s('kpiProntuario',  totalM);
   _s('kpiProntuarioOk',totalProntuarioOk);
 
-  const totalRecOk  = motoristasDB.filter(m => m.reciclagem === 'OK').length;
-  const totalRecPend = motoristasDB.filter(m => m.reciclagem === 'PENDENTE').length;
+  const totalRecOk  = motoristasDB.filter(m => reciclagemStatus(m) === 'OK').length;
+  const totalRecPend = motoristasDB.filter(m => reciclagemStatus(m) === 'PENDENTE').length;
   _s('kpiReciclagemOk', totalRecOk);
   _s('kpiReciclagemOkPct', totalM > 0 ? Math.round(totalRecOk/totalM*100) + '%' : '—');
   _s('kpiReciclagemPend', totalRecPend);
@@ -1923,13 +2142,13 @@ function expandirFilial(nomeFilial){{
   document.getElementById('mTotalDrivers').textContent = listagem.length;
   const totalDss = listagem.reduce((acc,m) => acc + contarDssSessoes(m), 0);
   document.getElementById('mWithDss').textContent = totalDss;
-  document.getElementById('mRecOk').textContent = listagem.filter(m => m.reciclagem === 'OK').length;
-  document.getElementById('mSimOk').textContent = listagem.filter(m => m.simulador === 'OK').length;
+  document.getElementById('mRecOk').textContent = listagem.filter(m => reciclagemStatus(m) === 'OK').length;
+  document.getElementById('mSimOk').textContent = listagem.filter(m => simuladorStatus(m) === 'OK').length;
   document.getElementById('mExcVel').textContent = listagem.reduce((acc,m) => acc + Math.max(0, parseInt(m.excesso)||0), 0);
   document.getElementById('mMultas').textContent = listagem.reduce((acc,m) => acc + Math.max(0, parseInt(m.multas)||0), 0);
   document.getElementById('mAcidentes').textContent = listagem.reduce((acc,m) => acc + Math.max(0, parseInt(m.acidentes)||0), 0);
-  document.getElementById('mExamePerOk').textContent = listagem.filter(m => m.examePeriodico).length;
-  document.getElementById('mExameToxOk').textContent = listagem.filter(m => m.exameToxicologico).length;
+  document.getElementById('mExamePerOk').textContent = listagem.filter(m => exameOk(m.examePeriodico, m.examePeriodicoValidadeMeses)).length;
+  document.getElementById('mExameToxOk').textContent = listagem.filter(m => exameOk(m.exameToxicologico, m.exameToxicologicoValidadeMeses)).length;
   document.getElementById('mTelCorpOk').textContent = listagem.filter(m => m.telefoneCorporativo === 'SIM').length;
   const tbody = document.getElementById('mDriversTableBody');
   tbody.innerHTML = '';
@@ -1950,13 +2169,13 @@ function expandirFilial(nomeFilial){{
       tbody.innerHTML += `<tr class="driver-row" onclick="abrirFichaMotorista('${{m.cpf}}')">
         <td><div class="m-name">${{m.nome}}</div><div class="m-cpf">CPF: ${{m.cpf}}</div></td>
         <td style="text-align:center"><span class="m-count-badge" style="color:${{dssCor}};border-color:${{dssCor}};background:${{dssCor}}18;">${{dssAno}}/${{dssMax}}</span></td>
-        <td><span class="m-badge ${{m.reciclagem==='OK'?'ok':'pend'}}">${{m.reciclagem}}</span></td>
-        <td><span class="m-badge ${{m.simulador==='OK'?'ok':'pend'}}">${{m.simulador}}</span></td>
+        <td><span class="m-badge ${{reciclagemStatus(m)==='OK'?'ok':'pend'}}">${{reciclagemStatus(m)}}</span></td>
+        <td><span class="m-badge ${{simuladorStatus(m)==='OK'?'ok':'pend'}}">${{simuladorStatus(m)}}</span></td>
         <td style="text-align:center"><span class="m-count-badge">${{m.excesso}}</span></td>
         <td style="text-align:center"><span class="m-count-badge">${{m.multas}}</span></td>
         <td style="text-align:center"><span class="m-count-badge">${{m.acidentes}}</span></td>
-        <td><span class="m-badge ${{m.examePeriodico?'ok':'pend'}}">${{m.examePeriodico?'OK':'PENDENTE'}}</span></td>
-        <td><span class="m-badge ${{m.exameToxicologico?'ok':'pend'}}">${{m.exameToxicologico?'OK':'PENDENTE'}}</span></td>
+        <td><span class="m-badge ${{exameOk(m.examePeriodico, m.examePeriodicoValidadeMeses)?'ok':'pend'}}">${{exameOk(m.examePeriodico, m.examePeriodicoValidadeMeses)?'OK':'PENDENTE'}}</span></td>
+        <td><span class="m-badge ${{exameOk(m.exameToxicologico, m.exameToxicologicoValidadeMeses)?'ok':'pend'}}">${{exameOk(m.exameToxicologico, m.exameToxicologicoValidadeMeses)?'OK':'PENDENTE'}}</span></td>
         <td><span class="m-badge ${{m.telefoneCorporativo==='SIM'?'ok':'pend'}}">${{m.telefoneCorporativo||'NÃO'}}</span></td>
       </tr>`;
     }});
@@ -1980,13 +2199,13 @@ function filtrarFilialPorIndicador(tipo){{
   const filtrados = listagem.filter(m => {{
    if(tipo==='todos')     return true;
     if(tipo==='dss')       return contarDssSessoes(m) > 0;
-    if(tipo==='reciclagem') return m.reciclagem === 'OK';
-    if(tipo==='simulador') return m.simulador === 'OK';
+    if(tipo==='reciclagem') return reciclagemStatus(m) === 'OK';
+    if(tipo==='simulador') return simuladorStatus(m) === 'OK';
     if(tipo==='excesso')   return Math.max(0,parseInt(m.excesso)||0)   > 0;
     if(tipo==='multas')    return Math.max(0,parseInt(m.multas)||0)    > 0;
     if(tipo==='acidentes') return Math.max(0,parseInt(m.acidentes)||0) > 0;
-    if(tipo==='examePeriodico')      return !!m.examePeriodico;
-    if(tipo==='exameToxicologico')   return !!m.exameToxicologico;
+    if(tipo==='examePeriodico')      return exameOk(m.examePeriodico, m.examePeriodicoValidadeMeses);
+    if(tipo==='exameToxicologico')   return exameOk(m.exameToxicologico, m.exameToxicologicoValidadeMeses);
     if(tipo==='telefoneCorporativo') return m.telefoneCorporativo === 'SIM';
     return true;
   }});
@@ -2024,11 +2243,17 @@ function abrirFichaMotorista(cpf){{
       </div></div>`;
   }});
   const esc = s => (s||'').replace(/"/g,'&quot;');
-  const svRec   = statusVencimento(m.reciclagemData, m.reciclagemValidadeAnos);
-  const svSim   = statusVencimento(m.simuladorData, m.simuladorValidadeAnos);
-  const svExPer = statusVencimento(m.examePeriodico, m.examePeriodicoValidadeAnos);
-  const svExTox = statusVencimento(m.exameToxicologico, m.exameToxicologicoValidadeAnos);
-  const svGest  = statusVencimento(m.gestimeData, m.gestimeValidadeAnos);
+  // Status efetivo: se venceu, volta para PENDENTE automaticamente (a data NÃO é apagada)
+  const recEfetivo  = reciclagemStatus(m);
+  const simEfetivo  = simuladorStatus(m);
+  const gestEfetivo = gestimeStatus(m);
+  const svRec   = statusVencimento(m.reciclagemData, m.reciclagemValidadeMeses);
+  const svSim   = statusVencimento(m.simuladorData, m.simuladorValidadeMeses);
+  const svExPer = statusVencimento(m.examePeriodico, m.examePeriodicoValidadeMeses);
+  const svExTox = statusVencimento(m.exameToxicologico, m.exameToxicologicoValidadeMeses);
+  const svGest  = statusVencimento(m.gestimeData, m.gestimeValidadeMeses);
+  const svCnh   = statusVencimentoData(m.validadeCnh);
+  const svMopp  = statusVencimentoData(m.vencimentoCnhMopp);
   let highlightSeg='', highlightDss='', badgeSegHtml='', badgeDssHtml='';
   if(fichaOrigemModal === 'kpi'){{
     if(kpiTipoAtual==='excesso')  {{ highlightSeg=' card-highlight-vel';  badgeSegHtml='<span style="margin-left:auto;font-size:8px;font-weight:800;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;padding:2px 8px;border-radius:20px;"><i class=\\"fa-solid fa-gauge-high\\" style=\\"margin-right:3px\\"></i>Excesso de Velocidade</span>'; }}
@@ -2058,17 +2283,17 @@ function abrirFichaMotorista(cpf){{
               <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-gauge-high" style="color:#ea580c;margin-right:6px"></i>Exc. Velocidade</span>
               <span style="font-size:32px;font-weight:900;color:#ea580c;line-height:1;">${{m.excesso||0}}</span>
             </div>
-            <div style="background:${{m.reciclagem==='OK'?'#f0fef4':'#fff5f5'}};border:1.5px solid ${{m.reciclagem==='OK'?'#86efac':'#fca5a5'}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-recycle" style="color:${{m.reciclagem==='OK'?'#16a34a':'#dc2626'}};margin-right:6px"></i>Reciclagem</span>
-              <span style="font-size:18px;font-weight:900;color:${{m.reciclagem==='OK'?'#16a34a':'#dc2626'}};line-height:1;">${{m.reciclagem}}</span>
+            <div style="background:${{recEfetivo==='OK'?'#f0fef4':'#fff5f5'}};border:1.5px solid ${{recEfetivo==='OK'?'#86efac':'#fca5a5'}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-recycle" style="color:${{recEfetivo==='OK'?'#16a34a':'#dc2626'}};margin-right:6px"></i>Reciclagem</span>
+              <span style="font-size:18px;font-weight:900;color:${{recEfetivo==='OK'?'#16a34a':'#dc2626'}};line-height:1;">${{recEfetivo}}</span>
             </div>
-            <div style="background:${{m.simulador==='OK'?'#f0fef4':'#fff5f5'}};border:1.5px solid ${{m.simulador==='OK'?'#86efac':'#fca5a5'}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-car-side" style="color:${{m.simulador==='OK'?'#16a34a':'#dc2626'}};margin-right:6px"></i>Simulador</span>
-              <span style="font-size:18px;font-weight:900;color:${{m.simulador==='OK'?'#16a34a':'#dc2626'}};line-height:1;">${{m.simulador}}</span>
+            <div style="background:${{simEfetivo==='OK'?'#f0fef4':'#fff5f5'}};border:1.5px solid ${{simEfetivo==='OK'?'#86efac':'#fca5a5'}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-car-side" style="color:${{simEfetivo==='OK'?'#16a34a':'#dc2626'}};margin-right:6px"></i>Simulador</span>
+              <span style="font-size:18px;font-weight:900;color:${{simEfetivo==='OK'?'#16a34a':'#dc2626'}};line-height:1;">${{simEfetivo}}</span>
             </div>
-            <div style="background:${{m.gestime==='OK'?'#f0fef4':'#fff5f5'}};border:1.5px solid ${{m.gestime==='OK'?'#86efac':'#fca5a5'}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-clipboard-check" style="color:${{m.gestime==='OK'?'#16a34a':'#dc2626'}};margin-right:6px"></i>Gestime</span>
-              <span style="font-size:18px;font-weight:900;color:${{m.gestime==='OK'?'#16a34a':'#dc2626'}};line-height:1;">${{m.gestime}}</span>
+            <div style="background:${{gestEfetivo==='OK'?'#f0fef4':'#fff5f5'}};border:1.5px solid ${{gestEfetivo==='OK'?'#86efac':'#fca5a5'}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-clipboard-check" style="color:${{gestEfetivo==='OK'?'#16a34a':'#dc2626'}};margin-right:6px"></i>Gestime</span>
+              <span style="font-size:18px;font-weight:900;color:${{gestEfetivo==='OK'?'#16a34a':'#dc2626'}};line-height:1;">${{gestEfetivo}}</span>
             </div>
           </div>
         </div>
@@ -2114,7 +2339,11 @@ function abrirFichaMotorista(cpf){{
           <div class="info-block-title"><i class="fa-solid fa-address-card"></i> Documentação</div>
           <div class="meta-grid">
             <div class="meta-item"><label>Nº Registro CNH</label><input type="text" id="editCnh" value="${{esc(m.cnh)}}"></div>
-            <div class="meta-item"><label>Validade CNH</label><input type="date" id="editValidadeCnh" value="${{esc(m.validadeCnh)}}"></div>
+            <div class="meta-item">
+              <label>Validade CNH</label>
+              <input type="date" id="editValidadeCnh" value="${{esc(m.validadeCnh)}}">
+              <div style="font-size:10px;font-weight:700;color:${{svCnh.cor}};margin-top:2px;">${{svCnh.label}}</div>
+            </div>
             <div class="meta-item"><label>Data Admissão</label><input type="date" id="editAdmissao" value="${{esc(m.admissao)}}"></div>
           </div>
         </div>
@@ -2127,21 +2356,25 @@ function abrirFichaMotorista(cpf){{
             <div class="meta-item">
               <label>Exame Periódico</label>
               <div style="display:flex;gap:4px;">
-                <input type="date" id="editExamePeriodico" value="${{esc(m.examePeriodico)}}" style="flex:1;" oninput="checarCamposValidade('editExamePeriodico','editExamePeriodicoValidadeAnos')">
-                <input type="number" id="editExamePeriodicoValidadeAnos" value="${{m.examePeriodicoValidadeAnos||0}}" min="0" style="width:52px;" title="Válido por (anos)" oninput="checarCamposValidade('editExamePeriodico','editExamePeriodicoValidadeAnos')">
+                <input type="date" id="editExamePeriodico" value="${{esc(m.examePeriodico)}}" style="flex:1;" oninput="checarCamposValidade('editExamePeriodico','editExamePeriodicoValidadeMeses')">
+                <input type="number" id="editExamePeriodicoValidadeMeses" value="${{m.examePeriodicoValidadeMeses||0}}" min="0" style="width:52px;" title="Válido por (meses)" oninput="checarCamposValidade('editExamePeriodico','editExamePeriodicoValidadeMeses')">
               </div>
               <div style="font-size:10px;font-weight:700;color:${{svExPer.cor}};margin-top:2px;">${{svExPer.label}}</div>
             </div>
             <div class="meta-item">
               <label>Exame Toxicológico</label>
               <div style="display:flex;gap:4px;">
-                <input type="date" id="editExameToxicologico" value="${{esc(m.exameToxicologico)}}" style="flex:1;" oninput="checarCamposValidade('editExameToxicologico','editExameToxicologicoValidadeAnos')">
-                <input type="number" id="editExameToxicologicoValidadeAnos" value="${{m.exameToxicologicoValidadeAnos||0}}" min="0" style="width:52px;" title="Válido por (anos)" oninput="checarCamposValidade('editExameToxicologico','editExameToxicologicoValidadeAnos')">
+                <input type="date" id="editExameToxicologico" value="${{esc(m.exameToxicologico)}}" style="flex:1;" oninput="checarCamposValidade('editExameToxicologico','editExameToxicologicoValidadeMeses')">
+                <input type="number" id="editExameToxicologicoValidadeMeses" value="${{m.exameToxicologicoValidadeMeses||0}}" min="0" style="width:52px;" title="Válido por (meses)" oninput="checarCamposValidade('editExameToxicologico','editExameToxicologicoValidadeMeses')">
               </div>
               <div style="font-size:10px;font-weight:700;color:${{svExTox.cor}};margin-top:2px;">${{svExTox.label}}</div>
             </div>
             <div class="meta-item"><label>Pontuação CNH</label><input type="number" id="editPontuacaoCnh" value="${{m.pontuacaoCnh||0}}"></div>
-            <div class="meta-item"><label>Vencimento CNH/MOPP</label><input type="date" id="editVencimentoCnhMopp" value="${{esc(m.vencimentoCnhMopp)}}"></div>
+            <div class="meta-item">
+              <label>Validade MOPP</label>
+              <input type="date" id="editVencimentoCnhMopp" value="${{esc(m.vencimentoCnhMopp)}}">
+              <div style="font-size:10px;font-weight:700;color:${{svMopp.cor}};margin-top:2px;">${{svMopp.label}}</div>
+            </div>
             <div class="meta-item">
               <label>Entrega de Uniforme</label>
               <select id="editEntregaUniforme">
@@ -2178,8 +2411,8 @@ function abrirFichaMotorista(cpf){{
                 <option value="OK" ${{m.simulador==='OK'?'selected':''}}>OK</option>
               </select>
               <div style="display:flex;gap:4px;margin-bottom:4px;">
-                <input type="date" id="editSimuladorData" value="${{esc(m.simuladorData)}}" style="flex:1;" title="Data de realização" oninput="checarCamposValidade('editSimuladorData','editSimuladorValidadeAnos')">
-                <input type="number" id="editSimuladorValidadeAnos" value="${{m.simuladorValidadeAnos||0}}" min="0" style="width:52px;" title="Válido por (anos)" oninput="checarCamposValidade('editSimuladorData','editSimuladorValidadeAnos')">
+                <input type="date" id="editSimuladorData" value="${{esc(m.simuladorData)}}" style="flex:1;" title="Data de realização" oninput="checarCamposValidade('editSimuladorData','editSimuladorValidadeMeses')">
+                <input type="number" id="editSimuladorValidadeMeses" value="${{m.simuladorValidadeMeses||0}}" min="0" style="width:52px;" title="Válido por (meses)" oninput="checarCamposValidade('editSimuladorData','editSimuladorValidadeMeses')">
               </div>
               <div style="font-size:10px;font-weight:700;color:${{svSim.cor}};margin-bottom:4px;">${{svSim.label}}</div>
               <input type="text" id="editObsSimulador" class="obs-input" value="${{esc(m.obsSimulador)}}" placeholder="Obs do Simulador">
@@ -2191,8 +2424,8 @@ function abrirFichaMotorista(cpf){{
                 <option value="OK" ${{m.reciclagem==='OK'?'selected':''}}>OK</option>
               </select>
               <div style="display:flex;gap:4px;margin-bottom:4px;">
-                <input type="date" id="editReciclagemData" value="${{esc(m.reciclagemData)}}" style="flex:1;" title="Data de realização" oninput="checarCamposValidade('editReciclagemData','editReciclagemValidadeAnos')">
-                <input type="number" id="editReciclagemValidadeAnos" value="${{m.reciclagemValidadeAnos||0}}" min="0" style="width:52px;" title="Válido por (anos)" oninput="checarCamposValidade('editReciclagemData','editReciclagemValidadeAnos')">
+                <input type="date" id="editReciclagemData" value="${{esc(m.reciclagemData)}}" style="flex:1;" title="Data de realização" oninput="checarCamposValidade('editReciclagemData','editReciclagemValidadeMeses')">
+                <input type="number" id="editReciclagemValidadeMeses" value="${{m.reciclagemValidadeMeses||0}}" min="0" style="width:52px;" title="Válido por (meses)" oninput="checarCamposValidade('editReciclagemData','editReciclagemValidadeMeses')">
               </div>
               <div style="font-size:10px;font-weight:700;color:${{svRec.cor}};margin-bottom:4px;">${{svRec.label}}</div>
               <input type="text" id="editObsReciclagem" class="obs-input" value="${{esc(m.obsReciclagem)}}" placeholder="Obs de Reciclagem">
@@ -2204,8 +2437,8 @@ function abrirFichaMotorista(cpf){{
                 <option value="OK" ${{m.gestime==='OK'?'selected':''}}>OK</option>
               </select>
               <div style="display:flex;gap:4px;margin-bottom:4px;">
-                <input type="date" id="editGestimeData" value="${{esc(m.gestimeData)}}" style="flex:1;" title="Data de realização" oninput="checarCamposValidade('editGestimeData','editGestimeValidadeAnos')">
-                <input type="number" id="editGestimeValidadeAnos" value="${{m.gestimeValidadeAnos||0}}" min="0" style="width:52px;" title="Válido por (anos)" oninput="checarCamposValidade('editGestimeData','editGestimeValidadeAnos')">
+                <input type="date" id="editGestimeData" value="${{esc(m.gestimeData)}}" style="flex:1;" title="Data de realização" oninput="checarCamposValidade('editGestimeData','editGestimeValidadeMeses')">
+                <input type="number" id="editGestimeValidadeMeses" value="${{m.gestimeValidadeMeses||0}}" min="0" style="width:52px;" title="Válido por (meses)" oninput="checarCamposValidade('editGestimeData','editGestimeValidadeMeses')">
               </div>
               <div style="font-size:10px;font-weight:700;color:${{svGest.cor}};margin-bottom:4px;">${{svGest.label}}</div>
               <input type="text" id="editObsGestime" class="obs-input" value="${{esc(m.obsGestime)}}" placeholder="Obs de Gestime">
@@ -2221,11 +2454,11 @@ function abrirFichaMotorista(cpf){{
         </div>
       </div>
     </div>`;
-  checarCamposValidade('editReciclagemData','editReciclagemValidadeAnos');
-  checarCamposValidade('editSimuladorData','editSimuladorValidadeAnos');
-  checarCamposValidade('editExamePeriodico','editExamePeriodicoValidadeAnos');
-  checarCamposValidade('editExameToxicologico','editExameToxicologicoValidadeAnos');
-  checarCamposValidade('editGestimeData','editGestimeValidadeAnos');
+  checarCamposValidade('editReciclagemData','editReciclagemValidadeMeses');
+  checarCamposValidade('editSimuladorData','editSimuladorValidadeMeses');
+  checarCamposValidade('editExamePeriodico','editExamePeriodicoValidadeMeses');
+  checarCamposValidade('editExameToxicologico','editExameToxicologicoValidadeMeses');
+  checarCamposValidade('editGestimeData','editGestimeValidadeMeses');
   document.getElementById('driverModal').style.display = 'flex';
   const btnVoltar = document.getElementById('btnVoltarFicha');
   if(fichaOrigemModal){{ btnVoltar.style.display = 'flex'; }} else {{ btnVoltar.style.display = 'none'; }}
@@ -2273,35 +2506,35 @@ async function confirmarEdicaoFicha(){{
 
   const recSelVal = document.getElementById('editReciclagem').value;
   const recData   = document.getElementById('editReciclagemData').value;
-  const recAnos   = parseInt(document.getElementById('editReciclagemValidadeAnos').value) || 0;
-  if(recSelVal === 'OK' && (!recData || recAnos <= 0)){{
-    toast('Para marcar Reciclagem como OK, preencha a Data de Realização e a Validade (anos).', 'erro');
+  const recMeses  = parseInt(document.getElementById('editReciclagemValidadeMeses').value) || 0;
+  if(recSelVal === 'OK' && (!recData || recMeses <= 0)){{
+    toast('Para marcar Reciclagem como OK, preencha a Data de Realização e a Validade (meses).', 'erro');
     return;
   }}
   const simSelVal = document.getElementById('editSimulador').value;
   const simData   = document.getElementById('editSimuladorData').value;
-  const simAnos   = parseInt(document.getElementById('editSimuladorValidadeAnos').value) || 0;
-  if(simSelVal === 'OK' && (!simData || simAnos <= 0)){{
-    toast('Para marcar Simulador como OK, preencha a Data de Realização e a Validade (anos).', 'erro');
+  const simMeses  = parseInt(document.getElementById('editSimuladorValidadeMeses').value) || 0;
+  if(simSelVal === 'OK' && (!simData || simMeses <= 0)){{
+    toast('Para marcar Simulador como OK, preencha a Data de Realização e a Validade (meses).', 'erro');
     return;
   }}
-  const exPerData = document.getElementById('editExamePeriodico').value;
-  const exPerAnos = parseInt(document.getElementById('editExamePeriodicoValidadeAnos').value) || 0;
-  if(exPerData && exPerAnos <= 0){{
-    toast('Informe a Validade (anos) do Exame Periódico.', 'erro');
+  const exPerData  = document.getElementById('editExamePeriodico').value;
+  const exPerMeses = parseInt(document.getElementById('editExamePeriodicoValidadeMeses').value) || 0;
+  if(exPerData && exPerMeses <= 0){{
+    toast('Informe a Validade (meses) do Exame Periódico.', 'erro');
     return;
   }}
-  const exToxData = document.getElementById('editExameToxicologico').value;
-  const exToxAnos = parseInt(document.getElementById('editExameToxicologicoValidadeAnos').value) || 0;
-  if(exToxData && exToxAnos <= 0){{
-    toast('Informe a Validade (anos) do Exame Toxicológico.', 'erro');
+  const exToxData  = document.getElementById('editExameToxicologico').value;
+  const exToxMeses = parseInt(document.getElementById('editExameToxicologicoValidadeMeses').value) || 0;
+  if(exToxData && exToxMeses <= 0){{
+    toast('Informe a Validade (meses) do Exame Toxicológico.', 'erro');
     return;
   }}
   const gestSelVal = document.getElementById('editGestime').value;
   const gestData   = document.getElementById('editGestimeData').value;
-  const gestAnos   = parseInt(document.getElementById('editGestimeValidadeAnos').value) || 0;
-  if(gestSelVal === 'OK' && (!gestData || gestAnos <= 0)){{
-    toast('Para marcar Gestime como OK, preencha a Data de Realização e a Validade (anos).', 'erro');
+  const gestMeses  = parseInt(document.getElementById('editGestimeValidadeMeses').value) || 0;
+  if(gestSelVal === 'OK' && (!gestData || gestMeses <= 0)){{
+    toast('Para marcar Gestime como OK, preencha a Data de Realização e a Validade (meses).', 'erro');
     return;
   }}
 
@@ -2331,15 +2564,15 @@ async function confirmarEdicaoFicha(){{
     modelo:              document.getElementById('editModelo').value,
     reciclagem:    document.getElementById('editReciclagem').value,
     reciclagemData: document.getElementById('editReciclagemData').value,
-    reciclagemValidadeAnos: parseInt(document.getElementById('editReciclagemValidadeAnos').value)||0,
+    reciclagemValidadeMeses: parseInt(document.getElementById('editReciclagemValidadeMeses').value)||0,
     simulador:     document.getElementById('editSimulador').value,
     simuladorData: document.getElementById('editSimuladorData').value,
-    simuladorValidadeAnos: parseInt(document.getElementById('editSimuladorValidadeAnos').value)||0,
-    examePeriodicoValidadeAnos: parseInt(document.getElementById('editExamePeriodicoValidadeAnos').value)||0,
-    exameToxicologicoValidadeAnos: parseInt(document.getElementById('editExameToxicologicoValidadeAnos').value)||0,
+    simuladorValidadeMeses: parseInt(document.getElementById('editSimuladorValidadeMeses').value)||0,
+    examePeriodicoValidadeMeses: parseInt(document.getElementById('editExamePeriodicoValidadeMeses').value)||0,
+    exameToxicologicoValidadeMeses: parseInt(document.getElementById('editExameToxicologicoValidadeMeses').value)||0,
     gestime:        document.getElementById('editGestime').value,
     gestimeData:    document.getElementById('editGestimeData').value,
-    gestimeValidadeAnos: parseInt(document.getElementById('editGestimeValidadeAnos').value)||0,
+    gestimeValidadeMeses: parseInt(document.getElementById('editGestimeValidadeMeses').value)||0,
     obsGestime:     document.getElementById('editObsGestime').value,
     acidentes:     parseInt(document.getElementById('editAcidentes').value)||0,
     multas:        parseInt(document.getElementById('editMultas').value)||0,
@@ -2507,11 +2740,11 @@ function gerarFichaPdf(cpf){{
         <div class="info-item" style="grid-column:1/-1;display:flex;gap:20px;padding-top:6px;border-top:1px solid #e8eef8;margin-top:2px;">
           <div style="display:flex;flex-direction:column;gap:2px;">
             <label>Reciclagem</label>
-            <span class="badge ${{m.reciclagem==='OK'?'badge-ok':'badge-pend'}}">${{m.reciclagem}}</span>
+            <span class="badge ${{reciclagemStatus(m)==='OK'?'badge-ok':'badge-pend'}}">${{reciclagemStatus(m)}}</span>
           </div>
           <div style="display:flex;flex-direction:column;gap:2px;">
             <label>Simulador</label>
-            <span class="badge ${{m.simulador==='OK'?'badge-ok':'badge-pend'}}">${{m.simulador}}</span>
+            <span class="badge ${{simuladorStatus(m)==='OK'?'badge-ok':'badge-pend'}}">${{simuladorStatus(m)}}</span>
           </div>
         </div>
       </div>
@@ -2642,7 +2875,7 @@ function _gerarRelatorio(mes, lista, realizado){{
         const feito = dssMes[i];
         return `<td style="text-align:center;padding:6px 4px;vertical-align:middle;border-bottom:1px solid #e0e8f0;background:${{zebra}};"><div style="width:16px;height:16px;border:2px solid ${{feito?'#22aa66':'#aaaaaa'}};border-radius:3px;margin:0 auto;display:flex;align-items:center;justify-content:center;background:${{feito?'#e8fff4':'#fff'}};">${{feito?'<span style=\\"color:#22aa66;font-size:12px;font-weight:900;line-height:1;\\">✕</span>':''}}</div></td>`;
       }}).join('');
-      const recOk = m.reciclagem==='OK'; const simOk = m.simulador==='OK';
+      const recOk = reciclagemStatus(m)==='OK'; const simOk = simuladorStatus(m)==='OK';
       const recBox = `<div style="display:inline-flex;align-items:center;gap:4px;"><div style="width:14px;height:14px;border:2px solid ${{recOk?'#22aa66':'#aaa'}};border-radius:2px;display:flex;align-items:center;justify-content:center;background:${{recOk?'#e8fff4':'#fff'}}">${{recOk?'<span style=\\"color:#22aa66;font-size:11px;font-weight:900;\\">✕</span>':''}}</div><span style="font-size:9px;color:${{recOk?'#22aa66':'#cc4444'}};font-weight:700;">${{recOk?'OK':'Pend'}}</span></div>`;
       const simBox = `<div style="display:inline-flex;align-items:center;gap:4px;"><div style="width:14px;height:14px;border:2px solid ${{simOk?'#22aa66':'#aaa'}};border-radius:2px;display:flex;align-items:center;justify-content:center;background:${{simOk?'#e8fff4':'#fff'}}">${{simOk?'<span style=\\"color:#22aa66;font-size:11px;font-weight:900;\\">✕</span>':''}}</div><span style="font-size:9px;color:${{simOk?'#22aa66':'#cc4444'}};font-weight:700;">${{simOk?'OK':'Pend'}}</span></div>`;
       linhas += `<tr style="background:${{zebra}};"><td style="padding:6px 10px;font-size:10px;font-weight:700;color:#111;border-bottom:1px solid #e0e8f0;background:${{zebra}};">${{m.nome}}</td><td style="padding:6px 8px;font-size:9px;color:#555;font-family:monospace;border-bottom:1px solid #e0e8f0;background:${{zebra}};">${{m.cpf}}</td>${{caixas}}<td style="padding:6px 8px;border-bottom:1px solid #e0e8f0;background:${{zebra}};">${{recBox}}</td><td style="padding:6px 8px;border-bottom:1px solid #e0e8f0;background:${{zebra}};">${{simBox}}</td></tr>`;
@@ -2681,10 +2914,7 @@ function _gerarRelatorio(mes, lista, realizado){{
 }}
 
 // ── Login + Inicialização ──
-const CREDENCIAIS = [
-  {{ usuario: 'rafaela.silva@luftagro.com.br', senha: 'rafaela.silva321', nome: 'Rafaela Silva' }},
-  {{ usuario: 'dionis.rodrigues@luftagro.com.br', senha: 'dionis.rodrigues321', nome: 'Dionis Rodrigues' }},
-];
+// CREDENCIAIS já foi injetado mais acima (vem do secrets.toml)
 let usuarioLogado = null;
 
 function tentarLogin(){{
