@@ -389,11 +389,11 @@ HTML = f"""<!DOCTYPE html>
 .m-lbl{{font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:1px}}
 .m-val{{font-size:36px;font-weight:900;color:#1a3a6b}}
 .modal-main{{background:#f8fafd;border:1.5px solid #dde6f4;border-radius:8px;display:flex;flex-direction:column;overflow:hidden}}
-.table-container{{flex:1;overflow-y:auto;overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}}
+.table-container{{flex:1;overflow-y:auto;overflow-x:auto;overscroll-behavior-x:contain;touch-action:pan-x pan-y}}
 .m-table{{width:100%;min-width:760px;border-collapse:collapse;text-align:left;font-size:14px}}
 .m-table th{{background:#eef3fb;color:#1a4fa0;font-size:12px;font-weight:800;text-transform:uppercase;padding:14px 16px;border-bottom:1.5px solid #dde6f4;position:sticky;top:0}}
 .m-table td{{padding:14px 16px;border-bottom:1px solid #eef3fb;color:#2a3a55}}
-.driver-row{{cursor:pointer}}
+.driver-row{{cursor:pointer;touch-action:manipulation}}
 .driver-row:hover{{background:#eef3fb!important}}
 .m-name{{font-weight:700;color:#1a3a6b;font-size:15px}}
 .m-cpf{{font-family:monospace;font-size:13px;color:#5a6e8a}}
