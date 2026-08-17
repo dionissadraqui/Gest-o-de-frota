@@ -390,6 +390,13 @@ HTML = f"""<!DOCTYPE html>
 .m-val{{font-size:36px;font-weight:900;color:#1a3a6b}}
 .modal-main{{background:#f8fafd;border:1.5px solid #dde6f4;border-radius:8px;display:flex;flex-direction:column;overflow:hidden}}
 .table-container{{flex:1;overflow-y:auto}}
+
+/* ── Lista mobile (dentro do modal de Filial) ── */
+.filial-mobile-list{{display:none;flex-direction:column;gap:10px;overflow-y:auto;padding:10px 12px;flex:1}}
+.filial-mobile-backbar{{display:none;align-items:center;gap:10px;padding:10px 12px 8px;border-bottom:1px solid #eef3fb;background:#fff;flex-shrink:0}}
+.btn-voltar-mobile{{background:transparent;color:#3b7dd8;border:1.5px solid #3b7dd8;padding:6px 14px;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:6px;flex-shrink:0}}
+.btn-voltar-mobile:hover{{background:#3b7dd8;color:#fff}}
+.filial-mobile-titulo{{font-size:12px;font-weight:800;color:#1a3a6b;text-transform:uppercase;letter-spacing:.5px}}
 .m-table{{width:100%;border-collapse:collapse;text-align:left;font-size:14px}}
 .m-table th{{background:#eef3fb;color:#1a4fa0;font-size:12px;font-weight:800;text-transform:uppercase;padding:14px 16px;border-bottom:1.5px solid #dde6f4;position:sticky;top:0}}
 .m-table td{{padding:14px 16px;border-bottom:1px solid #eef3fb;color:#2a3a55}}
@@ -607,6 +614,10 @@ HTML = f"""<!DOCTYPE html>
   .modal-sidebar{{flex-direction:row;flex-wrap:wrap;gap:6px}}
   .modal-kpi-card{{flex:1;min-width:120px;padding:8px}}
   .m-val{{font-size:22px}}
+  .modal-sidebar.mobile-hidden{{display:none}}
+  .table-container.mobile-hidden{{display:none}}
+  .filial-mobile-list.show{{display:flex}}
+  .filial-mobile-backbar.show{{display:flex}}
   .modal-box{{padding:10px;gap:8px}}
   .driver-profile-grid{{grid-template-columns:1fr;padding:8px;gap:10px}}
   .profile-details-right{{gap:8px}}
@@ -936,7 +947,7 @@ HTML = f"""<!DOCTYPE html>
       <button class="btn-close" onclick="fecharJanelaFilial()"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-split">
-      <div class="modal-sidebar">
+      <div class="modal-sidebar" id="filialSidebar">
         <div class="modal-kpi-card" onclick="filtrarFilialPorIndicador('todos')"><div class="m-lbl">Total de Motoristas</div><div class="m-val" id="mTotalDrivers">0</div></div>
         <div class="modal-kpi-card" onclick="filtrarFilialPorIndicador('dss')"><div class="m-lbl">DSS Realizados (Ano)</div><div class="m-val" id="mWithDss" style="color:#22cc88">0</div></div>
         <div class="modal-kpi-card" onclick="filtrarFilialPorIndicador('reciclagem')"><div class="m-lbl">Reciclagem OK</div><div class="m-val" id="mRecOk" style="color:#16a34a">0</div></div>
@@ -949,10 +960,14 @@ HTML = f"""<!DOCTYPE html>
         <div class="modal-kpi-card" onclick="filtrarFilialPorIndicador('telefoneCorporativo')"><div class="m-lbl">Telefone Corporativo OK</div><div class="m-val" id="mTelCorpOk" style="color:#0e9cc0">0</div></div>
       </div>
       <div class="modal-main">
+        <div class="filial-mobile-backbar" id="filialMobileBackbar">
+          <button class="btn-voltar-mobile" onclick="voltarSidebarFilialMobile()"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
+          <span class="filial-mobile-titulo" id="filialMobileTitulo"></span>
+        </div>
         <div style="padding:10px 14px;border-bottom:1px solid #dde6f4;background:#fff;flex-shrink:0;">
           <input type="text" id="filialSearchInput" placeholder="🔍  Buscar por nome ou CPF…" oninput="filtrarTabelaFilial()" style="width:100%;background:#f4f7fc;border:1.5px solid #c4d0e4;color:#1a2a44;padding:7px 12px;border-radius:6px;font-size:13px;outline:none;">
         </div>
-        <div class="table-container">
+        <div class="table-container" id="filialTableContainer">
           <table class="m-table">
             <thead>
               <tr>
@@ -967,6 +982,7 @@ HTML = f"""<!DOCTYPE html>
             <tbody id="mDriversTableBody"></tbody>
           </table>
         </div>
+        <div class="filial-mobile-list" id="filialMobileList"></div>
       </div>
     </div>
   </div>
@@ -2180,16 +2196,29 @@ function expandirFilial(nomeFilial){{
       </tr>`;
     }});
   }}
+  voltarSidebarFilialMobile();
   document.getElementById('filialModal').style.display = 'flex';
 }}
 
-function fecharJanelaFilial(){{ document.getElementById('filialModal').style.display = 'none'; }}
+function fecharJanelaFilial(){{
+  document.getElementById('filialModal').style.display = 'none';
+  voltarSidebarFilialMobile();
+}}
 function filtrarTabelaFilial(){{
   const q = document.getElementById('filialSearchInput').value.toLowerCase();
   document.querySelectorAll('#mDriversTableBody tr').forEach(tr => {{
     tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
   }});
 }}
+function isMobileView(){{ return window.innerWidth <= 768; }}
+
+const FILIAL_INDICADOR_LABEL = {{
+  todos:'Todos os Motoristas', dss:'DSS Realizados (Ano)', reciclagem:'Reciclagem OK',
+  simulador:'Simulador OK', excesso:'Excesso de Velocidade', multas:'Total de Multas',
+  acidentes:'Total de Acidentes', examePeriodico:'Exame Periódico OK',
+  exameToxicologico:'Exame Toxicológico OK', telefoneCorporativo:'Telefone Corporativo OK'
+}};
+
 function filtrarFilialPorIndicador(tipo){{
   document.querySelectorAll('#mDriversTableBody tr').forEach(tr => {{
     tr.style.display = '';
@@ -2217,6 +2246,55 @@ function filtrarFilialPorIndicador(tipo){{
       tr.style.display = cpfsFiltrados.has(cpf) ? '' : 'none';
     }}
   }});
+
+  // ── Versão mobile: mostra lista de cards com botão Voltar ──
+  renderizarListaMobileFilial(filtrados, FILIAL_INDICADOR_LABEL[tipo] || 'Motoristas');
+  if(isMobileView()){{
+    document.getElementById('filialSidebar').classList.add('mobile-hidden');
+    document.getElementById('filialTableContainer').classList.add('mobile-hidden');
+    document.getElementById('filialMobileBackbar').classList.add('show');
+    document.getElementById('filialMobileList').classList.add('show');
+  }}
+}}
+
+function renderizarListaMobileFilial(lista, titulo){{
+  const tituloEl = document.getElementById('filialMobileTitulo');
+  if(tituloEl) tituloEl.textContent = `${{titulo}} (${{lista.length}})`;
+  const cont = document.getElementById('filialMobileList');
+  if(!cont) return;
+  if(lista.length === 0){{
+    cont.innerHTML = `<div class="empty-state"><i class="fa-solid fa-magnifying-glass"></i><p>Nenhum motorista encontrado.</p></div>`;
+    return;
+  }}
+  cont.innerHTML = lista.map(m => {{
+    const avatar = m.foto ? `<img src="${{m.foto}}" alt="">` : `<i class="fa-solid fa-user-tie"></i>`;
+    const recOk  = reciclagemStatus(m) === 'OK';
+    const simOk  = simuladorStatus(m) === 'OK';
+    return `<div class="driver-mini-card ${{(recOk && simOk) ? 'card-ok' : 'card-pend'}}" onclick="irParaFichaViaFilialMobile('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
+      <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
+      <div class="dmc-cpf">${{m.cpf}}</div>
+      <div class="dmc-badges">
+        <span class="dmc-badge ${{recOk?'ok':'pend'}}"><i class="fa-solid fa-recycle"></i> ${{recOk?'Reciclagem OK':'Reciclagem Pend.'}}</span>
+        <span class="dmc-badge ${{simOk?'ok':'pend'}}"><i class="fa-solid fa-car-side"></i> ${{simOk?'Simulador OK':'Simulador Pend.'}}</span>
+      </div>
+    </div>`;
+  }}).join('');
+}}
+
+function irParaFichaViaFilialMobile(cpf){{
+  fichaOrigemModal = 'filialMobile';
+  abrirFichaMotorista(cpf);
+}}
+
+function voltarSidebarFilialMobile(){{
+  const sb  = document.getElementById('filialSidebar');
+  const tb  = document.getElementById('filialTableContainer');
+  const bar = document.getElementById('filialMobileBackbar');
+  const lst = document.getElementById('filialMobileList');
+  if(sb)  sb.classList.remove('mobile-hidden');
+  if(tb)  tb.classList.remove('mobile-hidden');
+  if(bar) bar.classList.remove('show');
+  if(lst) lst.classList.remove('show');
 }}
 function filtrarTabelaFilial(){{
   const q = document.getElementById('filialSearchInput').value.toLowerCase();
@@ -2637,6 +2715,7 @@ function voltarPaginaAnterior(){{
   const origem = fichaOrigemModal;
   fecharJanelaDriver();
   if(origem === 'kpi'){{ setTimeout(() => document.getElementById('kpiModal').classList.add('show'), 80); }}
+  if(origem === 'filialMobile'){{ setTimeout(() => {{ document.getElementById('filialModal').style.display = 'flex'; }}, 80); }}
 }}
 
 function fecharJanelaDriver(){{
