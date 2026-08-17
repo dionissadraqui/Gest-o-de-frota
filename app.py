@@ -199,8 +199,8 @@ st.markdown("""
   .block-container { padding: 0 !important; max-width: 100% !important; }
   [data-testid="stAppViewContainer"] { padding: 0 !important; }
   [data-testid="stVerticalBlock"] { gap: 0 !important; }
-  iframe { height: 100vh !important; min-height: 100vh !important; height: 100dvh !important; min-height: 100dvh !important; }
-  [data-testid="stIFrame"] { height: 100vh !important; height: 100dvh !important; }
+  iframe { height: 100vh !important; min-height: 100vh !important; }
+  [data-testid="stIFrame"] { height: 100vh !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -234,7 +234,7 @@ HTML = f"""<!DOCTYPE html>
 
 /* ── TELA SPLASH ── */
 #splash-screen{{
-  position:fixed;top:0;left:0;width:100vw;height:100vh;height:100dvh;
+  position:fixed;top:0;left:0;width:100vw;height:100vh;
   z-index:999999;
   display:flex;align-items:center;justify-content:center;
   overflow:hidden;
@@ -370,14 +370,14 @@ HTML = f"""<!DOCTYPE html>
 .toast.show{{display:flex}}
 
 /* ── SPINNER ── */
-.spinner-overlay{{position:fixed;top:0;left:0;width:100vw;height:100vh;height:100dvh;background:rgba(240,244,250,0.75);z-index:88888;display:none;align-items:center;justify-content:center}}
+.spinner-overlay{{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(240,244,250,0.75);z-index:88888;display:none;align-items:center;justify-content:center}}
 .spinner-overlay.show{{display:flex}}
 .spinner{{width:44px;height:44px;border:4px solid #dde6f4;border-top-color:#3b7dd8;border-radius:50%;animation:spin 0.8s linear infinite}}
 @keyframes spin{{to{{transform:rotate(360deg)}}}}
 
 /* ── MODAL FILIAL ── */
-.modal-overlay{{position:fixed;top:0;left:0;width:100vw;height:100vh;height:100dvh;background:rgba(20,40,100,0.45);backdrop-filter:blur(8px);display:none;justify-content:center;align-items:center;z-index:9999}}
-.modal-box{{background:#ffffff;border:1.5px solid #dde6f4;width:100%;max-width:100%;height:100vh;height:100dvh;border-radius:0;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 16px 48px rgba(20,50,120,0.18)}}
+.modal-overlay{{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(20,40,100,0.45);backdrop-filter:blur(8px);display:none;justify-content:center;align-items:center;z-index:9999}}
+.modal-box{{background:#ffffff;border:1.5px solid #dde6f4;width:100%;max-width:100%;height:100vh;border-radius:0;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 16px 48px rgba(20,50,120,0.18)}}
 .modal-header{{display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid #dde6f4;padding-bottom:10px}}
 .modal-title{{font-size:18px;font-weight:800;color:#1a3a6b;text-transform:uppercase;display:flex;align-items:center;gap:8px}}
 .btn-close{{background:#7a1a1a;color:#ffffff;border:1px solid #5c1212;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}}
@@ -495,7 +495,7 @@ HTML = f"""<!DOCTYPE html>
 .kpi:hover{{transform:translateY(-2px);box-shadow:0 6px 20px rgba(20,50,120,0.12)}}
 
 /* ── MODAL KPI ── */
-.kpi-modal-overlay{{position:fixed;top:0;left:0;width:100vw;height:100vh;height:100dvh;background:rgba(20,40,100,0.45);backdrop-filter:blur(10px);display:none;justify-content:stretch;align-items:stretch;z-index:11000;padding:12px;box-sizing:border-box}}
+.kpi-modal-overlay{{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(20,40,100,0.45);backdrop-filter:blur(10px);display:none;justify-content:stretch;align-items:stretch;z-index:11000;padding:12px;box-sizing:border-box}}
 .kpi-modal-overlay.show{{display:flex}}
 .kpi-modal-box{{background:#ffffff;border:1.5px solid #dde6f4;width:100%;height:100%;max-width:none;max-height:none;border-radius:12px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 16px 48px rgba(20,50,120,0.18)}}
 .kpi-modal-head{{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1.5px solid #dde6f4;flex-shrink:0;background:#f8fafd}}
@@ -590,10 +590,6 @@ HTML = f"""<!DOCTYPE html>
   .profile-card-left{{max-width:100%}}
   .meta-grid{{grid-template-columns:repeat(2,1fr)}}
   .dss-matrix-container{{grid-template-columns:repeat(3,1fr)}}
-}}
-
-@media (max-width:900px){{
-  .luft-center{{display:none}}
 }}
 
 @media (max-width:768px){{
@@ -708,7 +704,7 @@ HTML = f"""<!DOCTYPE html>
     <div class="brand-logo"><div class="dot-anim"></div><div class="brand-name">Controle<br><span class="brand-sub">Motoristas</span></div></div>
     <div id="topbarNomeUsuario" style="font-size:26px;font-weight:900;color:#1a4fa0;letter-spacing:-0.5px;"></div>
   </div>
-  <div class="luft-center" style="position:absolute;left:50%;transform:translateX(-50%);">
+  <div style="position:absolute;left:50%;transform:translateX(-50%);">
     <div class="luft-name" style="font-size:32px;">LUFT<span> LOGISTICS</span></div>
   </div>
   <div class="pct-box" style="display:flex;align-items:center;gap:16px;min-width:220px;justify-content:flex-end;">
