@@ -723,8 +723,8 @@ HTML = f"""<!DOCTYPE html>
       <div class="pct-lbl">Regularidade Geral DSS</div>
       <div class="pct-val" id="macroPctDss">—</div>
     </div>
-    <button class="btn-save-master" onclick="salvarTudoNoSheets()">
-      <i class="fa-solid fa-floppy-disk"></i> Salvar
+    <button class="btn-save-master" onclick="atualizarDadosDoSheets()" title="Buscar dados atualizados da planilha">
+      <i class="fa-solid fa-rotate"></i> Atualizar
     </button>
   </div>
 </div>
@@ -2709,6 +2709,112 @@ async function salvarTudoNoSheets(){{
     else toast(res.erro || 'Erro ao salvar.', 'erro');
   }} catch(e){{ toast('Falha de conexão: ' + e.message, 'erro'); }}
   finally{{ mostrarSpinner(false); }}
+}}
+
+// ── Converte as linhas cruas da planilha de volta em objetos de motorista ──
+function linhasParaMotoristas(linhas){{
+  return linhas.filter(row => row && row[0]).map(row => {{
+    let p = 0;
+    const next = () => {{ const v = row[p]; p++; return (v === undefined || v === null) ? '' : v; }};
+    const cpf = String(next()).trim();
+    const nome = String(next()).trim();
+    const filial = String(next()).trim();
+    const telefone = String(next()).trim();
+    const email = String(next()).trim();
+    const foto = String(next()).trim();
+    const reciclagem = String(next()).trim() || 'PENDENTE';
+    const simulador = String(next()).trim() || 'PENDENTE';
+    const excesso = Math.max(0, parseInt(next())||0);
+    const multas = Math.max(0, parseInt(next())||0);
+    const acidentes = Math.max(0, parseInt(next())||0);
+    const obsAcidente = String(next()).trim();
+    const obsMultas = String(next()).trim();
+    const obsGerais = String(next()).trim();
+    const obsReciclagem = String(next()).trim();
+    const obsSimulador = String(next()).trim();
+    const cnh = String(next()).trim();
+    const validadeCnh = String(next()).trim();
+    const admissao = String(next()).trim();
+    const dssAnual = {{}};
+    MESES.forEach(mes => {{
+      const semanas = [];
+      for(let s=0; s<4; s++){{
+        const val = next();
+        semanas.push(val === '1' || val === 1 || val === true || val === 'TRUE');
+      }}
+      dssAnual[mes] = semanas;
+    }});
+    const examePeriodico = String(next()).trim();
+    const exameToxicologico = String(next()).trim();
+    const pontuacaoCnh = Math.max(0, parseInt(next())||0);
+    const vencimentoCnhMopp = String(next()).trim();
+    const entregaUniforme = String(next()).trim() || 'PENDENTE';
+    const telefoneCorporativo = String(next()).trim() || 'NÃO';
+    const numeroLinha = String(next()).trim();
+    const modelo = String(next()).trim();
+    const reciclagemData = String(next()).trim();
+    const reciclagemValidadeMeses = Math.max(0, parseInt(next())||0);
+    const simuladorData = String(next()).trim();
+    const simuladorValidadeMeses = Math.max(0, parseInt(next())||0);
+    const examePeriodicoValidadeMeses = Math.max(0, parseInt(next())||0);
+    const exameToxicologicoValidadeMeses = Math.max(0, parseInt(next())||0);
+    const gestime = String(next()).trim() || 'PENDENTE';
+    const obsGestime = String(next()).trim();
+    const gestimeData = String(next()).trim();
+    const gestimeValidadeMeses = Math.max(0, parseInt(next())||0);
+    return {{
+      cpf, nome, filial, telefone, email, foto,
+      reciclagem, simulador, excesso, multas, acidentes,
+      obsAcidente, obsMultas, obsGerais, obsReciclagem, obsSimulador,
+      cnh, validadeCnh, admissao,
+      examePeriodico, exameToxicologico,
+      pontuacaoCnh, vencimentoCnhMopp, entregaUniforme,
+      telefoneCorporativo, numeroLinha, modelo,
+      reciclagemData, reciclagemValidadeMeses,
+      simuladorData, simuladorValidadeMeses,
+      examePeriodicoValidadeMeses, exameToxicologicoValidadeMeses,
+      gestime, obsGestime, gestimeData, gestimeValidadeMeses,
+      dssAnual
+    }};
+  }});
+}}
+
+// ── Botão "Atualizar": busca os dados direto do Sheets, sem salvar nada ──
+async function atualizarDadosDoSheets(){{
+  mostrarSpinner(true);
+  try{{
+    const auth  = `Bearer ${{ACCESS_TOKEN}}`;
+    const range = `${{SHEET_NAME_JS}}!A2:ZZ`;
+    const resp = await fetch(
+      `${{SHEETS_BASE}}/${{SHEET_ID_JS}}/values/${{encodeURIComponent(range)}}`,
+      {{ headers: {{ 'Authorization': auth }} }}
+    );
+    if(!resp.ok){{
+      const err = await resp.text();
+      if(resp.status === 401 || err.includes('ACCESS_TOKEN_EXPIRED')){{
+        _sessaoExpirouRecarregar();
+        return;
+      }}
+      toast('Erro ao atualizar dados: ' + err, 'erro');
+      return;
+    }}
+    const data   = await resp.json();
+    const linhas = data.values || [];
+    motoristasDB = linhasParaMotoristas(linhas);
+    atualizarDashboardCompleto();
+    if(motoristaEmEdicaoCpf && document.getElementById('driverModal').style.display === 'flex'){{
+      const aindaExiste = motoristasDB.some(m => m.cpf === motoristaEmEdicaoCpf);
+      if(aindaExiste) abrirFichaMotorista(motoristaEmEdicaoCpf);
+    }}
+    if(filialModalAtiva && document.getElementById('filialModal').style.display === 'flex'){{
+      expandirFilial(filialModalAtiva);
+    }}
+    toast('Dados atualizados com sucesso a partir do Google Sheets!');
+  }} catch(e){{
+    toast('Falha de conexão ao atualizar: ' + e.message, 'erro');
+  }} finally{{
+    mostrarSpinner(false);
+  }}
 }}
 
 function voltarPaginaAnterior(){{
