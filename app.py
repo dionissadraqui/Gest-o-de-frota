@@ -55,6 +55,7 @@ COLUNAS += [
     "simulador_data", "simulador_validade_meses",
     "exame_periodico_validade_meses", "exame_toxicologico_validade_meses",
     "gestime", "obsGestime", "gestime_data", "gestime_validade_meses",
+    "afastado", "obsAfastado",
 ]
 
 SCOPES = [
@@ -127,6 +128,8 @@ def ler_todos_motoristas():
             "obsGestime":     str(row.get("obsGestime", "")).strip(),
             "gestimeData":    str(row.get("gestime_data", "")).strip(),
             "gestimeValidadeMeses": max(0, int(row.get("gestime_validade_meses", 0) or 0)),
+            "afastado":       str(row.get("afastado", "NÃO")).strip() or "NÃO",
+            "obsAfastado":    str(row.get("obsAfastado", "")).strip(),
             "dssAnual":      dss_anual,
         })
     return motoristas
@@ -160,6 +163,7 @@ def salvar_todos_motoristas(lista):
             m.get("examePeriodicoValidadeMeses", 0), m.get("exameToxicologicoValidadeMeses", 0),
             m.get("gestime", "PENDENTE"), m.get("obsGestime", ""),
             m.get("gestimeData", ""), m.get("gestimeValidadeMeses", 0),
+            m.get("afastado", "NÃO"), m.get("obsAfastado", ""),
         ]
         all_rows.append(row_data)
     existing = ws.get_all_values()
@@ -325,7 +329,7 @@ HTML = f"""<!DOCTYPE html>
 .kpi.blue{{background:#f0f6ff;border-color:#3b7dd8;box-shadow:0 0 10px rgba(59,125,216,0.35),inset 0 0 6px rgba(59,125,216,0.06)}}
 .kpi.teal{{background:#f0fbfd;border-color:#0e9cc0;box-shadow:0 0 10px rgba(14,156,192,0.35),inset 0 0 6px rgba(14,156,192,0.06)}}
 .kpi.purple{{background:#f5f0ff;border-color:#7c3aed;box-shadow:0 0 10px rgba(124,58,237,0.35),inset 0 0 6px rgba(124,58,237,0.06)}}
-.kpi-lbl{{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#5a6e8a;margin-bottom:6px;font-weight:700}}
+.kpi-lbl{{font-size:14px;letter-spacing:1.5px;text-transform:uppercase;color:#5a6e8a;margin-bottom:6px;font-weight:700}}
 .kpi-val{{font-size:52px;font-weight:900;line-height:1}}
 .kpi.red .kpi-val{{color:#dc2626}}
 .kpi.green .kpi-val{{color:#16a34a}}
@@ -333,7 +337,7 @@ HTML = f"""<!DOCTYPE html>
 .kpi.blue .kpi-val{{color:#1a4fa0}}
 .kpi.teal .kpi-val{{color:#0a7a9a}}
 .kpi.purple .kpi-val{{color:#6d28d9}}
-.kpi-sub{{font-size:12px;color:#3b7dd8;margin-top:8px;text-transform:uppercase;letter-spacing:1px;font-weight:600}}
+.kpi-sub{{font-size:14px;color:#3b7dd8;margin-top:8px;text-transform:uppercase;letter-spacing:1px;font-weight:600}}
 
 /* ── PAINEL / SEÇÕES ── */
 .sec-title{{font-size:14px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#1a4fa0;margin-bottom:8px;display:flex;align-items:center;gap:6px}}
@@ -386,7 +390,7 @@ HTML = f"""<!DOCTYPE html>
 .modal-sidebar{{display:flex;flex-direction:column;gap:8px;overflow-y:auto;padding-right:4px}}
 .modal-kpi-card{{background:#f8fafd;border:1.5px solid #dde6f4;padding:14px;border-radius:8px;cursor:pointer;transition:border-color .15s,box-shadow .15s}}
 .modal-kpi-card:hover{{border-color:#3b7dd8;box-shadow:0 2px 12px rgba(59,125,216,0.18)}}
-.m-lbl{{font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:1px}}
+.m-lbl{{font-size:14px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:1px}}
 .m-val{{font-size:36px;font-weight:900;color:#1a3a6b}}
 .modal-main{{background:#f8fafd;border:1.5px solid #dde6f4;border-radius:8px;display:flex;flex-direction:column;overflow:hidden}}
 .table-container{{flex:1;overflow-y:auto}}
@@ -396,14 +400,14 @@ HTML = f"""<!DOCTYPE html>
 .filial-mobile-backbar{{display:none;align-items:center;gap:10px;padding:10px 12px 8px;border-bottom:1px solid #eef3fb;background:#fff;flex-shrink:0}}
 .btn-voltar-mobile{{background:transparent;color:#3b7dd8;border:1.5px solid #3b7dd8;padding:6px 14px;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:6px;flex-shrink:0}}
 .btn-voltar-mobile:hover{{background:#3b7dd8;color:#fff}}
-.filial-mobile-titulo{{font-size:12px;font-weight:800;color:#1a3a6b;text-transform:uppercase;letter-spacing:.5px}}
+.filial-mobile-titulo{{font-size:14px;font-weight:800;color:#1a3a6b;text-transform:uppercase;letter-spacing:.5px}}
 .m-table{{width:100%;border-collapse:collapse;text-align:left;font-size:14px}}
 .m-table th{{background:#eef3fb;color:#1a4fa0;font-size:12px;font-weight:800;text-transform:uppercase;padding:14px 16px;border-bottom:1.5px solid #dde6f4;position:sticky;top:0}}
 .m-table td{{padding:14px 16px;border-bottom:1px solid #eef3fb;color:#2a3a55}}
 .driver-row{{cursor:pointer}}
 .driver-row:hover{{background:#eef3fb!important}}
 .m-name{{font-weight:700;color:#1a3a6b;font-size:15px}}
-.m-cpf{{font-family:monospace;font-size:13px;color:#5a6e8a}}
+.m-cpf{{font-family:monospace;font-size:15px;color:#5a6e8a}}
 .m-badge{{display:inline-block;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:700}}
 .m-badge.ok{{background:rgba(22,163,74,0.1);color:#16a34a;border:1px solid rgba(22,163,74,0.25)}}
 .m-badge.pend{{background:rgba(217,119,6,0.1);color:#d97706;border:1px solid rgba(217,119,6,0.25)}}
@@ -423,7 +427,7 @@ HTML = f"""<!DOCTYPE html>
 .admin-panel-body.open{{max-height:200px;padding:0 16px 16px}}
 .form-grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:10px}}
 .form-group{{display:flex;flex-direction:column;gap:4px}}
-.form-group label{{font-size:13px;color:#5a6e8a;text-transform:uppercase;font-weight:700}}
+.form-group label{{font-size:15px;color:#5a6e8a;text-transform:uppercase;font-weight:700}}
 .form-group input,.form-group select{{background:#f4f7fc;border:1px solid #c4d0e4;color:#1a2a44;padding:8px 12px;border-radius:4px;font-size:14px;outline:none}}
 .form-group input:focus,.form-group select:focus{{border-color:#3b7dd8;background:#fff}}
 .btn-add{{background:#16a34a;color:#fff;border:none;font-weight:700;text-transform:uppercase;cursor:pointer;padding:0 16px;border-radius:4px;height:32px;margin-top:17px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px}}
@@ -438,7 +442,7 @@ HTML = f"""<!DOCTYPE html>
 .info-section-box:hover{{box-shadow:0 4px 16px rgba(20,50,120,0.13)}}
 .card-stripe{{height:4px;width:100%;border-radius:0;display:block}}
 .card-body{{padding:14px 16px 16px}}
-.info-block-title{{font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid #e8eef8;padding-bottom:6px;margin-bottom:12px;display:flex;align-items:center;gap:7px}}
+.info-block-title{{font-size:17px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid #e8eef8;padding-bottom:6px;margin-bottom:12px;display:flex;align-items:center;gap:7px}}
 .card-condutor{{border-color:#3b7dd8}}
 .card-condutor .card-stripe{{background:linear-gradient(90deg,#1a4fa0,#3b7dd8)}}
 .card-condutor .info-block-title{{color:#1a4fa0}}
@@ -476,20 +480,20 @@ HTML = f"""<!DOCTYPE html>
 .card-highlight-dss .card-stripe{{background:linear-gradient(90deg,#15803d,#22c55e)!important}}
 .meta-grid{{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}}
 .meta-item{{display:flex;flex-direction:column;gap:3px}}
-.meta-item label{{font-size:13px;color:#5a6e8a;text-transform:uppercase;font-weight:700}}
-.meta-item input,.meta-item select{{background:#f4f7fc;border:1px solid #c4d0e4;color:#1a2a44;padding:8px 10px;border-radius:5px;font-size:16px;outline:none;transition:border-color .15s,background .15s,box-shadow .15s}}
+.meta-item label{{font-size:15px;color:#5a6e8a;text-transform:uppercase;font-weight:700}}
+.meta-item input,.meta-item select{{background:#f4f7fc;border:1px solid #c4d0e4;color:#1a2a44;padding:9px 10px;border-radius:5px;font-size:17px;outline:none;transition:border-color .15s,background .15s,box-shadow .15s}}
 .meta-item input:focus,.meta-item select:focus{{border-color:#3b7dd8;background:#ffffff;box-shadow:0 0 0 2px rgba(59,125,216,.12)}}
 .card-contato .meta-item input:focus,.card-contato .meta-item select:focus{{border-color:#0e9cc0;box-shadow:0 0 0 2px rgba(14,156,192,.12)}}
 .card-docs .meta-item input:focus,.card-docs .meta-item select:focus{{border-color:#5a5fe8;box-shadow:0 0 0 2px rgba(90,95,232,.12)}}
 .card-seguranca .meta-item input:focus,.card-seguranca .meta-item select:focus{{border-color:#d97706;box-shadow:0 0 0 2px rgba(217,119,6,.12)}}
 .card-dss .meta-item input:focus,.card-dss .meta-item select:focus{{border-color:#16a34a;box-shadow:0 0 0 2px rgba(22,163,74,.12)}}
-.obs-input{{background:#f9fafd!important;border:1px solid #d0daea!important;color:#3a4a62!important;font-size:11px!important;font-style:italic}}
+.obs-input{{background:#f9fafd!important;border:1px solid #d0daea!important;color:#3a4a62!important;font-size:14px!important;font-style:italic;padding:8px 10px!important}}
 .campo-valido{{border-color:#16a34a!important;background:#f0fef4!important;box-shadow:0 0 0 1px rgba(22,163,74,.25)!important}}
 .dss-matrix-container{{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}}
 .month-dss-box{{background:#f0faf4;border:1px solid #bbddc8;border-radius:7px;padding:7px}}
-.month-name-lbl{{font-size:12px;font-weight:800;color:#15803d;text-transform:uppercase;margin-bottom:4px;text-align:center;border-bottom:1px solid #c8e8d4;padding-bottom:3px}}
+.month-name-lbl{{font-size:14px;font-weight:800;color:#15803d;text-transform:uppercase;margin-bottom:4px;text-align:center;border-bottom:1px solid #c8e8d4;padding-bottom:3px}}
 .weeks-flex{{display:flex;justify-content:space-between;gap:2px}}
-.week-checkbox-label{{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:#2d6a4a;cursor:pointer;flex:1;font-weight:600}}
+.week-checkbox-label{{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:14px;color:#2d6a4a;cursor:pointer;flex:1;font-weight:600}}
 .week-checkbox-label input{{cursor:pointer;accent-color:#16a34a}}
 .btn-delete-driver{{background:#fff0f0;color:#cc2222;border:1px solid #e8aaaa;padding:8px;border-radius:7px;font-size:10px;font-weight:700;text-transform:uppercase;cursor:pointer;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:6px;transition:.18s;width:100%}}
 .btn-delete-driver:hover{{background:#cc2222;color:#fff;border-color:#cc2222}}
@@ -521,8 +525,8 @@ HTML = f"""<!DOCTYPE html>
 .mes-btn.ativo{{background:#16a34a;border-color:#16a34a;color:#fff}}
 .dmc-semanas{{display:flex;gap:4px;margin-top:3px}}
 .dmc-sem{{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1}}
-.dmc-sem-lbl{{font-size:11px;color:#8899aa;font-weight:700;text-transform:uppercase}}
-.dmc-sem-dot{{width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900}}
+.dmc-sem-lbl{{font-size:13px;color:#8899aa;font-weight:700;text-transform:uppercase}}
+.dmc-sem-dot{{width:28px;height:28px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900}}
 .dmc-sem-dot.ok{{background:rgba(22,163,74,0.15);color:#16a34a;border:1px solid rgba(22,163,74,0.35)}}
 .dmc-sem-dot.pend{{background:rgba(220,38,38,0.08);color:#dc2626;border:1px solid rgba(220,38,38,0.2)}}
 
@@ -531,7 +535,7 @@ HTML = f"""<!DOCTYPE html>
 .categoria-glass-panel:hover{{transform:translateY(-3px);box-shadow:0 10px 30px rgba(20,50,120,0.16);border-color:#3b7dd8}}
 .cgp-header{{display:flex;align-items:center;gap:10px}}
 .cgp-icon{{width:38px;height:38px;border-radius:10px;background:rgba(22,163,74,0.12);color:#16a34a;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}}
-.cgp-titulo{{font-size:15px;font-weight:800;color:#1a3a6b;letter-spacing:.3px}}
+.cgp-titulo{{font-size:17px;font-weight:800;color:#1a3a6b;letter-spacing:.3px}}
 .cgp-stats{{display:grid;grid-template-columns:1fr 1fr;gap:8px}}
 .cgp-stat{{border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s;border:1.5px solid}}
 .cgp-stat:hover{{transform:translateY(-2px)}}
@@ -540,7 +544,7 @@ HTML = f"""<!DOCTYPE html>
 .cgp-stat-val{{font-size:26px;font-weight:900;line-height:1}}
 .cgp-stat.ok .cgp-stat-val{{color:#16a34a}}
 .cgp-stat.pend .cgp-stat-val{{color:#d97706}}
-.cgp-stat-lbl{{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:4px}}
+.cgp-stat-lbl{{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:4px}}
 .cgp-stat.ok .cgp-stat-lbl{{color:#16a34a}}
 .cgp-stat.pend .cgp-stat-lbl{{color:#d97706}}
 .driver-mini-card{{background:#ffffff;border:1.5px solid #dde6f4;border-radius:10px;padding:14px;cursor:pointer;transition:border-color .15s,transform .15s,box-shadow .15s;display:flex;flex-direction:column;gap:10px;box-shadow:0 2px 6px rgba(20,50,120,0.06)}}
@@ -550,17 +554,17 @@ HTML = f"""<!DOCTYPE html>
 .dmc-avatar{{width:48px;height:48px;border-radius:50%;background:#eef3fb;border:2px solid #c4d0e4;display:flex;align-items:center;justify-content:center;font-size:20px;color:#3b7dd8;flex-shrink:0;overflow:hidden}}
 .dmc-avatar img{{width:100%;height:100%;object-fit:cover;border-radius:50%}}
 .dmc-info{{flex:1;min-width:0}}
-.dmc-nome{{font-size:16px;font-weight:800;color:#1a3a6b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.2px;margin-bottom:3px}}
-.dmc-filial{{font-size:13px;color:#3b7dd8;text-transform:uppercase;font-weight:700;letter-spacing:.5px;margin-bottom:2px}}
-.dmc-cpf{{font-size:14px;color:#5a6e8a;font-family:monospace;letter-spacing:.8px;font-weight:600}}
+.dmc-nome{{font-size:18px;font-weight:800;color:#1a3a6b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.2px;margin-bottom:3px}}
+.dmc-filial{{font-size:15px;color:#3b7dd8;text-transform:uppercase;font-weight:700;letter-spacing:.5px;margin-bottom:2px}}
+.dmc-cpf{{font-size:15px;color:#5a6e8a;font-family:monospace;letter-spacing:.8px;font-weight:600}}
 .dmc-badges{{display:flex;flex-wrap:wrap;gap:5px}}
-.dmc-badge{{padding:5px 12px;border-radius:4px;font-size:13px;font-weight:800;letter-spacing:.3px;display:flex;align-items:center;gap:4px}}
+.dmc-badge{{padding:6px 14px;border-radius:4px;font-size:15px;font-weight:800;letter-spacing:.3px;display:flex;align-items:center;gap:4px}}
 .dmc-badge.ok{{background:rgba(22,163,74,0.1);color:#16a34a;border:1px solid rgba(22,163,74,0.3)}}
 .dmc-badge.pend{{background:rgba(217,119,6,0.1);color:#d97706;border:1px solid rgba(217,119,6,0.3)}}
 .dmc-infracao{{display:flex;align-items:center;gap:10px;background:#f4f7fc;border-radius:8px;padding:10px 12px;border:1.5px solid #dde6f4}}
 .dmc-inf-icon{{font-size:20px;flex-shrink:0}}
 .dmc-inf-body{{flex:1;min-width:0}}
-.dmc-inf-label{{font-size:9px;color:#5a6e8a;text-transform:uppercase;letter-spacing:1px;font-weight:700}}
+.dmc-inf-label{{font-size:12px;color:#5a6e8a;text-transform:uppercase;letter-spacing:1px;font-weight:700}}
 .dmc-inf-val{{font-size:28px;font-weight:900;line-height:1;margin-top:1px}}
 .dmc-inf-val.vel{{color:#dc2626}}.dmc-inf-val.mul{{color:#d97706}}.dmc-inf-val.acid{{color:#be185d}}
 
@@ -573,14 +577,14 @@ HTML = f"""<!DOCTYPE html>
 .dmc-pront-grid{{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px;background:#f8fafd;border:1px solid #eef3fb;border-radius:8px;padding:10px 12px}}
 .dmc-pront-item{{display:flex;flex-direction:column;gap:2px;min-width:0}}
 .dmc-pront-item.full{{grid-column:1/-1}}
-.dmc-pront-lbl{{font-size:9px;color:#8899aa;text-transform:uppercase;letter-spacing:.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
-.dmc-pront-val{{font-size:13px;font-weight:700;color:#1a3a6b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+.dmc-pront-lbl{{font-size:11px;color:#8899aa;text-transform:uppercase;letter-spacing:.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;min-width:0}}
+.dmc-pront-val{{font-size:15px;font-weight:700;color:#1a3a6b;white-space:nowrap;flex-shrink:0}}
 .dmc-status-row{{display:grid;grid-template-columns:1fr 1fr;gap:8px}}
 .dmc-status-pill{{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 6px;border-radius:8px;border:1.5px solid}}
 .dmc-status-pill.ok{{background:rgba(22,163,74,0.08);border-color:rgba(22,163,74,0.35)}}
 .dmc-status-pill.pend{{background:rgba(217,119,6,0.08);border-color:rgba(217,119,6,0.35)}}
-.dmc-status-pill-lbl{{font-size:9px;text-transform:uppercase;letter-spacing:.5px;font-weight:700;color:#5a6e8a}}
-.dmc-status-pill-val{{font-size:13px;font-weight:800}}
+.dmc-status-pill-lbl{{font-size:11px;text-transform:uppercase;letter-spacing:.5px;font-weight:700;color:#5a6e8a}}
+.dmc-status-pill-val{{font-size:15px;font-weight:800}}
 .dmc-status-pill.ok .dmc-status-pill-val{{color:#16a34a}}
 .dmc-status-pill.pend .dmc-status-pill-val{{color:#d97706}}
 .kpi-empty{{grid-column:1/-1;text-align:center;padding:40px;color:#9aaabb;font-size:12px}}
@@ -842,6 +846,18 @@ HTML = f"""<!DOCTYPE html>
       <div class="kpi-sub">Exames &amp; Complementares</div>
     </div>
 
+    <div class="kpi red" onclick="abrirKpiModal('afastados')" title="Ver motoristas afastados">
+      <div class="kpi-lbl">Motoristas Afastados</div>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;">
+        <div class="kpi-val" id="kpiAfastados">—</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
+          <div style="font-size:8px;color:#dc2626;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">do total</div>
+          <div id="kpiAfastadosPct" style="font-size:17px;font-weight:900;color:#dc2626;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(255,68,68,0.5);">—</div>
+        </div>
+      </div>
+      <div class="kpi-sub">Afastado = SIM</div>
+    </div>
+
     <div class="kpi amber" onclick="abrirVencimentoMenu('alerta')" title="Ver categorias com vencimento em até 30 dias" style="background:#fefce8;border-color:#eab308;box-shadow:0 0 10px rgba(234,179,8,0.35),inset 0 0 6px rgba(234,179,8,0.06);">
       <div class="kpi-lbl" style="color:#a16207;">Alertas de Vencimento</div>
       <div class="kpi-val" style="color:#eab308;font-size:34px;">ALERTA</div>
@@ -1064,7 +1080,8 @@ function motoristasParaLinhas(lista){{
       m.simuladorData||'', m.simuladorValidadeMeses||0,
       m.examePeriodicoValidadeMeses||0, m.exameToxicologicoValidadeMeses||0,
       m.gestime||'PENDENTE', m.obsGestime||'',
-      m.gestimeData||'', m.gestimeValidadeMeses||0
+      m.gestimeData||'', m.gestimeValidadeMeses||0,
+      m.afastado||'NÃO', m.obsAfastado||''
     );
     return row;
   }});
@@ -1183,6 +1200,7 @@ const KPI_CONFIG = {{
   simuladorTodos:  {{ label:'Simulador SEST SENAT — Status Geral', icon:'fa-car-side',    cor:'#16a34a', bg:'rgba(22,163,74,0.15)', filtro: m => true }},
   gestimeTodos:    {{ label:'Gestime — Status Geral',          icon:'fa-clipboard-check', cor:'#16a34a', bg:'rgba(22,163,74,0.15)', filtro: m => true }},
   telCorp:  {{ label:'Celulares Corporativos',      icon:'fa-mobile-screen-button', cor:'#0eb8e0', bg:'rgba(14,156,192,0.15)', filtro: m => m.telefoneCorporativo === 'SIM' }},
+  afastados:{{ label:'Motoristas Afastados',        icon:'fa-user-slash',        cor:'#dc2626', bg:'rgba(220,38,38,0.15)',  filtro: m => m.afastado === 'SIM' }},
   prontuario:{{ label:'Prontuário — Exames & Complementares', icon:'fa-file-medical', cor:'#a78bfa', bg:'rgba(124,58,237,0.15)', filtro: m => true }},
 }};
 
@@ -1458,6 +1476,7 @@ function renderizarCardsKpi(lista){{
   const isAcidentes  = kpiTipoAtual === 'acidentes';
   const isInfracao   = isExcesso || isMultas || isAcidentes;
   const isTelCorp    = kpiTipoAtual === 'telCorp';
+  const isAfastados  = kpiTipoAtual === 'afastados';
   const isProntuario = kpiTipoAtual === 'prontuario';
   const isReciclagemOk = kpiTipoAtual === 'reciclagemOk';
   const isReciclagemPend = kpiTipoAtual === 'reciclagemPend';
@@ -1483,6 +1502,14 @@ function renderizarCardsKpi(lista){{
         <div class="dmc-badges"><span class="dmc-badge ok"><i class="fa-solid fa-mobile"></i> ${{m.modelo || 'Modelo não informado'}}</span></div>
       </div>`;
     }}
+    if(isAfastados){{
+      return `<div class="driver-mini-card card-pend" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
+        <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
+        <div class="dmc-cpf">${{m.cpf}}</div>
+        <div class="dmc-badges"><span class="dmc-badge pend"><i class="fa-solid fa-user-slash"></i> Afastado</span></div>
+        ${{m.obsAfastado ? `<div style="font-size:14px;color:#5a6e8a;font-style:italic;margin-top:4px;">${{m.obsAfastado}}</div>` : ''}}
+      </div>`;
+    }}
     if(isProntuario){{
       const exPerOk = exameOk(m.examePeriodico, m.examePeriodicoValidadeMeses);
       const exToxOk = exameOk(m.exameToxicologico, m.exameToxicologicoValidadeMeses);
@@ -1491,6 +1518,7 @@ function renderizarCardsKpi(lista){{
       const recOk   = reciclagemStatus(m) === 'OK';
       const simOk   = simuladorStatus(m) === 'OK';
       const uniOk   = m.entregaUniforme === 'OK';
+      const afastadoSim = m.afastado === 'SIM';
       const svCnhK  = statusVencimentoData(m.validadeCnh);
       const svMoppK = statusVencimentoData(m.vencimentoCnhMopp);
       const fmtData = d => d ? new Date(d+'T00:00:00').toLocaleDateString('pt-BR') : 'PENDENTE';
@@ -1501,15 +1529,20 @@ function renderizarCardsKpi(lista){{
           <div class="dmc-filial">${{m.filial||'—'}}</div>
           <div class="dmc-cpf">${{m.cpf}}</div>
         </div>
-        <div class="dmc-pront-grid">
-          <div class="dmc-pront-item"><span class="dmc-pront-lbl">Exame Periódico</span><span class="dmc-pront-val" style="color:${{exPerOk?'#16a34a':'#dc2626'}}">${{fmtData(m.examePeriodico)}}</span></div>
-          <div class="dmc-pront-item"><span class="dmc-pront-lbl">Venc. Periódico</span><span class="dmc-pront-val" style="color:${{svExPerK.cor}}">${{svExPerK.label}}</span></div>
-          <div class="dmc-pront-item"><span class="dmc-pront-lbl">Exame Toxicológico</span><span class="dmc-pront-val" style="color:${{exToxOk?'#16a34a':'#dc2626'}}">${{fmtData(m.exameToxicologico)}}</span></div>
-          <div class="dmc-pront-item"><span class="dmc-pront-lbl">Venc. Toxicológico</span><span class="dmc-pront-val" style="color:${{svExToxK.cor}}">${{svExToxK.label}}</span></div>
-          <div class="dmc-pront-item"><span class="dmc-pront-lbl">Validade CNH</span><span class="dmc-pront-val" style="color:${{svCnhK.cor}}">${{svCnhK.label}}</span></div>
-          <div class="dmc-pront-item"><span class="dmc-pront-lbl">Validade MOPP</span><span class="dmc-pront-val" style="color:${{svMoppK.cor}}">${{svMoppK.label}}</span></div>
-          <div class="dmc-pront-item"><span class="dmc-pront-lbl">Pontuação CNH</span><span class="dmc-pront-val">${{m.pontuacaoCnh||0}} pts</span></div>
-          <div class="dmc-pront-item full"><span class="dmc-pront-lbl">Entrega de Uniforme</span><span class="dmc-pront-val" style="color:${{uniOk?'#16a34a':'#dc2626'}}">${{m.entregaUniforme||'PENDENTE'}}</span></div>
+        <div class="dmc-pront-grid" style="background:none;border:none;padding:0;gap:8px;">
+          <div class="dmc-pront-item full" style="background:rgba(255,255,255,0.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(196,208,228,0.6);border-radius:8px;padding:8px 10px;box-shadow:0 2px 6px rgba(20,50,120,0.05);gap:4px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;white-space:nowrap;"><span class="dmc-pront-lbl">Exame Periódico</span><span class="dmc-pront-val" style="color:${{exPerOk?'#16a34a':'#dc2626'}};white-space:nowrap;">${{fmtData(m.examePeriodico)}}</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px dashed rgba(196,208,228,0.6);padding-top:4px;white-space:nowrap;"><span class="dmc-pront-lbl">Venc. Periódico</span><span class="dmc-pront-val" style="color:${{svExPerK.cor}};white-space:nowrap;">${{svExPerK.venc ? svExPerK.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span></div>
+          </div>
+          <div class="dmc-pront-item full" style="background:rgba(255,255,255,0.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(196,208,228,0.6);border-radius:8px;padding:8px 10px;box-shadow:0 2px 6px rgba(20,50,120,0.05);gap:4px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;white-space:nowrap;"><span class="dmc-pront-lbl">Exame Toxicológico</span><span class="dmc-pront-val" style="color:${{exToxOk?'#16a34a':'#dc2626'}};white-space:nowrap;">${{fmtData(m.exameToxicologico)}}</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px dashed rgba(196,208,228,0.6);padding-top:4px;white-space:nowrap;"><span class="dmc-pront-lbl">Venc. Toxicológico</span><span class="dmc-pront-val" style="color:${{svExToxK.cor}};white-space:nowrap;">${{svExToxK.venc ? svExToxK.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span></div>
+          </div>
+          <div class="dmc-pront-item full" style="flex-direction:row;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(196,208,228,0.6);border-radius:8px;padding:8px 10px;box-shadow:0 2px 6px rgba(20,50,120,0.05);"><span class="dmc-pront-lbl">Validade CNH</span><span class="dmc-pront-val" style="color:${{svCnhK.cor}}">${{fmtData(m.validadeCnh)}}</span></div>
+          <div class="dmc-pront-item full" style="flex-direction:row;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(196,208,228,0.6);border-radius:8px;padding:8px 10px;box-shadow:0 2px 6px rgba(20,50,120,0.05);"><span class="dmc-pront-lbl">Validade MOPP</span><span class="dmc-pront-val" style="color:${{svMoppK.cor}}">${{fmtData(m.vencimentoCnhMopp)}}</span></div>
+          <div class="dmc-pront-item" style="background:rgba(255,255,255,0.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(196,208,228,0.6);border-radius:8px;padding:8px 10px;box-shadow:0 2px 6px rgba(20,50,120,0.05);"><span class="dmc-pront-lbl">Pontuação CNH</span><span class="dmc-pront-val">${{m.pontuacaoCnh||0}} pts</span></div>
+          <div class="dmc-pront-item full" style="background:rgba(255,255,255,0.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(196,208,228,0.6);border-radius:8px;padding:8px 10px;box-shadow:0 2px 6px rgba(20,50,120,0.05);"><span class="dmc-pront-lbl">Entrega de Uniforme</span><span class="dmc-pront-val" style="color:${{uniOk?'#16a34a':'#dc2626'}}">${{m.entregaUniforme||'PENDENTE'}}</span></div>
+          <div class="dmc-pront-item full" style="background:rgba(255,255,255,0.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(196,208,228,0.6);border-radius:8px;padding:8px 10px;box-shadow:0 2px 6px rgba(20,50,120,0.05);"><span class="dmc-pront-lbl">Afastado</span><span class="dmc-pront-val" style="color:${{afastadoSim?'#dc2626':'#16a34a'}}">${{m.afastado||'NÃO'}}${{afastadoSim && m.obsAfastado ? ' — ' + m.obsAfastado : ''}}</span></div>
         </div>
         <div class="dmc-status-row">
           <div class="dmc-status-pill ${{recOk?'ok':'pend'}}">
@@ -1529,7 +1562,7 @@ function renderizarCardsKpi(lista){{
         <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
         <div class="dmc-cpf">${{m.cpf}}</div>
         <div class="dmc-badges"><span class="dmc-badge ok"><i class="fa-solid fa-recycle"></i> Reciclagem OK</span></div>
-        <div style="font-size:11px;font-weight:700;color:${{svR.cor}}">${{svR.label}}</div>
+        <div style="font-size:13px;font-weight:700;color:${{svR.cor}}">${{svR.label}}</div>
       </div>`;
     }}
     if(isReciclagemPend){{
@@ -1538,7 +1571,7 @@ function renderizarCardsKpi(lista){{
         <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
         <div class="dmc-cpf">${{m.cpf}}</div>
         <div class="dmc-badges"><span class="dmc-badge pend"><i class="fa-solid fa-clock"></i> Reciclagem Pendente</span></div>
-        <div style="font-size:11px;font-weight:700;color:${{svR.cor}}">${{svR.label}}</div>
+        <div style="font-size:13px;font-weight:700;color:${{svR.cor}}">${{svR.label}}</div>
       </div>`;
     }}
     if(isSimuladorOk){{
@@ -1547,7 +1580,7 @@ function renderizarCardsKpi(lista){{
         <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
         <div class="dmc-cpf">${{m.cpf}}</div>
         <div class="dmc-badges"><span class="dmc-badge ok"><i class="fa-solid fa-car-side"></i> Simulador OK</span></div>
-        <div style="font-size:11px;font-weight:700;color:${{svS.cor}}">${{svS.label}}</div>
+        <div style="font-size:13px;font-weight:700;color:${{svS.cor}}">${{svS.label}}</div>
       </div>`;
     }}
     if(isSimuladorPend){{
@@ -1556,7 +1589,7 @@ function renderizarCardsKpi(lista){{
         <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
         <div class="dmc-cpf">${{m.cpf}}</div>
         <div class="dmc-badges"><span class="dmc-badge pend"><i class="fa-solid fa-clock"></i> Simulador Pendente</span></div>
-        <div style="font-size:11px;font-weight:700;color:${{svS.cor}}">${{svS.label}}</div>
+        <div style="font-size:13px;font-weight:700;color:${{svS.cor}}">${{svS.label}}</div>
       </div>`;
     }}
     if(isGestimeOk){{
@@ -1565,7 +1598,7 @@ function renderizarCardsKpi(lista){{
         <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
         <div class="dmc-cpf">${{m.cpf}}</div>
         <div class="dmc-badges"><span class="dmc-badge ok"><i class="fa-solid fa-clipboard-check"></i> Gestime OK</span></div>
-        <div style="font-size:11px;font-weight:700;color:${{svG.cor}}">${{svG.label}}</div>
+        <div style="font-size:13px;font-weight:700;color:${{svG.cor}}">${{svG.label}}</div>
       </div>`;
     }}
     if(isGestimePend){{
@@ -1574,7 +1607,7 @@ function renderizarCardsKpi(lista){{
         <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
         <div class="dmc-cpf">${{m.cpf}}</div>
         <div class="dmc-badges"><span class="dmc-badge pend"><i class="fa-solid fa-clock"></i> Gestime Pendente</span></div>
-        <div style="font-size:11px;font-weight:700;color:${{svG.cor}}">${{svG.label}}</div>
+        <div style="font-size:13px;font-weight:700;color:${{svG.cor}}">${{svG.label}}</div>
       </div>`;
     }}
     if(isReciclagemTodos){{
@@ -1584,7 +1617,7 @@ function renderizarCardsKpi(lista){{
         <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
         <div class="dmc-cpf">${{m.cpf}}</div>
         <div class="dmc-badges"><span class="dmc-badge ${{ok?'ok':'pend'}}"><i class="fa-solid ${{ok?'fa-recycle':'fa-clock'}}"></i> Reciclagem ${{ok?'OK':'Pendente'}}</span></div>
-        <div style="font-size:11px;font-weight:700;color:${{svR.cor}}">${{svR.label}}</div>
+        <div style="font-size:13px;font-weight:700;color:${{svR.cor}}">${{svR.label}}</div>
       </div>`;
     }}
     if(isSimuladorTodos){{
@@ -1594,7 +1627,7 @@ function renderizarCardsKpi(lista){{
         <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
         <div class="dmc-cpf">${{m.cpf}}</div>
         <div class="dmc-badges"><span class="dmc-badge ${{ok?'ok':'pend'}}"><i class="fa-solid ${{ok?'fa-car-side':'fa-clock'}}"></i> Simulador ${{ok?'OK':'Pendente'}}</span></div>
-        <div style="font-size:11px;font-weight:700;color:${{svS.cor}}">${{svS.label}}</div>
+        <div style="font-size:13px;font-weight:700;color:${{svS.cor}}">${{svS.label}}</div>
       </div>`;
     }}
     if(isGestimeTodos){{
@@ -1604,7 +1637,7 @@ function renderizarCardsKpi(lista){{
         <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
         <div class="dmc-cpf">${{m.cpf}}</div>
         <div class="dmc-badges"><span class="dmc-badge ${{ok?'ok':'pend'}}"><i class="fa-solid ${{ok?'fa-clipboard-check':'fa-clock'}}"></i> Gestime ${{ok?'OK':'Pendente'}}</span></div>
-        <div style="font-size:11px;font-weight:700;color:${{svG.cor}}">${{svG.label}}</div>
+        <div style="font-size:13px;font-weight:700;color:${{svG.cor}}">${{svG.label}}</div>
       </div>`;
     }}
     if(isInfracao){{
@@ -1698,7 +1731,7 @@ function statusVencimento(dataStr, meses){{
   const hoje = new Date(); hoje.setHours(0,0,0,0);
   const diffDias = Math.floor((venc - hoje) / 86400000);
   if(diffDias < 0)   return {{ label:'VENCIDO em ' + venc.toLocaleDateString('pt-BR'), cor:'#dc2626', venc }};
-  if(diffDias <= 60) return {{ label:'Vence em ' + venc.toLocaleDateString('pt-BR'), cor:'#d97706', venc }};
+  if(diffDias <= 30) return {{ label:'Vence em ' + venc.toLocaleDateString('pt-BR'), cor:'#d97706', venc }};
   return {{ label:'Válido até ' + venc.toLocaleDateString('pt-BR'), cor:'#16a34a', venc }};
 }}
 
@@ -1708,7 +1741,7 @@ function statusVencimentoProntuario(dataStr, meses){{
   const hoje = new Date(); hoje.setHours(0,0,0,0);
   const diffDias = Math.floor((venc - hoje) / 86400000);
   if(diffDias < 0) return {{ label:'VENCIDO em ' + venc.toLocaleDateString('pt-BR'), cor:'#dc2626', venc }};
-  const cor = diffDias <= 60 ? '#d97706' : '#16a34a';
+  const cor = diffDias <= 30 ? '#d97706' : '#16a34a';
   return {{ label: venc.toLocaleDateString('pt-BR'), cor, venc }};
 }}
 
@@ -1747,7 +1780,7 @@ function statusVencimentoData(dataStr){{
   const hoje = new Date(); hoje.setHours(0,0,0,0);
   const diffDias = Math.floor((venc - hoje) / 86400000);
   if(diffDias < 0)   return {{ label:'VENCIDA em ' + venc.toLocaleDateString('pt-BR'), cor:'#dc2626', venc, vencida:true }};
-  if(diffDias <= 60) return {{ label:'Vence em ' + venc.toLocaleDateString('pt-BR'), cor:'#d97706', venc, vencida:false }};
+  if(diffDias <= 30) return {{ label:'Vence em ' + venc.toLocaleDateString('pt-BR'), cor:'#d97706', venc, vencida:false }};
   return {{ label:'' + venc.toLocaleDateString('pt-BR'), cor:'#16a34a', venc, vencida:false }};
 }}
 function cnhVencida(m){{
@@ -1832,6 +1865,10 @@ function atualizarDashboardCompleto(){{
   _s('kpiTelCorpPct',  totalM > 0 ? Math.round(totalTelCorp/totalM*100) + '%' : '—');
   _s('kpiProntuario',  totalM);
   _s('kpiProntuarioOk',totalProntuarioOk);
+
+  const totalAfastados = motoristasDB.filter(m => m.afastado === 'SIM').length;
+  _s('kpiAfastados',    totalAfastados);
+  _s('kpiAfastadosPct', totalM > 0 ? Math.round(totalAfastados/totalM*100) + '%' : '—');
 
   const totalRecOk  = motoristasDB.filter(m => reciclagemStatus(m) === 'OK').length;
   const totalRecPend = motoristasDB.filter(m => reciclagemStatus(m) === 'PENDENTE').length;
@@ -2129,6 +2166,7 @@ async function adicionarNovoMotorista(){{
     examePeriodico:'', exameToxicologico:'',
     pontuacaoCnh:0, vencimentoCnhMopp:'', entregaUniforme:'PENDENTE',
     telefoneCorporativo:'NÃO', numeroLinha:'', modelo:'',
+    afastado:'NÃO', obsAfastado:'',
     dssAnual: gerarMatrizDssEmBranco()
   }};
   mostrarSpinner(true);
@@ -2363,15 +2401,15 @@ function abrirFichaMotorista(cpf){{
             </div>
             <div style="background:${{recEfetivo==='OK'?'#f0fef4':'#fff5f5'}};border:1.5px solid ${{recEfetivo==='OK'?'#86efac':'#fca5a5'}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
               <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-recycle" style="color:${{recEfetivo==='OK'?'#16a34a':'#dc2626'}};margin-right:6px"></i>Reciclagem</span>
-              <span style="font-size:18px;font-weight:900;color:${{recEfetivo==='OK'?'#16a34a':'#dc2626'}};line-height:1;">${{recEfetivo}}</span>
+              <span style="font-size:20px;font-weight:900;color:${{recEfetivo==='OK'?'#16a34a':'#dc2626'}};line-height:1;">${{recEfetivo}}</span>
             </div>
             <div style="background:${{simEfetivo==='OK'?'#f0fef4':'#fff5f5'}};border:1.5px solid ${{simEfetivo==='OK'?'#86efac':'#fca5a5'}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
               <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-car-side" style="color:${{simEfetivo==='OK'?'#16a34a':'#dc2626'}};margin-right:6px"></i>Simulador</span>
-              <span style="font-size:18px;font-weight:900;color:${{simEfetivo==='OK'?'#16a34a':'#dc2626'}};line-height:1;">${{simEfetivo}}</span>
+              <span style="font-size:20px;font-weight:900;color:${{simEfetivo==='OK'?'#16a34a':'#dc2626'}};line-height:1;">${{simEfetivo}}</span>
             </div>
             <div style="background:${{gestEfetivo==='OK'?'#f0fef4':'#fff5f5'}};border:1.5px solid ${{gestEfetivo==='OK'?'#86efac':'#fca5a5'}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
               <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-clipboard-check" style="color:${{gestEfetivo==='OK'?'#16a34a':'#dc2626'}};margin-right:6px"></i>Gestime</span>
-              <span style="font-size:18px;font-weight:900;color:${{gestEfetivo==='OK'?'#16a34a':'#dc2626'}};line-height:1;">${{gestEfetivo}}</span>
+              <span style="font-size:20px;font-weight:900;color:${{gestEfetivo==='OK'?'#16a34a':'#dc2626'}};line-height:1;">${{gestEfetivo}}</span>y
             </div>
           </div>
         </div>
@@ -2448,6 +2486,14 @@ function abrirFichaMotorista(cpf){{
               <div style="font-size:10px;font-weight:700;color:${{svExTox.cor}};margin-top:2px;">${{svExTox.label}}</div>
             </div>
             <div class="meta-item"><label>Pontuação CNH</label><input type="number" id="editPontuacaoCnh" value="${{m.pontuacaoCnh||0}}"></div>
+            <div class="meta-item">
+              <label>Afastado</label>
+              <select id="editAfastado">
+                <option value="NÃO" ${{m.afastado==='NÃO'?'selected':''}}>NÃO</option>
+                <option value="SIM" ${{m.afastado==='SIM'?'selected':''}}>SIM</option>
+              </select>
+              <input type="text" id="editObsAfastado" class="obs-input" style="margin-top:4px;" value="${{esc(m.obsAfastado)}}" placeholder="Obs de Afastamento">
+            </div>
             <div class="meta-item">
               <label>Validade MOPP</label>
               <input type="date" id="editVencimentoCnhMopp" value="${{esc(m.vencimentoCnhMopp)}}">
@@ -2637,6 +2683,8 @@ async function confirmarEdicaoFicha(){{
     pontuacaoCnh:        parseInt(document.getElementById('editPontuacaoCnh').value)||0,
     vencimentoCnhMopp:   document.getElementById('editVencimentoCnhMopp').value,
     entregaUniforme:     document.getElementById('editEntregaUniforme').value,
+    afastado:            document.getElementById('editAfastado').value,
+    obsAfastado:         document.getElementById('editObsAfastado').value,
     telefoneCorporativo: telCorp,
     numeroLinha:         telCorp === 'SIM' ? numLinha : '',
     modelo:              document.getElementById('editModelo').value,
@@ -2762,6 +2810,8 @@ function linhasParaMotoristas(linhas){{
     const obsGestime = String(next()).trim();
     const gestimeData = String(next()).trim();
     const gestimeValidadeMeses = Math.max(0, parseInt(next())||0);
+    const afastado = String(next()).trim() || 'NÃO';
+    const obsAfastado = String(next()).trim();
     return {{
       cpf, nome, filial, telefone, email, foto,
       reciclagem, simulador, excesso, multas, acidentes,
@@ -2774,6 +2824,7 @@ function linhasParaMotoristas(linhas){{
       simuladorData, simuladorValidadeMeses,
       examePeriodicoValidadeMeses, exameToxicologicoValidadeMeses,
       gestime, obsGestime, gestimeData, gestimeValidadeMeses,
+      afastado, obsAfastado,
       dssAnual
     }};
   }});
