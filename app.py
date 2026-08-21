@@ -2480,6 +2480,7 @@ function abrirFichaMotorista(cpf){{
           <div class="meta-grid">
             <div class="meta-item"><label>Telefone / WhatsApp</label><input type="text" id="editTelefone" value="${{esc(m.telefone)}}" placeholder="(00) 00000-0000"></div>
             <div class="meta-item"><label>E-mail Corporativo</label><input type="email" id="editEmail" value="${{esc(m.email)}}" placeholder="nome@luft.com.br"></div>
+            <div class="meta-item"><label>CPF do Motorista</label><input type="text" id="editCpf" value="${{esc(m.cpf)}}" placeholder="000.000.000-00"></div>
           </div>
           <div class="meta-grid" style="border-top:1px dashed #d0e4ec;padding-top:10px;margin-top:10px;">
             <div class="meta-item">
@@ -2668,6 +2669,16 @@ async function confirmarEdicaoFicha(){{
   const idx = motoristasDB.findIndex(x => x.cpf === motoristaEmEdicaoCpf);
   if(idx === -1) return;
 
+  const novoCpf = document.getElementById('editCpf').value.trim();
+  if(!novoCpf){{
+    toast('O campo CPF não pode ficar vazio.', 'erro');
+    return;
+  }}
+  if(novoCpf !== motoristaEmEdicaoCpf && motoristasDB.some(m => m.cpf === novoCpf)){{
+    toast('Já existe outro motorista cadastrado com este CPF.', 'erro');
+    return;
+  }}
+
   const telCorp = document.getElementById('editTelefoneCorporativo').value;
   const numLinha = document.getElementById('editNumeroLinha').value.trim();
   if(telCorp === 'SIM' && !numLinha){{
@@ -2718,6 +2729,7 @@ async function confirmarEdicaoFicha(){{
   }});
   const atualizado = {{
     ...motoristasDB[idx],
+    cpf:           novoCpf,
     nome:          document.getElementById('editNome').value.toUpperCase(),
     filial:        document.getElementById('editFilial').value.toUpperCase(),
     telefone:      document.getElementById('editTelefone').value,
