@@ -80,9 +80,12 @@ def ler_todos_motoristas():
     ws = get_sheet()
     records = ws.get_all_records(default_blank="")
     motoristas = []
-    for row in records:
-        if not row.get("cpf"):
+    for i, row in enumerate(records):
+        cpf_bruto  = str(row.get("cpf", "")).strip()
+        nome_bruto = str(row.get("nome", "")).strip()
+        if not cpf_bruto and not nome_bruto:
             continue
+        cpf_efetivo = cpf_bruto or f"SEMCPF-{i+1:04d}"
         dss_anual = {}
         for mes in MESES:
             semanas = []
@@ -91,8 +94,8 @@ def ler_todos_motoristas():
                 semanas.append(bool(val) and val not in ("", "0", 0, False))
             dss_anual[mes] = semanas
         motoristas.append({
-            "cpf":           str(row.get("cpf", "")).strip(),
-            "nome":          str(row.get("nome", "")).strip(),
+            "cpf":           cpf_efetivo,
+            "nome":          nome_bruto,
             "filial":        str(row.get("filial", "")).strip(),
             "telefone":      str(row.get("telefone", "")).strip(),
             "email":         str(row.get("email", "")).strip(),
@@ -2203,10 +2206,12 @@ function renderizarGraficos(filiais){{
 }}
 
 async function adicionarNovoMotorista(){{
-  const cpf    = document.getElementById('addCpf').value.trim();
+  let cpf      = document.getElementById('addCpf').value.trim();
   const nome   = document.getElementById('addNome').value.toUpperCase().trim();
   const filial = document.getElementById('addFilial').value.toUpperCase().trim();
-  if(!cpf || !nome || !filial){{ toast('Preencha CPF, Nome e Filial.', 'erro'); return; }}
+  if(!nome || !filial){{ toast('Preencha ao menos Nome e Filial.', 'erro'); return; }}
+  if(!cpf){{ cpf = `SEMCPF-${{Date.now()}}-${{Math.random().toString(36).slice(2,7)}}`; }}
+  if(motoristasDB.some(m => m.cpf === cpf)){{ toast('Já existe um motorista com este CPF.', 'erro'); return; }}
   const novo = {{
     cpf, nome, filial, telefone:'', email:'', foto:'',
     reciclagem: document.getElementById('addRec').value,
@@ -2669,10 +2674,10 @@ async function confirmarEdicaoFicha(){{
   const idx = motoristasDB.findIndex(x => x.cpf === motoristaEmEdicaoCpf);
   if(idx === -1) return;
 
-  const novoCpf = document.getElementById('editCpf').value.trim();
+  let novoCpf = document.getElementById('editCpf').value.trim();
   if(!novoCpf){{
-    toast('O campo CPF não pode ficar vazio.', 'erro');
-    return;
+    novoCpf = `SEMCPF-${{Date.now()}}-${{Math.random().toString(36).slice(2,7)}}`;
+    document.getElementById('editCpf').value = novoCpf;
   }}
   if(novoCpf !== motoristaEmEdicaoCpf && motoristasDB.some(m => m.cpf === novoCpf)){{
     toast('Já existe outro motorista cadastrado com este CPF.', 'erro');
@@ -2820,11 +2825,12 @@ async function salvarTudoNoSheets(){{
 
 // ── Converte as linhas cruas da planilha de volta em objetos de motorista ──
 function linhasParaMotoristas(linhas){{
-  return linhas.filter(row => row && row[0]).map(row => {{
+  return linhas.filter(row => row && (row[0] || row[1])).map((row, idx) => {{
     let p = 0;
     const next = () => {{ const v = row[p]; p++; return (v === undefined || v === null) ? '' : v; }};
-    const cpf = String(next()).trim();
+    const cpfBruto = String(next()).trim();
     const nome = String(next()).trim();
+    const cpf = cpfBruto || `SEMCPF-${{String(idx+1).padStart(4,'0')}}`;
     const filial = String(next()).trim();
     const telefone = String(next()).trim();
     const email = String(next()).trim();
