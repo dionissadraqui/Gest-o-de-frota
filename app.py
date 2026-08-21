@@ -489,6 +489,8 @@ HTML = f"""<!DOCTYPE html>
 .card-dss .meta-item input:focus,.card-dss .meta-item select:focus{{border-color:#16a34a;box-shadow:0 0 0 2px rgba(22,163,74,.12)}}
 .obs-input{{background:#f9fafd!important;border:1px solid #d0daea!important;color:#3a4a62!important;font-size:14px!important;font-style:italic;padding:8px 10px!important}}
 .campo-valido{{border-color:#16a34a!important;background:#f0fef4!important;box-shadow:0 0 0 1px rgba(22,163,74,.25)!important}}
+.campo-alerta-venc{{border-color:#d97706!important;background:#fffbeb!important;box-shadow:0 0 0 1px rgba(217,119,6,.25)!important}}
+.campo-vencido-venc{{border-color:#dc2626!important;background:#fff5f5!important;box-shadow:0 0 0 1px rgba(220,38,38,.25)!important}}
 .dss-matrix-container{{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}}
 .month-dss-box{{background:#f0faf4;border:1px solid #bbddc8;border-radius:7px;padding:7px}}
 .month-name-lbl{{font-size:14px;font-weight:800;color:#15803d;text-transform:uppercase;margin-bottom:4px;text-align:center;border-bottom:1px solid #c8e8d4;padding-bottom:3px}}
@@ -1787,13 +1789,62 @@ function cnhVencida(m){{
   return statusVencimentoData(m.validadeCnh).vencida;
 }}
 
+// ── Grupos de campos vinculados a vencimento (data + validade em meses) ──
+const CAMPOS_VENCIMENTO_MESES = [
+  ['editReciclagemData','editReciclagemValidadeMeses'],
+  ['editSimuladorData','editSimuladorValidadeMeses'],
+  ['editExamePeriodico','editExamePeriodicoValidadeMeses'],
+  ['editExameToxicologico','editExameToxicologicoValidadeMeses'],
+  ['editGestimeData','editGestimeValidadeMeses'],
+];
+// ── Campos cuja própria data já é o vencimento (sem soma de meses) ──
+const CAMPOS_VENCIMENTO_DATA = ['editValidadeCnh','editVencimentoCnhMopp'];
+
+function _aplicarCorPorStatus(elementos, cor){{
+  elementos.forEach(el => {{
+    if(!el) return;
+    el.classList.remove('campo-valido','campo-alerta-venc','campo-vencido-venc');
+    if(cor === '#16a34a') el.classList.add('campo-valido');
+    else if(cor === '#d97706') el.classList.add('campo-alerta-venc');
+    else if(cor === '#dc2626') el.classList.add('campo-vencido-venc');
+  }});
+}}
+
+function aplicarEstadoVisualCampos(){{
+  const container = document.getElementById('driverProfileContent');
+  if(!container) return;
+
+  const idsUsados = new Set();
+  CAMPOS_VENCIMENTO_MESES.forEach(([dataId, anosId]) => {{
+    idsUsados.add(dataId); idsUsados.add(anosId);
+    const dataEl = document.getElementById(dataId);
+    const anosEl = document.getElementById(anosId);
+    if(!dataEl || !anosEl) return;
+    const sv = statusVencimento(dataEl.value, anosEl.value);
+    _aplicarCorPorStatus([dataEl, anosEl], sv.venc ? sv.cor : null);
+  }});
+
+  CAMPOS_VENCIMENTO_DATA.forEach(id => {{
+    idsUsados.add(id);
+    const el = document.getElementById(id);
+    if(!el) return;
+    const sv = statusVencimentoData(el.value);
+    _aplicarCorPorStatus([el], sv.venc ? sv.cor : null);
+  }});
+
+  container.querySelectorAll('input[type="text"], input[type="email"], input[type="number"], input[type="date"]').forEach(el => {{
+    if(idsUsados.has(el.id)) return;
+    el.classList.remove('campo-valido','campo-alerta-venc','campo-vencido-venc');
+    if((el.value||'').toString().trim() !== '') el.classList.add('campo-valido');
+  }});
+}}
+
+document.addEventListener('input',  e => {{ if(e.target.closest && e.target.closest('#driverProfileContent')) aplicarEstadoVisualCampos(); }});
+document.addEventListener('change', e => {{ if(e.target.closest && e.target.closest('#driverProfileContent')) aplicarEstadoVisualCampos(); }});
+
+// Mantido por compatibilidade com o HTML já existente (oninput="checarCamposValidade(...)").
 function checarCamposValidade(dataId, anosId){{
-  const dataEl = document.getElementById(dataId);
-  const anosEl = document.getElementById(anosId);
-  if(!dataEl || !anosEl) return;
-  const completo = !!dataEl.value && parseInt(anosEl.value) > 0;
-  dataEl.classList.toggle('campo-valido', completo);
-  anosEl.classList.toggle('campo-valido', completo);
+  aplicarEstadoVisualCampos();
 }}
 
 function agruparPorFilial(){{
@@ -2409,7 +2460,7 @@ function abrirFichaMotorista(cpf){{
             </div>
             <div style="background:${{gestEfetivo==='OK'?'#f0fef4':'#fff5f5'}};border:1.5px solid ${{gestEfetivo==='OK'?'#86efac':'#fca5a5'}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
               <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-clipboard-check" style="color:${{gestEfetivo==='OK'?'#16a34a':'#dc2626'}};margin-right:6px"></i>Gestime</span>
-              <span style="font-size:20px;font-weight:900;color:${{gestEfetivo==='OK'?'#16a34a':'#dc2626'}};line-height:1;">${{gestEfetivo}}</span>y
+              <span style="font-size:20px;font-weight:900;color:${{gestEfetivo==='OK'?'#16a34a':'#dc2626'}};line-height:1;">${{gestEfetivo}}</span>
             </div>
           </div>
         </div>
@@ -2578,11 +2629,7 @@ function abrirFichaMotorista(cpf){{
         </div>
       </div>
     </div>`;
-  checarCamposValidade('editReciclagemData','editReciclagemValidadeMeses');
-  checarCamposValidade('editSimuladorData','editSimuladorValidadeMeses');
-  checarCamposValidade('editExamePeriodico','editExamePeriodicoValidadeMeses');
-  checarCamposValidade('editExameToxicologico','editExameToxicologicoValidadeMeses');
-  checarCamposValidade('editGestimeData','editGestimeValidadeMeses');
+  aplicarEstadoVisualCampos();
   document.getElementById('driverModal').style.display = 'flex';
   const btnVoltar = document.getElementById('btnVoltarFicha');
   if(fichaOrigemModal){{ btnVoltar.style.display = 'flex'; }} else {{ btnVoltar.style.display = 'none'; }}
