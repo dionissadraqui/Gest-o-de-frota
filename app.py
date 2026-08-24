@@ -50,7 +50,7 @@ for _mes in MESES:
 COLUNAS += [
     "exame_periodico", "exame_toxicologico", "pontuação_cnh",
     "vencimento_cnh_mopp", "entrega_de_uniforme",
-    "telefone_corporativo", "numero_linha", "modelo",
+    "telefone_corporativo", "numero_linha", "modelo", "imei",
     "reciclagem_data", "reciclagem_validade_meses",
     "simulador_data", "simulador_validade_meses",
     "exame_periodico_validade_meses", "exame_toxicologico_validade_meses",
@@ -121,6 +121,7 @@ def ler_todos_motoristas():
             "telefoneCorporativo": str(row.get("telefone_corporativo", "NÃO")).strip() or "NÃO",
             "numeroLinha":         str(row.get("numero_linha", "")).strip(),
             "modelo":              str(row.get("modelo", "")).strip(),
+            "imei":                str(row.get("imei", "")).strip(),
             "reciclagemData":       str(row.get("reciclagem_data", "")).strip(),
             "reciclagemValidadeMeses": max(0, int(row.get("reciclagem_validade_meses", 0) or 0)),
             "simuladorData":        str(row.get("simulador_data", "")).strip(),
@@ -160,7 +161,7 @@ def salvar_todos_motoristas(lista):
             m.get("pontuacaoCnh", 0), m.get("vencimentoCnhMopp", ""),
             m.get("entregaUniforme", "PENDENTE"),
             m.get("telefoneCorporativo", "NÃO"), m.get("numeroLinha", ""),
-            m.get("modelo", ""),
+            m.get("modelo", ""), m.get("imei", ""),
             m.get("reciclagemData", ""), m.get("reciclagemValidadeMeses", 0),
             m.get("simuladorData", ""), m.get("simuladorValidadeMeses", 0),
             m.get("examePeriodicoValidadeMeses", 0), m.get("exameToxicologicoValidadeMeses", 0),
@@ -1086,7 +1087,7 @@ function motoristasParaLinhas(lista){{
       m.pontuacaoCnh||0, m.vencimentoCnhMopp||'',
       m.entregaUniforme||'PENDENTE',
       m.telefoneCorporativo||'NÃO', m.numeroLinha||'',
-      m.modelo||'',
+      m.modelo||'', m.imei||'',
       m.reciclagemData||'', m.reciclagemValidadeMeses||0,
       m.simuladorData||'', m.simuladorValidadeMeses||0,
       m.examePeriodicoValidadeMeses||0, m.exameToxicologicoValidadeMeses||0,
@@ -1510,7 +1511,10 @@ function renderizarCardsKpi(lista){{
         <div class="dmc-infracao"><i class="fa-solid fa-mobile-screen-button dmc-inf-icon" style="color:#0e9cc0"></i>
           <div class="dmc-inf-body"><div class="dmc-inf-label">Número da Linha</div><div class="dmc-inf-val" style="color:#0e9cc0;font-size:17px;">${{m.numeroLinha || 'Não informado'}}</div></div>
         </div>
-        <div class="dmc-badges"><span class="dmc-badge ok"><i class="fa-solid fa-mobile"></i> ${{m.modelo || 'Modelo não informado'}}</span></div>
+        <div class="dmc-badges">
+          <span class="dmc-badge ok"><i class="fa-solid fa-mobile"></i> ${{m.modelo || 'Modelo não informado'}}</span>
+          <span class="dmc-badge ok"><i class="fa-solid fa-barcode"></i> IMEI: ${{m.imei || 'Não informado'}}</span>
+        </div>
       </div>`;
     }}
     if(isAfastados){{
@@ -1846,6 +1850,29 @@ function aplicarEstadoVisualCampos(){{
     el.classList.remove('campo-valido','campo-alerta-venc','campo-vencido-venc');
     if((el.value||'').toString().trim() !== '') el.classList.add('campo-valido');
   }});
+
+  // Selects marcados como "OK" ficam verdes (Reciclagem, Simulador, Gestime, Entrega de Uniforme)
+  ['editReciclagem','editSimulador','editGestime','editEntregaUniforme'].forEach(id => {{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.classList.remove('campo-valido','campo-alerta-venc','campo-vencido-venc');
+    if(el.value === 'OK') el.classList.add('campo-valido');
+  }});
+
+  // Telefone Corporativo = SIM fica verde
+  const telCorpEl = document.getElementById('editTelefoneCorporativo');
+  if(telCorpEl){{
+    telCorpEl.classList.remove('campo-valido','campo-alerta-venc','campo-vencido-venc');
+    if(telCorpEl.value === 'SIM') telCorpEl.classList.add('campo-valido');
+  }}
+
+  // Label "*obrigatório" do Número da Linha fica verde quando o campo está preenchido
+  const numLinhaEl = document.getElementById('editNumeroLinha');
+  const numLinhaObrigLbl = document.getElementById('numeroLinhaObrigatorio');
+  if(numLinhaEl && numLinhaObrigLbl){{
+    const preenchido = (numLinhaEl.value||'').toString().trim() !== '';
+    numLinhaObrigLbl.style.color = preenchido ? '#16a34a' : '#dc2626';
+  }}
 }}
 
 document.addEventListener('input',  e => {{ if(e.target.closest && e.target.closest('#driverProfileContent')) aplicarEstadoVisualCampos(); }});
@@ -2234,7 +2261,7 @@ async function adicionarNovoMotorista(){{
     cnh:'', validadeCnh:'', admissao:'',
     examePeriodico:'', exameToxicologico:'',
     pontuacaoCnh:0, vencimentoCnhMopp:'', entregaUniforme:'PENDENTE',
-    telefoneCorporativo:'NÃO', numeroLinha:'', modelo:'',
+    telefoneCorporativo:'NÃO', numeroLinha:'', modelo:'', imei:'',
     afastado:'NÃO', obsAfastado:'',
     dssAnual: gerarMatrizDssEmBranco()
   }};
@@ -2521,7 +2548,10 @@ function abrirFichaMotorista(cpf){{
             </div>
             <div class="meta-item">
               <label>Modelo do Celular</label>
-              <input type="text" id="editModelo" value="${{esc(m.modelo)}}" placeholder="Ex: Samsung A54">
+              <div style="display:flex;gap:4px;">
+                <input type="text" id="editModelo" value="${{esc(m.modelo)}}" placeholder="Ex: Samsung A54" style="flex:1;min-width:0;">
+                <input type="text" id="editImei" value="${{esc(m.imei)}}" placeholder="IMEI" style="flex:1;min-width:0;" title="IMEI do celular">
+              </div>
             </div>
           </div>
         </div>
@@ -2800,6 +2830,7 @@ async function confirmarEdicaoFicha(){{
     nome:          document.getElementById('editNome').value.toUpperCase(),
     filial:        document.getElementById('editFilial').value.toUpperCase(),
     telefone:      document.getElementById('editTelefone').value,
+    imei:          document.getElementById('editImei').value,
     email:         document.getElementById('editEmail').value,
     cnh:           document.getElementById('editCnh').value,
     validadeCnh:   document.getElementById('editValidadeCnh').value,
@@ -2927,6 +2958,7 @@ function linhasParaMotoristas(linhas){{
     const telefoneCorporativo = String(next()).trim() || 'NÃO';
     const numeroLinha = String(next()).trim();
     const modelo = String(next()).trim();
+    const imei = String(next()).trim();
     const reciclagemData = String(next()).trim();
     const reciclagemValidadeMeses = Math.max(0, parseInt(next())||0);
     const simuladorData = String(next()).trim();
@@ -2946,7 +2978,7 @@ function linhasParaMotoristas(linhas){{
       cnh, validadeCnh, admissao,
       examePeriodico, exameToxicologico,
       pontuacaoCnh, vencimentoCnhMopp, entregaUniforme,
-      telefoneCorporativo, numeroLinha, modelo,
+      telefoneCorporativo, numeroLinha, modelo, imei,
       reciclagemData, reciclagemValidadeMeses,
       simuladorData, simuladorValidadeMeses,
       examePeriodicoValidadeMeses, exameToxicologicoValidadeMeses,
