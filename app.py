@@ -1047,6 +1047,8 @@ const CREDENCIAIS     = {json.dumps(CREDENCIAIS_LOGIN, ensure_ascii=False)};
 const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho",
                "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 
+const AVATAR_PADRAO = 'data:image/jpeg;base64,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';
+
 let motoristasDB         = DADOS_INICIAIS;
 let dssChartInstance      = null;
 let filialChartInstance   = null;
@@ -1469,7 +1471,7 @@ function renderizarCardsKpi(lista){{
     const cor = isAlerta ? '#eab308' : '#dc2626';
     const bg  = isAlerta ? '#fefce8' : '#fff5f5';
     grid.innerHTML = lista.map(m => {{
-      const avatar = m.foto ? `<img src="${{m.foto}}" alt="">` : `<i class="fa-solid fa-user-tie"></i>`;
+      const avatar = `<img src="${{m.foto || AVATAR_PADRAO}}" alt="">`;
       const d = diasParaVencerCategoria(m, kpiCategoriaVencAtual);
       const prazoTxt = isAlerta ? `Vence em ${{d}} dia${{d===1?'':'s'}}` : `Vencido há ${{Math.abs(d)}} dia${{Math.abs(d)===1?'':'s'}}`;
       return `<div class="driver-mini-card" style="border-color:${{cor}}55;background:${{bg}};" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
@@ -1500,7 +1502,7 @@ function renderizarCardsKpi(lista){{
   const isSimuladorTodos  = kpiTipoAtual === 'simuladorTodos';
   const isGestimeTodos    = kpiTipoAtual === 'gestimeTodos';
   grid.innerHTML = lista.map(m => {{
-    const avatar = m.foto ? `<img src="${{m.foto}}" alt="">` : `<i class="fa-solid fa-user-tie"></i>`;
+    const avatar = `<img src="${{m.foto || AVATAR_PADRAO}}" alt="">`;
     const nExc   = Math.max(0, parseInt(m.excesso)   || 0);
     const nMul   = Math.max(0, parseInt(m.multas)    || 0);
     const nAcid  = Math.max(0, parseInt(m.acidentes) || 0);
@@ -1845,6 +1847,7 @@ function aplicarEstadoVisualCampos(){{
     _aplicarCorPorStatus([el], sv.venc ? sv.cor : null);
   }});
 
+  idsUsados.add('editObsAfastado');
   container.querySelectorAll('input[type="text"], input[type="email"], input[type="number"], input[type="date"]').forEach(el => {{
     if(idsUsados.has(el.id)) return;
     el.classList.remove('campo-valido','campo-alerta-venc','campo-vencido-venc');
@@ -1864,6 +1867,20 @@ function aplicarEstadoVisualCampos(){{
   if(telCorpEl){{
     telCorpEl.classList.remove('campo-valido','campo-alerta-venc','campo-vencido-venc');
     if(telCorpEl.value === 'SIM') telCorpEl.classList.add('campo-valido');
+  }}
+
+  // Afastado: SIM fica vermelho, NÃO fica verde
+  const afastadoEl = document.getElementById('editAfastado');
+  if(afastadoEl){{
+    afastadoEl.classList.remove('campo-valido','campo-alerta-venc','campo-vencido-venc');
+    afastadoEl.classList.add(afastadoEl.value === 'SIM' ? 'campo-vencido-venc' : 'campo-valido');
+  }}
+
+  // Obs de Afastamento: fica vermelho quando preenchido
+  const obsAfastadoEl = document.getElementById('editObsAfastado');
+  if(obsAfastadoEl){{
+    obsAfastadoEl.classList.remove('campo-valido','campo-alerta-venc','campo-vencido-venc');
+    if((obsAfastadoEl.value||'').toString().trim() !== '') obsAfastadoEl.classList.add('campo-vencido-venc');
   }}
 
   // Label "*obrigatório" do Número da Linha fica verde quando o campo está preenchido
@@ -2401,7 +2418,7 @@ function renderizarListaMobileFilial(lista, titulo){{
     return;
   }}
   cont.innerHTML = lista.map(m => {{
-    const avatar = m.foto ? `<img src="${{m.foto}}" alt="">` : `<i class="fa-solid fa-user-tie"></i>`;
+    const avatar = `<img src="${{m.foto || AVATAR_PADRAO}}" alt="">`;
     const recOk  = reciclagemStatus(m) === 'OK';
     const simOk  = simuladorStatus(m) === 'OK';
     return `<div class="driver-mini-card ${{(recOk && simOk) ? 'card-ok' : 'card-pend'}}" onclick="irParaFichaViaFilialMobile('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
@@ -2442,9 +2459,7 @@ function abrirFichaMotorista(cpf){{
   if(!m) return;
   motoristaEmEdicaoCpf = cpf;
   fotoTemporariaBase64 = m.foto || null;
-  const avatarHtml = m.foto
-    ? `<img src="${{m.foto}}" id="profilePreviewImg">`
-    : `<i class="fa-solid fa-user-tie" id="profileIconPlaceholder" style="font-size:32px;color:#4a9eff;"></i><img src="" id="profilePreviewImg" style="display:none">`;
+  const avatarHtml = `<img src="${{m.foto || AVATAR_PADRAO}}" id="profilePreviewImg">`;
   let matrizHtml = '';
   MESES.forEach(mes => {{
     const semanas = m.dssAnual[mes] || [false,false,false,false];
@@ -2727,23 +2742,10 @@ document.addEventListener('click', e => {{
 
 function excluirFotoAtual(){{
   fotoTemporariaBase64 = '';
-  const img   = document.getElementById('profilePreviewImg');
-  const icone = document.getElementById('profileIconPlaceholder');
-  if(img){{ img.src = ''; img.style.display = 'none'; }}
-  if(icone){{
-    icone.style.display = 'block';
-  }} else {{
-    const wrapper = document.getElementById('avatarWrapperFicha');
-    if(wrapper){{
-      const i = document.createElement('i');
-      i.id = 'profileIconPlaceholder';
-      i.className = 'fa-solid fa-user-tie';
-      i.style.cssText = 'font-size:32px;color:#4a9eff;';
-      wrapper.insertBefore(i, wrapper.firstChild);
-    }}
-  }}
+  const img = document.getElementById('profilePreviewImg');
+  if(img){{ img.src = AVATAR_PADRAO; img.style.display = 'block'; }}
   document.getElementById('avatarMenu').style.display = 'none';
-  toast('Foto removida do preview. Clique em "Confirmar Alterações" para salvar.', 'ok');
+  toast('Foto removida. Avatar padrão restaurado. Clique em "Confirmar Alterações" para salvar.', 'ok');
 }}
 
 function processarFotoCarregada(input){{
@@ -2752,9 +2754,7 @@ function processarFotoCarregada(input){{
     reader.onload = async e => {{
       // Comprime já na leitura — nunca guarda base64 gigante na memória
       fotoTemporariaBase64 = await _comprimirBase64(e.target.result, 80, 0.5);
-      const img  = document.getElementById('profilePreviewImg');
-      const icon = document.getElementById('profileIconPlaceholder');
-      if(icon) icon.style.display = 'none';
+      const img = document.getElementById('profilePreviewImg');
       img.src = fotoTemporariaBase64;
       img.style.display = 'block';
     }};
@@ -3050,9 +3050,7 @@ function gerarFichaPdf(cpf){{
   const dtStr  = now.toLocaleDateString('pt-BR');
   const hrStr  = now.toLocaleTimeString('pt-BR', {{hour:'2-digit', minute:'2-digit'}});
   const esc    = s => (s||'—').replace(/</g,'&lt;');
-  const fotoHtml = m.foto
-    ? `<img src="${{m.foto}}" style="width:100px;height:100px;object-fit:cover;border-radius:6px;border:2px solid #c4d0e4;">`
-    : `<div style="width:100px;height:100px;border-radius:6px;border:2px dashed #c4d0e4;display:flex;align-items:center;justify-content:center;background:#f0f4fa;color:#9aaabb;font-size:11px;text-align:center;">Sem<br>Foto</div>`;
+  const fotoHtml = `<img src="${{m.foto || AVATAR_PADRAO}}" style="width:100px;height:100px;object-fit:cover;border-radius:6px;border:2px solid #c4d0e4;">`;
 
   const dssLinhas = Object.entries(m.dssAnual||{{}}).map(([mes, sems])=>{{
     const boxes = sems.map((ok,i)=>`<td style="text-align:center;padding:4px;border:1px solid #dde6f4;background:${{ok?'#dcfce7':'#fff5f5'}};color:${{ok?'#16a34a':'#dc2626'}};font-weight:800;font-size:11px;">${{ok?'✓':'✗'}}</td>`).join('');
