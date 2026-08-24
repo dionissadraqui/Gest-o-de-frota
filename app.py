@@ -773,16 +773,28 @@ HTML = f"""<!DOCTYPE html>
   </div>
 
   <div class="kpi-row">
-   <div class="kpi blue" onclick="abrirKpiModal('total')" title="Ver todos os motoristas">
-      <div class="kpi-lbl">Total Motoristas</div>
+    <div class="kpi purple" onclick="abrirKpiModal('prontuario')" title="Ver prontuário de exames dos motoristas">
+      <div class="kpi-lbl">Prontuário</div>
       <div style="display:flex;align-items:flex-end;justify-content:space-between;">
-        <div class="kpi-val" id="kpiTotal">—</div>
+        <div class="kpi-val" id="kpiProntuario">—</div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
-          <div style="font-size:8px;color:#1a4fa0;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">cadastrados</div>
-          <div id="kpiTotalAnual" style="font-size:17px;font-weight:900;color:#1a4fa0;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(59,125,216,0.5);">—</div>
+          <div style="font-size:8px;color:#7c3aed;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">exames ok</div>
+          <div id="kpiProntuarioOk" style="font-size:17px;font-weight:900;color:#7c3aed;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(124,58,237,0.5);">—</div>
         </div>
       </div>
-      <div class="kpi-sub">Todas as filiais</div>
+      <div class="kpi-sub">Exames &amp; Complementares</div>
+    </div>
+
+    <div class="kpi amber" onclick="abrirVencimentoMenu('alerta')" title="Ver categorias com vencimento em até 30 dias" style="background:#fefce8;border-color:#eab308;box-shadow:0 0 10px rgba(234,179,8,0.35),inset 0 0 6px rgba(234,179,8,0.06);">
+      <div class="kpi-lbl" style="color:#a16207;">Alertas de Vencimento</div>
+      <div class="kpi-val" style="color:#eab308;font-size:34px;">ALERTA</div>
+      <div class="kpi-sub" style="color:#ca8a04;">Vencendo em até 30 dias</div>
+    </div>
+
+    <div class="kpi amber" onclick="abrirVencimentoMenu('vencido')" title="Ver categorias já vencidas">
+      <div class="kpi-lbl">Itens Vencidos</div>
+      <div class="kpi-val" style="color:#dc2626;font-size:34px;">VENCIDOS</div>
+      <div class="kpi-sub">Prazo já expirado</div>
     </div>
 
     <div class="kpi green" onclick="abrirCursosMenu()" title="Ver DSS e Reciclagem por categoria">
@@ -795,6 +807,30 @@ HTML = f"""<!DOCTYPE html>
         </div>
       </div>
       <div class="kpi-sub">DSS · Reciclagem</div>
+    </div>
+
+    <div class="kpi red" onclick="abrirKpiModal('afastados')" title="Ver motoristas afastados">
+      <div class="kpi-lbl">Motoristas Afastados</div>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;">
+        <div class="kpi-val" id="kpiAfastados">—</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
+          <div style="font-size:8px;color:#dc2626;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">do total</div>
+          <div id="kpiAfastadosPct" style="font-size:17px;font-weight:900;color:#dc2626;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(255,68,68,0.5);">—</div>
+        </div>
+      </div>
+      <div class="kpi-sub">Afastado = SIM</div>
+    </div>
+
+    <div class="kpi teal" onclick="abrirKpiModal('telCorp')" title="Ver motoristas com celular corporativo">
+      <div class="kpi-lbl">Celulares Corporativos</div>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;">
+        <div class="kpi-val" id="kpiTelCorp">—</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
+          <div style="font-size:8px;color:#0e9cc0;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">com linha SIM</div>
+          <div id="kpiTelCorpPct" style="font-size:17px;font-weight:900;color:#0e9cc0;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(14,156,192,0.5);">—</div>
+        </div>
+      </div>
+      <div class="kpi-sub">Telefone Corporativo = SIM</div>
     </div>
 
     <div class="kpi red" onclick="abrirKpiModal('excesso')" title="Ver motoristas com excesso de velocidade">
@@ -833,52 +869,16 @@ HTML = f"""<!DOCTYPE html>
       <div class="kpi-sub">Total Ocorrências</div>
     </div>
 
-    <div class="kpi teal" onclick="abrirKpiModal('telCorp')" title="Ver motoristas com celular corporativo">
-      <div class="kpi-lbl">Celulares Corporativos</div>
+    <div class="kpi blue" onclick="abrirKpiModal('total')" title="Ver todos os motoristas">
+      <div class="kpi-lbl">Total Motoristas</div>
       <div style="display:flex;align-items:flex-end;justify-content:space-between;">
-        <div class="kpi-val" id="kpiTelCorp">—</div>
+        <div class="kpi-val" id="kpiTotal">—</div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
-          <div style="font-size:8px;color:#0e9cc0;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">com linha SIM</div>
-          <div id="kpiTelCorpPct" style="font-size:17px;font-weight:900;color:#0e9cc0;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(14,156,192,0.5);">—</div>
+          <div style="font-size:8px;color:#1a4fa0;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">cadastrados</div>
+          <div id="kpiTotalAnual" style="font-size:17px;font-weight:900;color:#1a4fa0;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(59,125,216,0.5);">—</div>
         </div>
       </div>
-      <div class="kpi-sub">Telefone Corporativo = SIM</div>
-    </div>
-
-    <div class="kpi purple" onclick="abrirKpiModal('prontuario')" title="Ver prontuário de exames dos motoristas">
-      <div class="kpi-lbl">Prontuário</div>
-      <div style="display:flex;align-items:flex-end;justify-content:space-between;">
-        <div class="kpi-val" id="kpiProntuario">—</div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
-          <div style="font-size:8px;color:#7c3aed;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">exames ok</div>
-          <div id="kpiProntuarioOk" style="font-size:17px;font-weight:900;color:#7c3aed;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(124,58,237,0.5);">—</div>
-        </div>
-      </div>
-      <div class="kpi-sub">Exames &amp; Complementares</div>
-    </div>
-
-    <div class="kpi red" onclick="abrirKpiModal('afastados')" title="Ver motoristas afastados">
-      <div class="kpi-lbl">Motoristas Afastados</div>
-      <div style="display:flex;align-items:flex-end;justify-content:space-between;">
-        <div class="kpi-val" id="kpiAfastados">—</div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
-          <div style="font-size:8px;color:#dc2626;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">do total</div>
-          <div id="kpiAfastadosPct" style="font-size:17px;font-weight:900;color:#dc2626;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(255,68,68,0.5);">—</div>
-        </div>
-      </div>
-      <div class="kpi-sub">Afastado = SIM</div>
-    </div>
-
-    <div class="kpi amber" onclick="abrirVencimentoMenu('alerta')" title="Ver categorias com vencimento em até 30 dias" style="background:#fefce8;border-color:#eab308;box-shadow:0 0 10px rgba(234,179,8,0.35),inset 0 0 6px rgba(234,179,8,0.06);">
-      <div class="kpi-lbl" style="color:#a16207;">Alertas de Vencimento</div>
-      <div class="kpi-val" style="color:#eab308;font-size:34px;">ALERTA</div>
-      <div class="kpi-sub" style="color:#ca8a04;">Vencendo em até 30 dias</div>
-    </div>
-
-    <div class="kpi amber" onclick="abrirVencimentoMenu('vencido')" title="Ver categorias já vencidas">
-      <div class="kpi-lbl">Itens Vencidos</div>
-      <div class="kpi-val" style="color:#dc2626;font-size:34px;">VENCIDOS</div>
-      <div class="kpi-sub">Prazo já expirado</div>
+      <div class="kpi-sub">Todas as filiais</div>
     </div>
   </div>
 
