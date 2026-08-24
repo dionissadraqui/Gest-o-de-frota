@@ -1866,7 +1866,7 @@ function agruparPorFilial(){{
   const semAtual  = Math.min(3, Math.floor((new Date().getDate() - 1) / 7));
   motoristasDB.forEach(m => {{
     const f = obterChaveFilial(m);
-    if(!mapa[f]) mapa[f] = {{ name:f, total:0, comDss:0, dssMax:0, recOk:0, simOk:0, acid:0, multas:0, excVel:0, examePerOk:0, exameToxOk:0, telCorpOk:0 }};
+    if(!mapa[f]) mapa[f] = {{ name:f, total:0, comDss:0, dssMax:0, recOk:0, simOk:0, acid:0, multas:0, excVel:0, acidMot:0, multasMot:0, excVelMot:0, examePerOk:0, exameToxOk:0, telCorpOk:0 }};
     mapa[f].total++;
     mapa[f].comDss += (m.dssAnual && m.dssAnual[mesAtual] && m.dssAnual[mesAtual][semAtual]) ? 1 : 0;
     mapa[f].dssMax += 1;
@@ -1875,6 +1875,9 @@ function agruparPorFilial(){{
     mapa[f].acid   += Math.max(0, parseInt(m.acidentes || 0));
     mapa[f].multas += Math.max(0, parseInt(m.multas    || 0));
     mapa[f].excVel += Math.max(0, parseInt(m.excesso   || 0));
+    if(Math.max(0, parseInt(m.acidentes || 0)) > 0) mapa[f].acidMot++;
+    if(Math.max(0, parseInt(m.multas    || 0)) > 0) mapa[f].multasMot++;
+    if(Math.max(0, parseInt(m.excesso   || 0)) > 0) mapa[f].excVelMot++;
     if(exameOk(m.examePeriodico, m.examePeriodicoValidadeMeses))       mapa[f].examePerOk++;
     if(exameOk(m.exameToxicologico, m.exameToxicologicoValidadeMeses)) mapa[f].exameToxOk++;
     if(m.telefoneCorporativo === 'SIM') mapa[f].telCorpOk++;
@@ -1955,9 +1958,9 @@ function renderizarGridFiliais(filiais){{
     const pSem   = f.total > 0 ? Math.round((f.total - f.comDss)/ f.total *100) : 100;
     const recPct = f.total > 0 ? Math.round(f.recOk / f.total *100) : 0;
     const simPct = f.total > 0 ? Math.round(f.simOk / f.total *100) : 0;
-    const acidPct= f.total > 0 ? Math.round(f.acid  / f.total *100) : 0;
-    const multPct= f.total > 0 ? Math.round(f.multas/ f.total *100) : 0;
-    const velPct = f.total > 0 ? Math.round(f.excVel/ f.total *100) : 0;
+    const acidPct= f.total > 0 ? Math.round(f.acidMot   / f.total *100) : 0;
+    const multPct= f.total > 0 ? Math.round(f.multasMot / f.total *100) : 0;
+    const velPct = f.total > 0 ? Math.round(f.excVelMot / f.total *100) : 0;
     const exPerPct  = f.total > 0 ? Math.round(f.examePerOk / f.total *100) : 0;
     const exToxPct  = f.total > 0 ? Math.round(f.exameToxOk / f.total *100) : 0;
     const telCorpPct= f.total > 0 ? Math.round(f.telCorpOk  / f.total *100) : 0;
