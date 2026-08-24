@@ -449,9 +449,15 @@ HTML = f"""<!DOCTYPE html>
 .card-condutor{{border-color:#3b7dd8}}
 .card-condutor .card-stripe{{background:linear-gradient(90deg,#1a4fa0,#3b7dd8)}}
 .card-condutor .info-block-title{{color:#1a4fa0}}
-.avatar-wrapper{{position:relative;width:92px;height:92px;margin:0 auto;cursor:pointer;border-radius:50%;border:2.5px dashed #3b7dd8;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#e8f0fe}}
+.avatar-outer{{position:relative;width:92px;height:92px;margin:0 auto;z-index:20;}}
+.avatar-wrapper{{position:relative;width:92px;height:92px;cursor:pointer;border-radius:50%;border:2.5px dashed #3b7dd8;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#e8f0fe}}
 .avatar-wrapper img{{width:100%;height:100%;object-fit:cover}}
 .avatar-wrapper .upload-hint{{position:absolute;bottom:0;background:rgba(26,79,160,0.82);width:100%;font-size:8px;color:#fff;padding:2px 0;text-transform:uppercase;font-weight:700}}
+.avatar-menu{{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:6px;background:#ffffff;border:1.5px solid #c4d0e4;border-radius:8px;box-shadow:0 8px 24px rgba(20,50,120,0.18);z-index:9999;display:none;flex-direction:column;min-width:170px;overflow:visible;}}
+.avatar-menu button{{background:none;border:none;padding:10px 14px;text-align:left;font-size:12px;font-weight:700;color:#1a3a6b;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .15s;width:100%;}}
+.avatar-menu button:hover{{background:#eef3fb}}
+.avatar-menu button#avatarMenuExcluir{{color:#dc2626}}
+.avatar-menu button#avatarMenuExcluir:hover{{background:#fff5f5}}
 .profile-card-left{{background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(20,50,120,0.10);border:1.5px solid #3b7dd8;display:flex;flex-direction:column}}
 .profile-card-left .card-stripe{{background:linear-gradient(90deg,#1a4fa0,#3b7dd8)}}
 .profile-card-left-body{{padding:16px;text-align:center;display:flex;flex-direction:column;gap:10px;flex:1;justify-content:space-between}}
@@ -1850,12 +1856,16 @@ function checarCamposValidade(dataId, anosId){{
   aplicarEstadoVisualCampos();
 }}
 
+function obterChaveFilial(m){{
+  return (m.filial||'').toUpperCase().trim() || 'AGUARDANDO FILIAL';
+}}
+
 function agruparPorFilial(){{
   const mapa = {{}};
   const mesAtual  = MESES[new Date().getMonth()];
   const semAtual  = Math.min(3, Math.floor((new Date().getDate() - 1) / 7));
   motoristasDB.forEach(m => {{
-    const f = (m.filial||'').toUpperCase().trim() || 'SEM FILIAL';
+    const f = obterChaveFilial(m);
     if(!mapa[f]) mapa[f] = {{ name:f, total:0, comDss:0, dssMax:0, recOk:0, simOk:0, acid:0, multas:0, excVel:0, examePerOk:0, exameToxOk:0, telCorpOk:0 }};
     mapa[f].total++;
     mapa[f].comDss += (m.dssAnual && m.dssAnual[mesAtual] && m.dssAnual[mesAtual][semAtual]) ? 1 : 0;
@@ -2248,7 +2258,7 @@ async function adicionarNovoMotorista(){{
 function expandirFilial(nomeFilial){{
   filialModalAtiva = nomeFilial;
   document.getElementById('mUnidadeName').textContent = nomeFilial;
-  const listagem = motoristasDB.filter(m => (m.filial||'').toUpperCase() === nomeFilial.toUpperCase());
+  const listagem = motoristasDB.filter(m => obterChaveFilial(m) === nomeFilial.toUpperCase());
   document.getElementById('mTotalDrivers').textContent = listagem.length;
   const totalDss = listagem.reduce((acc,m) => acc + contarDssSessoes(m), 0);
   document.getElementById('mWithDss').textContent = totalDss;
@@ -2318,7 +2328,7 @@ function filtrarFilialPorIndicador(tipo){{
     tr.style.display = '';
   }});
   document.getElementById('filialSearchInput').value = '';
-  const listagem = motoristasDB.filter(m => (m.filial||'').toUpperCase() === (filialModalAtiva||'').toUpperCase());
+  const listagem = motoristasDB.filter(m => obterChaveFilial(m) === (filialModalAtiva||'').toUpperCase());
   const filtrados = listagem.filter(m => {{
    if(tipo==='todos')     return true;
     if(tipo==='dss')       return contarDssSessoes(m) > 0;
@@ -2439,7 +2449,14 @@ function abrirFichaMotorista(cpf){{
       <span class="card-stripe"></span>
       <div class="profile-card-left-body">
         <div>
-          <div class="avatar-wrapper" onclick="dispararUploadFoto()">${{avatarHtml}}<div class="upload-hint">Alterar Foto</div></div>
+          <div class="avatar-outer" id="avatarOuterFicha">
+            <div class="avatar-wrapper" id="avatarWrapperFicha" onclick="abrirMenuAvatar(event)">${{avatarHtml}}<div class="upload-hint">Alterar Foto</div></div>
+            <div class="avatar-menu" id="avatarMenu">
+              <button type="button" id="avatarMenuCarregar" onclick="event.stopPropagation(); dispararUploadFoto();"><i class="fa-solid fa-upload"></i> Carregar Imagem</button>
+              <button type="button" id="avatarMenuSubstituir" style="display:none;" onclick="event.stopPropagation(); dispararUploadFoto();"><i class="fa-solid fa-rotate"></i> Substituir Imagem</button>
+              <button type="button" id="avatarMenuExcluir" style="display:none;" onclick="event.stopPropagation(); excluirFotoAtual();"><i class="fa-solid fa-trash"></i> Excluir Imagem</button>
+            </div>
+          </div>
           <div class="form-group" style="width:100%;margin-top:15px;"><label>Nome do Condutor</label><input type="text" id="editNome" value="${{esc(m.nome)}}"></div>
           <div class="form-group" style="width:100%;margin-top:10px;"><label>Filial Base</label><input type="text" id="editFilial" value="${{esc(m.filial)}}"></div>
           <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;">
@@ -2653,7 +2670,49 @@ function toggleNumeroLinha(){{
   if(!ehSim) input.value = '';
 }}
 
-function dispararUploadFoto(){{ document.getElementById('hiddenPhotoInput').click(); }}
+function dispararUploadFoto(){{
+  document.getElementById('avatarMenu').style.display = 'none';
+  document.getElementById('hiddenPhotoInput').click();
+}}
+
+function abrirMenuAvatar(event){{
+  event.stopPropagation();
+  const menu    = document.getElementById('avatarMenu');
+  const temFoto = !!fotoTemporariaBase64;
+  document.getElementById('avatarMenuCarregar').style.display   = temFoto ? 'none' : 'flex';
+  document.getElementById('avatarMenuSubstituir').style.display = temFoto ? 'flex' : 'none';
+  document.getElementById('avatarMenuExcluir').style.display    = temFoto ? 'flex' : 'none';
+  menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+}}
+
+document.addEventListener('click', e => {{
+  const menu = document.getElementById('avatarMenu');
+  if(menu && menu.style.display === 'flex' && !menu.contains(e.target) && e.target.id !== 'avatarWrapperFicha'){{
+    menu.style.display = 'none';
+  }}
+}});
+
+function excluirFotoAtual(){{
+  fotoTemporariaBase64 = '';
+  const img   = document.getElementById('profilePreviewImg');
+  const icone = document.getElementById('profileIconPlaceholder');
+  if(img){{ img.src = ''; img.style.display = 'none'; }}
+  if(icone){{
+    icone.style.display = 'block';
+  }} else {{
+    const wrapper = document.getElementById('avatarWrapperFicha');
+    if(wrapper){{
+      const i = document.createElement('i');
+      i.id = 'profileIconPlaceholder';
+      i.className = 'fa-solid fa-user-tie';
+      i.style.cssText = 'font-size:32px;color:#4a9eff;';
+      wrapper.insertBefore(i, wrapper.firstChild);
+    }}
+  }}
+  document.getElementById('avatarMenu').style.display = 'none';
+  toast('Foto removida do preview. Clique em "Confirmar Alterações" para salvar.', 'ok');
+}}
+
 function processarFotoCarregada(input){{
   if(input.files && input.files[0]){{
     const reader = new FileReader();
