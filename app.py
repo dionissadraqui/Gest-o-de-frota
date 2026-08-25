@@ -2568,6 +2568,42 @@ function abrirFichaMotorista(cpf){{
           <div class="form-group" style="width:100%;margin-top:15px;"><label>Nome do Condutor</label><input type="text" id="editNome" value="${{esc(m.nome)}}"></div>
           <div class="form-group" style="width:100%;margin-top:10px;"><label>Filial Base</label><input type="text" id="editFilial" value="${{esc(m.filial)}}"></div>
           <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;">
+            <div style="background:${{afastadoBg}};border:1.5px solid ${{afastadoBd}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-user-slash" style="color:${{afastadoCor}};margin-right:6px"></i>Afastado</span>
+              <span style="font-size:20px;font-weight:900;color:${{afastadoCor}};line-height:1;">${{m.afastado||'NÃO'}}</span>
+            </div>
+            <div style="background:${{bgPorCor(svCnh.cor)}};border:1.5px solid ${{bdPorCor(svCnh.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-id-card" style="color:${{svCnh.cor}};margin-right:6px"></i>Validade CNH</span>
+                <span style="font-size:13px;font-weight:900;color:${{svCnh.cor}};letter-spacing:.5px;">${{rotuloVenc(svCnh)}}</span>
+              </div>
+              <span style="font-size:12px;font-weight:700;color:${{svCnh.cor}};">${{svCnh.venc ? svCnh.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span>
+            </div>
+            <div style="background:${{bgPorCor(svMopp.cor)}};border:1.5px solid ${{bdPorCor(svMopp.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-id-card-clip" style="color:${{svMopp.cor}};margin-right:6px"></i>Validade MOPP</span>
+                <span style="font-size:13px;font-weight:900;color:${{svMopp.cor}};letter-spacing:.5px;">${{rotuloVenc(svMopp)}}</span>
+              </div>
+              <span style="font-size:12px;font-weight:700;color:${{svMopp.cor}};">${{svMopp.venc ? svMopp.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span>
+            </div>
+            <div style="background:${{bgPorCor(svExTox.cor)}};border:1.5px solid ${{bdPorCor(svExTox.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-vial" style="color:${{svExTox.cor}};margin-right:6px"></i>Exame Toxicológico</span>
+                <span style="font-size:13px;font-weight:900;color:${{svExTox.cor}};letter-spacing:.5px;">${{rotuloVenc(svExTox)}}</span>
+              </div>
+              <span style="font-size:12px;font-weight:700;color:${{svExTox.cor}};">${{svExTox.venc ? svExTox.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span>
+            </div>
+            <div style="background:${{bgPorCor(svExPer.cor)}};border:1.5px solid ${{bdPorCor(svExPer.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-stethoscope" style="color:${{svExPer.cor}};margin-right:6px"></i>Exame Periódico</span>
+                <span style="font-size:13px;font-weight:900;color:${{svExPer.cor}};letter-spacing:.5px;">${{rotuloVenc(svExPer)}}</span>
+              </div>
+              <span style="font-size:12px;font-weight:700;color:${{svExPer.cor}};">${{svExPer.venc ? svExPer.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span>
+            </div>
+            <div style="background:${{pontosBg}};border:1.5px solid ${{pontosBd}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-id-card-clip" style="color:${{pontosCor}};margin-right:6px"></i>Pontuação CNH</span>
+              <span style="font-size:20px;font-weight:900;color:${{pontosCor}};line-height:1;">${{pontosCnh}} pts</span>
+            </div>
             <div style="background:${{acidBg}};border:1.5px solid ${{acidBd}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
               <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-car-burst" style="color:${{acidCor}};margin-right:6px"></i>Acidentes</span>
               <span style="font-size:32px;font-weight:900;color:${{acidCor}};line-height:1;">${{m.acidentes||0}}</span>
@@ -2601,42 +2637,6 @@ function abrirFichaMotorista(cpf){{
               </div>
               <span style="font-size:12px;font-weight:700;color:${{svGest.cor}};">${{svGest.venc ? svGest.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span>
             </div>
-            <div style="background:${{bgPorCor(svCnh.cor)}};border:1.5px solid ${{bdPorCor(svCnh.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-                <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-id-card" style="color:${{svCnh.cor}};margin-right:6px"></i>Validade CNH</span>
-                <span style="font-size:13px;font-weight:900;color:${{svCnh.cor}};letter-spacing:.5px;">${{rotuloVenc(svCnh)}}</span>
-              </div>
-              <span style="font-size:12px;font-weight:700;color:${{svCnh.cor}};">${{svCnh.venc ? svCnh.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span>
-            </div>
-            <div style="background:${{bgPorCor(svExPer.cor)}};border:1.5px solid ${{bdPorCor(svExPer.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-                <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-stethoscope" style="color:${{svExPer.cor}};margin-right:6px"></i>Exame Periódico</span>
-                <span style="font-size:13px;font-weight:900;color:${{svExPer.cor}};letter-spacing:.5px;">${{rotuloVenc(svExPer)}}</span>
-              </div>
-              <span style="font-size:12px;font-weight:700;color:${{svExPer.cor}};">${{svExPer.venc ? svExPer.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span>
-            </div>
-            <div style="background:${{bgPorCor(svExTox.cor)}};border:1.5px solid ${{bdPorCor(svExTox.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-                <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-vial" style="color:${{svExTox.cor}};margin-right:6px"></i>Exame Toxicológico</span>
-                <span style="font-size:13px;font-weight:900;color:${{svExTox.cor}};letter-spacing:.5px;">${{rotuloVenc(svExTox)}}</span>
-              </div>
-              <span style="font-size:12px;font-weight:700;color:${{svExTox.cor}};">${{svExTox.venc ? svExTox.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span>
-            </div>
-            <div style="background:${{pontosBg}};border:1.5px solid ${{pontosBd}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-id-card-clip" style="color:${{pontosCor}};margin-right:6px"></i>Pontuação CNH</span>
-              <span style="font-size:20px;font-weight:900;color:${{pontosCor}};line-height:1;">${{pontosCnh}} pts</span>
-            </div>
-            <div style="background:${{afastadoBg}};border:1.5px solid ${{afastadoBd}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-user-slash" style="color:${{afastadoCor}};margin-right:6px"></i>Afastado</span>
-              <span style="font-size:20px;font-weight:900;color:${{afastadoCor}};line-height:1;">${{m.afastado||'NÃO'}}</span>
-            </div>
-            <div style="background:${{bgPorCor(svMopp.cor)}};border:1.5px solid ${{bdPorCor(svMopp.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-                <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-id-card-clip" style="color:${{svMopp.cor}};margin-right:6px"></i>Validade MOPP</span>
-                <span style="font-size:13px;font-weight:900;color:${{svMopp.cor}};letter-spacing:.5px;">${{rotuloVenc(svMopp)}}</span>
-              </div>
-              <span style="font-size:12px;font-weight:700;color:${{svMopp.cor}};">${{svMopp.venc ? svMopp.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span>
-            </div>
             <div style="background:${{uniformeBg}};border:1.5px solid ${{uniformeBd}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
               <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-shirt" style="color:${{uniformeCor}};margin-right:6px"></i>Entrega de Uniforme</span>
               <span style="font-size:18px;font-weight:900;color:${{uniformeCor}};line-height:1;">${{m.entregaUniforme||'PENDENTE'}}</span>
@@ -2652,37 +2652,6 @@ function abrirFichaMotorista(cpf){{
       </div>
     </div>
     <div class="profile-details-right">
-      <div class="info-section-box card-contato">
-        <span class="card-stripe"></span>
-        <div class="card-body">
-          <div class="info-block-title"><i class="fa-solid fa-phone"></i> Dados de Contato</div>
-          <div class="meta-grid">
-            <div class="meta-item"><label>Telefone / WhatsApp</label><input type="text" id="editTelefone" value="${{esc(m.telefone)}}" placeholder="(00) 00000-0000"></div>
-            <div class="meta-item"><label>E-mail Corporativo</label><input type="email" id="editEmail" value="${{esc(m.email)}}" placeholder="nome@luft.com.br"></div>
-            <div class="meta-item"><label>CPF do Motorista</label><input type="text" id="editCpf" value="${{esc(m.cpf)}}" placeholder="000.000.000-00"></div>
-          </div>
-          <div class="meta-grid" style="border-top:1px dashed #d0e4ec;padding-top:10px;margin-top:10px;">
-            <div class="meta-item">
-              <label>Possui Telefone Corporativo?</label>
-              <select id="editTelefoneCorporativo" onchange="toggleNumeroLinha()">
-                <option value="NÃO" ${{m.telefoneCorporativo==='NÃO'?'selected':''}}>NÃO</option>
-                <option value="SIM" ${{m.telefoneCorporativo==='SIM'?'selected':''}}>SIM</option>
-              </select>
-            </div>
-            <div class="meta-item">
-              <label>Número da Linha <span id="numeroLinhaObrigatorio" style="color:#dc2626;${{m.telefoneCorporativo==='SIM'?'':'display:none;'}}">*obrigatório</span></label>
-              <input type="text" id="editNumeroLinha" value="${{esc(m.numeroLinha)}}" placeholder="(00) 00000-0000" ${{m.telefoneCorporativo==='NÃO'?'disabled':''}} style="${{m.telefoneCorporativo==='NÃO'?'background:#eef1f5!important;color:#9aaabb!important;':''}}">
-            </div>
-            <div class="meta-item">
-              <label>Modelo do Celular</label>
-              <div style="display:flex;gap:4px;">
-                <input type="text" id="editModelo" value="${{esc(m.modelo)}}" placeholder="Ex: Samsung A54" style="flex:1;min-width:0;">
-                <input type="text" id="editImei" value="${{esc(m.imei)}}" placeholder="IMEI" style="flex:1;min-width:0;" title="IMEI do celular">
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
       <div class="info-section-box card-docs">
         <span class="card-stripe"></span>
         <div class="card-body">
@@ -2704,23 +2673,6 @@ function abrirFichaMotorista(cpf){{
           <div class="info-block-title"><i class="fa-solid fa-stethoscope"></i> Exames & Complementares</div>
           <div class="meta-grid">
             <div class="meta-item">
-              <label>Exame Periódico</label>
-              <div style="display:flex;gap:4px;">
-                <input type="date" id="editExamePeriodico" value="${{esc(m.examePeriodico)}}" style="flex:1;" oninput="checarCamposValidade('editExamePeriodico','editExamePeriodicoValidadeMeses')">
-                <input type="number" id="editExamePeriodicoValidadeMeses" value="${{m.examePeriodicoValidadeMeses||0}}" min="0" style="width:52px;" title="Válido por (meses)" oninput="checarCamposValidade('editExamePeriodico','editExamePeriodicoValidadeMeses')">
-              </div>
-              <div style="font-size:10px;font-weight:700;color:${{svExPer.cor}};margin-top:2px;">${{svExPer.label}}</div>
-            </div>
-            <div class="meta-item">
-              <label>Exame Toxicológico</label>
-              <div style="display:flex;gap:4px;">
-                <input type="date" id="editExameToxicologico" value="${{esc(m.exameToxicologico)}}" style="flex:1;" oninput="checarCamposValidade('editExameToxicologico','editExameToxicologicoValidadeMeses')">
-                <input type="number" id="editExameToxicologicoValidadeMeses" value="${{m.exameToxicologicoValidadeMeses||0}}" min="0" style="width:52px;" title="Válido por (meses)" oninput="checarCamposValidade('editExameToxicologico','editExameToxicologicoValidadeMeses')">
-              </div>
-              <div style="font-size:10px;font-weight:700;color:${{svExTox.cor}};margin-top:2px;">${{svExTox.label}}</div>
-            </div>
-            <div class="meta-item"><label>Pontuação CNH</label><input type="number" id="editPontuacaoCnh" value="${{m.pontuacaoCnh||0}}"></div>
-            <div class="meta-item">
               <label>Afastado</label>
               <select id="editAfastado">
                 <option value="NÃO" ${{m.afastado==='NÃO'?'selected':''}}>NÃO</option>
@@ -2733,6 +2685,23 @@ function abrirFichaMotorista(cpf){{
               <input type="date" id="editVencimentoCnhMopp" value="${{esc(m.vencimentoCnhMopp)}}">
               <div style="font-size:10px;font-weight:700;color:${{svMopp.cor}};margin-top:2px;">${{svMopp.label}}</div>
             </div>
+            <div class="meta-item">
+              <label>Exame Toxicológico</label>
+              <div style="display:flex;gap:4px;">
+                <input type="date" id="editExameToxicologico" value="${{esc(m.exameToxicologico)}}" style="flex:1;" oninput="checarCamposValidade('editExameToxicologico','editExameToxicologicoValidadeMeses')">
+                <input type="number" id="editExameToxicologicoValidadeMeses" value="${{m.exameToxicologicoValidadeMeses||0}}" min="0" style="width:52px;" title="Válido por (meses)" oninput="checarCamposValidade('editExameToxicologico','editExameToxicologicoValidadeMeses')">
+              </div>
+              <div style="font-size:10px;font-weight:700;color:${{svExTox.cor}};margin-top:2px;">${{svExTox.label}}</div>
+            </div>
+            <div class="meta-item">
+              <label>Exame Periódico</label>
+              <div style="display:flex;gap:4px;">
+                <input type="date" id="editExamePeriodico" value="${{esc(m.examePeriodico)}}" style="flex:1;" oninput="checarCamposValidade('editExamePeriodico','editExamePeriodicoValidadeMeses')">
+                <input type="number" id="editExamePeriodicoValidadeMeses" value="${{m.examePeriodicoValidadeMeses||0}}" min="0" style="width:52px;" title="Válido por (meses)" oninput="checarCamposValidade('editExamePeriodico','editExamePeriodicoValidadeMeses')">
+              </div>
+              <div style="font-size:10px;font-weight:700;color:${{svExPer.cor}};margin-top:2px;">${{svExPer.label}}</div>
+            </div>
+            <div class="meta-item"><label>Pontuação CNH</label><input type="number" id="editPontuacaoCnh" value="${{m.pontuacaoCnh||0}}"></div>
             <div class="meta-item">
               <label>Entrega de Uniforme</label>
               <select id="editEntregaUniforme">
@@ -2800,6 +2769,37 @@ function abrirFichaMotorista(cpf){{
               </div>
               <div style="font-size:10px;font-weight:700;color:${{svGest.cor}};margin-bottom:4px;">${{svGest.label}}</div>
               <input type="text" id="editObsGestime" class="obs-input" value="${{esc(m.obsGestime)}}" placeholder="Obs de Gestime">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="info-section-box card-contato">
+        <span class="card-stripe"></span>
+        <div class="card-body">
+          <div class="info-block-title"><i class="fa-solid fa-phone"></i> Dados de Contato</div>
+          <div class="meta-grid">
+            <div class="meta-item"><label>Telefone / WhatsApp</label><input type="text" id="editTelefone" value="${{esc(m.telefone)}}" placeholder="(00) 00000-0000"></div>
+            <div class="meta-item"><label>E-mail Corporativo</label><input type="email" id="editEmail" value="${{esc(m.email)}}" placeholder="nome@luft.com.br"></div>
+            <div class="meta-item"><label>CPF do Motorista</label><input type="text" id="editCpf" value="${{esc(m.cpf)}}" placeholder="000.000.000-00"></div>
+          </div>
+          <div class="meta-grid" style="border-top:1px dashed #d0e4ec;padding-top:10px;margin-top:10px;">
+            <div class="meta-item">
+              <label>Possui Telefone Corporativo?</label>
+              <select id="editTelefoneCorporativo" onchange="toggleNumeroLinha()">
+                <option value="NÃO" ${{m.telefoneCorporativo==='NÃO'?'selected':''}}>NÃO</option>
+                <option value="SIM" ${{m.telefoneCorporativo==='SIM'?'selected':''}}>SIM</option>
+              </select>
+            </div>
+            <div class="meta-item">
+              <label>Número da Linha <span id="numeroLinhaObrigatorio" style="color:#dc2626;${{m.telefoneCorporativo==='SIM'?'':'display:none;'}}">*obrigatório</span></label>
+              <input type="text" id="editNumeroLinha" value="${{esc(m.numeroLinha)}}" placeholder="(00) 00000-0000" ${{m.telefoneCorporativo==='NÃO'?'disabled':''}} style="${{m.telefoneCorporativo==='NÃO'?'background:#eef1f5!important;color:#9aaabb!important;':''}}">
+            </div>
+            <div class="meta-item">
+              <label>Modelo do Celular</label>
+              <div style="display:flex;gap:4px;">
+                <input type="text" id="editModelo" value="${{esc(m.modelo)}}" placeholder="Ex: Samsung A54" style="flex:1;min-width:0;">
+                <input type="text" id="editImei" value="${{esc(m.imei)}}" placeholder="IMEI" style="flex:1;min-width:0;" title="IMEI do celular">
+              </div>
             </div>
           </div>
         </div>
