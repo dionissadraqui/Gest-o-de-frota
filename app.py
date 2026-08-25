@@ -595,10 +595,12 @@ HTML = f"""<!DOCTYPE html>
 .dmc-status-pill{{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 6px;border-radius:8px;border:1.5px solid}}
 .dmc-status-pill.ok{{background:rgba(22,163,74,0.08);border-color:rgba(22,163,74,0.35)}}
 .dmc-status-pill.pend{{background:rgba(217,119,6,0.08);border-color:rgba(217,119,6,0.35)}}
+.dmc-status-pill.vencido{{background:rgba(220,38,38,0.08);border-color:rgba(220,38,38,0.35)}}
 .dmc-status-pill-lbl{{font-size:11px;text-transform:uppercase;letter-spacing:.5px;font-weight:700;color:#5a6e8a}}
 .dmc-status-pill-val{{font-size:15px;font-weight:800}}
 .dmc-status-pill.ok .dmc-status-pill-val{{color:#16a34a}}
 .dmc-status-pill.pend .dmc-status-pill-val{{color:#d97706}}
+.dmc-status-pill.vencido .dmc-status-pill-val{{color:#dc2626}}
 .kpi-empty{{grid-column:1/-1;text-align:center;padding:40px;color:#9aaabb;font-size:12px}}
 .kpi-empty i{{font-size:32px;margin-bottom:10px;display:block;color:#c4d0e4}}
 .empty-state{{text-align:center;padding:40px;color:#9aaabb}}
@@ -1532,8 +1534,8 @@ function renderizarCardsKpi(lista){{
       const exToxOk = exameOk(m.exameToxicologico, m.exameToxicologicoValidadeMeses);
       const svExPerK = statusVencimentoProntuario(m.examePeriodico, m.examePeriodicoValidadeMeses);
       const svExToxK = statusVencimentoProntuario(m.exameToxicologico, m.exameToxicologicoValidadeMeses);
-      const recOk   = reciclagemStatus(m) === 'OK';
-      const simOk   = simuladorStatus(m) === 'OK';
+      const recPill = statusPill3(m.reciclagemData, m.reciclagemValidadeMeses);
+      const simPill = statusPill3(m.simuladorData, m.simuladorValidadeMeses);
       const uniOk   = m.entregaUniforme === 'OK';
       const afastadoSim = m.afastado === 'SIM';
       const svCnhK  = statusVencimentoData(m.validadeCnh);
@@ -1562,13 +1564,13 @@ function renderizarCardsKpi(lista){{
           <div class="dmc-pront-item full" style="background:rgba(255,255,255,0.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(196,208,228,0.6);border-radius:8px;padding:8px 10px;box-shadow:0 2px 6px rgba(20,50,120,0.05);"><span class="dmc-pront-lbl">Afastado</span><span class="dmc-pront-val" style="color:${{afastadoSim?'#dc2626':'#16a34a'}}">${{m.afastado||'NÃO'}}${{afastadoSim && m.obsAfastado ? ' — ' + m.obsAfastado : ''}}</span></div>
         </div>
         <div class="dmc-status-row">
-          <div class="dmc-status-pill ${{recOk?'ok':'pend'}}">
+          <div class="dmc-status-pill ${{recPill.cls}}">
             <span class="dmc-status-pill-lbl"><i class="fa-solid fa-recycle"></i> Reciclagem</span>
-            <span class="dmc-status-pill-val">${{recOk?'OK':'PENDENTE'}}</span>
+            <span class="dmc-status-pill-val">${{recPill.txt}}</span>
           </div>
-          <div class="dmc-status-pill ${{simOk?'ok':'pend'}}">
+          <div class="dmc-status-pill ${{simPill.cls}}">
             <span class="dmc-status-pill-lbl"><i class="fa-solid fa-car-side"></i> Simulador</span>
-            <span class="dmc-status-pill-val">${{simOk?'OK':'PENDENTE'}}</span>
+            <span class="dmc-status-pill-val">${{simPill.txt}}</span>
           </div>
         </div>
       </div>`;
@@ -1780,6 +1782,15 @@ function statusEfetivo(campoStatus, dataStr, meses){{
 function reciclagemStatus(m){{ return statusEfetivo(m.reciclagem, m.reciclagemData, m.reciclagemValidadeMeses); }}
 function simuladorStatus(m){{  return statusEfetivo(m.simulador,  m.simuladorData,  m.simuladorValidadeMeses); }}
 function gestimeStatus(m){{    return statusEfetivo(m.gestime,    m.gestimeData,    m.gestimeValidadeMeses); }}
+
+// Status em 3 estados (verde/laranja/vermelho) para os pills do Prontuário
+function statusPill3(dataStr, meses){{
+  const sv = statusVencimento(dataStr, meses);
+  if(!sv.venc) return {{ cls:'pend', txt:'PENDENTE' }};
+  if(sv.cor === '#dc2626') return {{ cls:'vencido', txt:'VENCIDO' }};
+  if(sv.cor === '#d97706') return {{ cls:'pend', txt:'ALERTA' }};
+  return {{ cls:'ok', txt:'OK' }};
+}}
 // Exame: considerado OK só se tem data preenchida E não está vencido.
 // A data continua salva mesmo depois de vencer — só o status calculado muda.
 function exameOk(dataStr, meses){{
@@ -1802,6 +1813,12 @@ function statusVencimentoData(dataStr){{
 }}
 function cnhVencida(m){{
   return statusVencimentoData(m.validadeCnh).vencida;
+}}
+function rotuloVenc(sv){{
+  if(!sv || !sv.venc) return 'PENDENTE';
+  if(sv.cor === '#dc2626') return 'VENCIDO';
+  if(sv.cor === '#d97706') return 'ALERTA';
+  return 'OK';
 }}
 
 // ── Grupos de campos vinculados a vencimento (data + validade em meses) ──
@@ -1848,10 +1865,33 @@ function aplicarEstadoVisualCampos(){{
   }});
 
   idsUsados.add('editObsAfastado');
+  idsUsados.add('editAcidentes');
+  idsUsados.add('editMultas');
+  idsUsados.add('editExcesso');
+  idsUsados.add('editObsAcidente');
+  idsUsados.add('editObsMultas');
+  idsUsados.add('editObsGerais');
   container.querySelectorAll('input[type="text"], input[type="email"], input[type="number"], input[type="date"]').forEach(el => {{
     if(idsUsados.has(el.id)) return;
     el.classList.remove('campo-valido','campo-alerta-venc','campo-vencido-venc');
     if((el.value||'').toString().trim() !== '') el.classList.add('campo-valido');
+  }});
+
+  // Acidentes / Multas / Exc. Velocidade: verde se 0, vermelho se 1 ou mais
+  ['editAcidentes','editMultas','editExcesso'].forEach(id => {{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.classList.remove('campo-valido','campo-alerta-venc','campo-vencido-venc');
+    const val = parseInt(el.value) || 0;
+    el.classList.add(val > 0 ? 'campo-vencido-venc' : 'campo-valido');
+  }});
+
+  // Obs. Acidente / Obs. Multas / Obs. Excesso: vermelho se preenchido
+  ['editObsAcidente','editObsMultas','editObsGerais'].forEach(id => {{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.classList.remove('campo-valido','campo-alerta-venc','campo-vencido-venc');
+    if((el.value||'').toString().trim() !== '') el.classList.add('campo-vencido-venc');
   }});
 
   // Selects marcados como "OK" ficam verdes (Reciclagem, Simulador, Gestime, Entrega de Uniforme)
@@ -2474,6 +2514,15 @@ function abrirFichaMotorista(cpf){{
   const recEfetivo  = reciclagemStatus(m);
   const simEfetivo  = simuladorStatus(m);
   const gestEfetivo = gestimeStatus(m);
+  const acidCor = (m.acidentes||0) > 0 ? '#dc2626' : '#16a34a';
+  const acidBg  = (m.acidentes||0) > 0 ? '#fff5f5' : '#f0fef4';
+  const acidBd  = (m.acidentes||0) > 0 ? '#fca5a5' : '#86efac';
+  const multCor = (m.multas||0) > 0 ? '#dc2626' : '#16a34a';
+  const multBg  = (m.multas||0) > 0 ? '#fff5f5' : '#f0fef4';
+  const multBd  = (m.multas||0) > 0 ? '#fca5a5' : '#86efac';
+  const velCor  = (m.excesso||0) > 0 ? '#dc2626' : '#16a34a';
+  const velBg   = (m.excesso||0) > 0 ? '#fff5f5' : '#f0fef4';
+  const velBd   = (m.excesso||0) > 0 ? '#fca5a5' : '#86efac';
   const svRec   = statusVencimento(m.reciclagemData, m.reciclagemValidadeMeses);
   const svSim   = statusVencimento(m.simuladorData, m.simuladorValidadeMeses);
   const svExPer = statusVencimento(m.examePeriodico, m.examePeriodicoValidadeMeses);
@@ -2481,6 +2530,20 @@ function abrirFichaMotorista(cpf){{
   const svGest  = statusVencimento(m.gestimeData, m.gestimeValidadeMeses);
   const svCnh   = statusVencimentoData(m.validadeCnh);
   const svMopp  = statusVencimentoData(m.vencimentoCnhMopp);
+  const bgPorCor = c => c==='#16a34a'?'#f0fef4':c==='#d97706'?'#fffbeb':c==='#dc2626'?'#fff5f5':'#f8fafd';
+  const bdPorCor = c => c==='#16a34a'?'#86efac':c==='#d97706'?'#fde68a':c==='#dc2626'?'#fca5a5':'#dde6f4';
+  const pontosCnh = m.pontuacaoCnh||0;
+  const pontosCor = pontosCnh > 0 ? '#dc2626' : '#16a34a';
+  const pontosBg  = pontosCnh > 0 ? '#fff5f5' : '#f0fef4';
+  const pontosBd  = pontosCnh > 0 ? '#fca5a5' : '#86efac';
+  const afastadoSimFlag = m.afastado === 'SIM';
+  const afastadoCor = afastadoSimFlag ? '#dc2626' : '#16a34a';
+  const afastadoBg  = afastadoSimFlag ? '#fff5f5' : '#f0fef4';
+  const afastadoBd  = afastadoSimFlag ? '#fca5a5' : '#86efac';
+  const uniformeOkFlag = m.entregaUniforme === 'OK';
+  const uniformeCor = uniformeOkFlag ? '#16a34a' : '#dc2626';
+  const uniformeBg  = uniformeOkFlag ? '#f0fef4' : '#fff5f5';
+  const uniformeBd  = uniformeOkFlag ? '#86efac' : '#fca5a5';
   let highlightSeg='', highlightDss='', badgeSegHtml='', badgeDssHtml='';
   if(fichaOrigemModal === 'kpi'){{
     if(kpiTipoAtual==='excesso')  {{ highlightSeg=' card-highlight-vel';  badgeSegHtml='<span style="margin-left:auto;font-size:8px;font-weight:800;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;padding:2px 8px;border-radius:20px;"><i class=\\"fa-solid fa-gauge-high\\" style=\\"margin-right:3px\\"></i>Excesso de Velocidade</span>'; }}
@@ -2505,29 +2568,78 @@ function abrirFichaMotorista(cpf){{
           <div class="form-group" style="width:100%;margin-top:15px;"><label>Nome do Condutor</label><input type="text" id="editNome" value="${{esc(m.nome)}}"></div>
           <div class="form-group" style="width:100%;margin-top:10px;"><label>Filial Base</label><input type="text" id="editFilial" value="${{esc(m.filial)}}"></div>
           <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;">
-            <div style="background:#fff5f5;border:1.5px solid #fca5a5;border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-car-burst" style="color:#dc2626;margin-right:6px"></i>Acidentes</span>
-              <span style="font-size:32px;font-weight:900;color:#dc2626;line-height:1;">${{m.acidentes||0}}</span>
+            <div style="background:${{acidBg}};border:1.5px solid ${{acidBd}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-car-burst" style="color:${{acidCor}};margin-right:6px"></i>Acidentes</span>
+              <span style="font-size:32px;font-weight:900;color:${{acidCor}};line-height:1;">${{m.acidentes||0}}</span>
             </div>
-            <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-file-circle-xmark" style="color:#d97706;margin-right:6px"></i>Multas</span>
-              <span style="font-size:32px;font-weight:900;color:#d97706;line-height:1;">${{m.multas||0}}</span>
+            <div style="background:${{multBg}};border:1.5px solid ${{multBd}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-file-circle-xmark" style="color:${{multCor}};margin-right:6px"></i>Multas</span>
+              <span style="font-size:32px;font-weight:900;color:${{multCor}};line-height:1;">${{m.multas||0}}</span>
             </div>
-            <div style="background:#fffbeb;border:1.5px solid #fed7aa;border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-gauge-high" style="color:#ea580c;margin-right:6px"></i>Exc. Velocidade</span>
-              <span style="font-size:32px;font-weight:900;color:#ea580c;line-height:1;">${{m.excesso||0}}</span>
+            <div style="background:${{velBg}};border:1.5px solid ${{velBd}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-gauge-high" style="color:${{velCor}};margin-right:6px"></i>Exc. Velocidade</span>
+              <span style="font-size:32px;font-weight:900;color:${{velCor}};line-height:1;">${{m.excesso||0}}</span>
             </div>
-            <div style="background:${{recEfetivo==='OK'?'#f0fef4':'#fff5f5'}};border:1.5px solid ${{recEfetivo==='OK'?'#86efac':'#fca5a5'}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-recycle" style="color:${{recEfetivo==='OK'?'#16a34a':'#dc2626'}};margin-right:6px"></i>Reciclagem</span>
-              <span style="font-size:20px;font-weight:900;color:${{recEfetivo==='OK'?'#16a34a':'#dc2626'}};line-height:1;">${{recEfetivo}}</span>
+            <div style="background:${{bgPorCor(svRec.cor)}};border:1.5px solid ${{bdPorCor(svRec.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-recycle" style="color:${{svRec.cor}};margin-right:6px"></i>Reciclagem</span>
+                <span style="font-size:13px;font-weight:900;color:${{svRec.cor}};letter-spacing:.5px;">${{rotuloVenc(svRec)}}</span>
+              </div>
+              <span style="font-size:12px;font-weight:700;color:${{svRec.cor}};">${{svRec.venc ? svRec.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span>
             </div>
-            <div style="background:${{simEfetivo==='OK'?'#f0fef4':'#fff5f5'}};border:1.5px solid ${{simEfetivo==='OK'?'#86efac':'#fca5a5'}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-car-side" style="color:${{simEfetivo==='OK'?'#16a34a':'#dc2626'}};margin-right:6px"></i>Simulador</span>
-              <span style="font-size:20px;font-weight:900;color:${{simEfetivo==='OK'?'#16a34a':'#dc2626'}};line-height:1;">${{simEfetivo}}</span>
+            <div style="background:${{bgPorCor(svSim.cor)}};border:1.5px solid ${{bdPorCor(svSim.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-car-side" style="color:${{svSim.cor}};margin-right:6px"></i>Simulador</span>
+                <span style="font-size:13px;font-weight:900;color:${{svSim.cor}};letter-spacing:.5px;">${{rotuloVenc(svSim)}}</span>
+              </div>
+              <span style="font-size:12px;font-weight:700;color:${{svSim.cor}};">${{svSim.venc ? svSim.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span>
             </div>
-            <div style="background:${{gestEfetivo==='OK'?'#f0fef4':'#fff5f5'}};border:1.5px solid ${{gestEfetivo==='OK'?'#86efac':'#fca5a5'}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-clipboard-check" style="color:${{gestEfetivo==='OK'?'#16a34a':'#dc2626'}};margin-right:6px"></i>Gestime</span>
-              <span style="font-size:20px;font-weight:900;color:${{gestEfetivo==='OK'?'#16a34a':'#dc2626'}};line-height:1;">${{gestEfetivo}}</span>
+            <div style="background:${{bgPorCor(svGest.cor)}};border:1.5px solid ${{bdPorCor(svGest.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-clipboard-check" style="color:${{svGest.cor}};margin-right:6px"></i>Gestime</span>
+                <span style="font-size:13px;font-weight:900;color:${{svGest.cor}};letter-spacing:.5px;">${{rotuloVenc(svGest)}}</span>
+              </div>
+              <span style="font-size:12px;font-weight:700;color:${{svGest.cor}};">${{svGest.venc ? svGest.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span>
+            </div>
+            <div style="background:${{bgPorCor(svCnh.cor)}};border:1.5px solid ${{bdPorCor(svCnh.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-id-card" style="color:${{svCnh.cor}};margin-right:6px"></i>Validade CNH</span>
+                <span style="font-size:13px;font-weight:900;color:${{svCnh.cor}};letter-spacing:.5px;">${{rotuloVenc(svCnh)}}</span>
+              </div>
+              <span style="font-size:12px;font-weight:700;color:${{svCnh.cor}};">${{svCnh.venc ? svCnh.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span>
+            </div>
+            <div style="background:${{bgPorCor(svExPer.cor)}};border:1.5px solid ${{bdPorCor(svExPer.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-stethoscope" style="color:${{svExPer.cor}};margin-right:6px"></i>Exame Periódico</span>
+                <span style="font-size:13px;font-weight:900;color:${{svExPer.cor}};letter-spacing:.5px;">${{rotuloVenc(svExPer)}}</span>
+              </div>
+              <span style="font-size:12px;font-weight:700;color:${{svExPer.cor}};">${{svExPer.venc ? svExPer.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span>
+            </div>
+            <div style="background:${{bgPorCor(svExTox.cor)}};border:1.5px solid ${{bdPorCor(svExTox.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-vial" style="color:${{svExTox.cor}};margin-right:6px"></i>Exame Toxicológico</span>
+                <span style="font-size:13px;font-weight:900;color:${{svExTox.cor}};letter-spacing:.5px;">${{rotuloVenc(svExTox)}}</span>
+              </div>
+              <span style="font-size:12px;font-weight:700;color:${{svExTox.cor}};">${{svExTox.venc ? svExTox.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span>
+            </div>
+            <div style="background:${{pontosBg}};border:1.5px solid ${{pontosBd}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-id-card-clip" style="color:${{pontosCor}};margin-right:6px"></i>Pontuação CNH</span>
+              <span style="font-size:20px;font-weight:900;color:${{pontosCor}};line-height:1;">${{pontosCnh}} pts</span>
+            </div>
+            <div style="background:${{afastadoBg}};border:1.5px solid ${{afastadoBd}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-user-slash" style="color:${{afastadoCor}};margin-right:6px"></i>Afastado</span>
+              <span style="font-size:20px;font-weight:900;color:${{afastadoCor}};line-height:1;">${{m.afastado||'NÃO'}}</span>
+            </div>
+            <div style="background:${{bgPorCor(svMopp.cor)}};border:1.5px solid ${{bdPorCor(svMopp.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-id-card-clip" style="color:${{svMopp.cor}};margin-right:6px"></i>Validade MOPP</span>
+                <span style="font-size:13px;font-weight:900;color:${{svMopp.cor}};letter-spacing:.5px;">${{rotuloVenc(svMopp)}}</span>
+              </div>
+              <span style="font-size:12px;font-weight:700;color:${{svMopp.cor}};">${{svMopp.venc ? svMopp.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span>
+            </div>
+            <div style="background:${{uniformeBg}};border:1.5px solid ${{uniformeBd}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-shirt" style="color:${{uniformeCor}};margin-right:6px"></i>Entrega de Uniforme</span>
+              <span style="font-size:18px;font-weight:900;color:${{uniformeCor}};line-height:1;">${{m.entregaUniforme||'PENDENTE'}}</span>
             </div>
           </div>
         </div>
