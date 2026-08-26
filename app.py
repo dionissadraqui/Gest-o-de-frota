@@ -3172,8 +3172,31 @@ async function atualizarDadosDoSheets(silencioso = false){{
 
 // ── AUTO-REFRESH PADRÃO ──────────────────────────────────────────
 // Atualiza tudo periodicamente sem sair da tela.
-// Se a ficha do condutor estiver aberta com alterações NÃO salvas,
-// o ciclo é pulado (a pessoa não perde o que digitou).
+// Pula o ciclo se: houver edição não salva na ficha, um salvamento em andamento,
+// algum filtro/busca preenchido, ou a pessoa estiver digitando em algum campo.
+function existeFiltroOuBuscaAtivo(){{
+  // Campos de busca/filtro do sistema — se tiverem texto digitado, não atualiza
+  const camposBusca = ['kpiSearchInput', 'filialSearchInput'];
+  for(const id of camposBusca){{
+    const el = document.getElementById(id);
+    if(el && el.value && el.value.trim() !== '') return true;
+  }}
+
+  // Se a pessoa estiver com o foco em algum campo de digitação neste exato momento
+  const ativo = document.activeElement;
+  if(ativo){{
+    const tag = ativo.tagName;
+    const tipo = (ativo.type || '').toLowerCase();
+    const editavel = (tag === 'INPUT' && !['button','checkbox','radio','submit'].includes(tipo))
+                   || tag === 'TEXTAREA'
+                   || tag === 'SELECT'
+                   || ativo.isContentEditable;
+    if(editavel) return true;
+  }}
+
+  return false;
+}}
+
 async function executarAutoRefresh(){{
   const fichaAberta   = document.getElementById('driverModal').style.display === 'flex';
   const salvandoAgora = document.getElementById('spinnerOverlay').classList.contains('show');
@@ -3184,6 +3207,10 @@ async function executarAutoRefresh(){{
   }}
   if(fichaAberta && houveEdicaoNaoSalva){{
     console.log('[auto-refresh] Pulado: existem alterações não salvas na ficha aberta.');
+    return;
+  }}
+  if(existeFiltroOuBuscaAtivo()){{
+    console.log('[auto-refresh] Pulado: há um filtro/busca preenchido ou um campo em uso no momento.');
     return;
   }}
   await atualizarDadosDoSheets(true); // true = silencioso (sem spinner nem toast)
