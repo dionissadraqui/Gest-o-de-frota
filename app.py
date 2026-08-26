@@ -781,7 +781,7 @@ HTML = f"""<!DOCTYPE html>
       <div style="display:flex;align-items:flex-end;justify-content:space-between;">
         <div class="kpi-val" id="kpiProntuario">—</div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
-          <div style="font-size:8px;color:#7c3aed;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">exames ok</div>
+          <div style="font-size:10px;color:#7c3aed;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">exames ok</div>
           <div id="kpiProntuarioOk" style="font-size:17px;font-weight:900;color:#7c3aed;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(124,58,237,0.5);">—</div>
         </div>
       </div>
@@ -805,7 +805,7 @@ HTML = f"""<!DOCTYPE html>
       <div style="display:flex;align-items:flex-end;justify-content:space-between;">
         <div class="kpi-val" id="kpiCursosTotal">—</div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
-          <div style="font-size:8px;color:#16a34a;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">regularidade DSS</div>
+          <div style="font-size:10px;color:#16a34a;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">regularidade DSS</div>
           <div id="kpiCursosSubPct" style="font-size:17px;font-weight:900;color:#16a34a;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(34,204,136,0.5);">—</div>
         </div>
       </div>
@@ -817,7 +817,7 @@ HTML = f"""<!DOCTYPE html>
       <div style="display:flex;align-items:flex-end;justify-content:space-between;">
         <div class="kpi-val" id="kpiAfastados">—</div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
-          <div style="font-size:8px;color:#dc2626;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">do total</div>
+          <div style="font-size:10px;color:#dc2626;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">do total</div>
           <div id="kpiAfastadosPct" style="font-size:17px;font-weight:900;color:#dc2626;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(255,68,68,0.5);">—</div>
         </div>
       </div>
@@ -829,7 +829,7 @@ HTML = f"""<!DOCTYPE html>
       <div style="display:flex;align-items:flex-end;justify-content:space-between;">
         <div class="kpi-val" id="kpiTelCorp">—</div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
-          <div style="font-size:8px;color:#0e9cc0;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">com linha SIM</div>
+          <div style="font-size:10px;color:#0e9cc0;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">com linha SIM</div>
           <div id="kpiTelCorpPct" style="font-size:17px;font-weight:900;color:#0e9cc0;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(14,156,192,0.5);">—</div>
         </div>
       </div>
@@ -841,7 +841,7 @@ HTML = f"""<!DOCTYPE html>
       <div style="display:flex;align-items:flex-end;justify-content:space-between;">
         <div class="kpi-val" id="kpiExcesso">—</div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
-          <div style="font-size:8px;color:#dc2626;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">motoristas</div>
+          <div style="font-size:10px;color:#dc2626;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">motoristas</div>
           <div id="kpiExcessoMot" style="font-size:17px;font-weight:900;color:#dc2626;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(255,68,68,0.5);">—</div>
         </div>
       </div>
@@ -853,7 +853,7 @@ HTML = f"""<!DOCTYPE html>
       <div style="display:flex;align-items:flex-end;justify-content:space-between;">
         <div class="kpi-val" id="kpiMultas">—</div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
-          <div style="font-size:8px;color:#dc2626;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">motoristas</div>
+          <div style="font-size:10px;color:#dc2626;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">motoristas</div>
           <div id="kpiMultasMot" style="font-size:17px;font-weight:900;color:#dc2626;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(255,68,68,0.5);">—</div>
         </div>
       </div>
@@ -865,7 +865,7 @@ HTML = f"""<!DOCTYPE html>
       <div style="display:flex;align-items:flex-end;justify-content:space-between;">
         <div class="kpi-val" id="kpiAcidentes">—</div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
-          <div style="font-size:8px;color:#dc2626;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">motoristas</div>
+          <div style="font-size:10px;color:#dc2626;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">motoristas</div>
           <div id="kpiAcidentesMot" style="font-size:17px;font-weight:900;color:#dc2626;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(255,68,68,0.5);">—</div>
         </div>
       </div>
@@ -877,7 +877,7 @@ HTML = f"""<!DOCTYPE html>
       <div style="display:flex;align-items:flex-end;justify-content:space-between;">
         <div class="kpi-val" id="kpiTotal">—</div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
-          <div style="font-size:8px;color:#1a4fa0;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">cadastrados</div>
+          <div style="font-size:10px;color:#1a4fa0;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">cadastrados</div>
           <div id="kpiTotalAnual" style="font-size:17px;font-weight:900;color:#1a4fa0;font-family:'Courier New',monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(59,125,216,0.5);">—</div>
         </div>
       </div>
@@ -1809,7 +1809,7 @@ function statusVencimentoData(dataStr){{
   const diffDias = Math.floor((venc - hoje) / 86400000);
   if(diffDias < 0)   return {{ label:'VENCIDA em ' + venc.toLocaleDateString('pt-BR'), cor:'#dc2626', venc, vencida:true }};
   if(diffDias <= 30) return {{ label:'Vence em ' + venc.toLocaleDateString('pt-BR'), cor:'#d97706', venc, vencida:false }};
-  return {{ label:'' + venc.toLocaleDateString('pt-BR'), cor:'#16a34a', venc, vencida:false }};
+  return {{ label:'Válido até ' + venc.toLocaleDateString('pt-BR'), cor:'#16a34a', venc, vencida:false }};
 }}
 function cnhVencida(m){{
   return statusVencimentoData(m.validadeCnh).vencida;
@@ -2575,30 +2575,55 @@ function abrirFichaMotorista(cpf){{
             <div style="background:${{bgPorCor(svCnh.cor)}};border:1.5px solid ${{bdPorCor(svCnh.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
               <div style="display:flex;justify-content:space-between;align-items:center;">
                 <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-id-card" style="color:${{svCnh.cor}};margin-right:6px"></i>Validade CNH</span>
-                <span style="font-size:13px;font-weight:900;color:${{svCnh.cor}};letter-spacing:.5px;">${{rotuloVenc(svCnh)}}</span>
+                <span style="font-size:15px;font-weight:900;color:${{svCnh.cor}};letter-spacing:.5px;">${{rotuloVenc(svCnh)}}</span>
               </div>
-              <span style="font-size:12px;font-weight:700;color:${{svCnh.cor}};">${{svCnh.venc ? svCnh.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span>
+              <span style="font-size:13px;font-weight:700;color:${{svCnh.cor}};">${{svCnh.venc ? svCnh.label : 'PENDENTE'}}</span>
             </div>
             <div style="background:${{bgPorCor(svMopp.cor)}};border:1.5px solid ${{bdPorCor(svMopp.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
               <div style="display:flex;justify-content:space-between;align-items:center;">
                 <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-id-card-clip" style="color:${{svMopp.cor}};margin-right:6px"></i>Validade MOPP</span>
-                <span style="font-size:13px;font-weight:900;color:${{svMopp.cor}};letter-spacing:.5px;">${{rotuloVenc(svMopp)}}</span>
+                <span style="font-size:15px;font-weight:900;color:${{svMopp.cor}};letter-spacing:.5px;">${{rotuloVenc(svMopp)}}</span>
               </div>
-              <span style="font-size:12px;font-weight:700;color:${{svMopp.cor}};">${{svMopp.venc ? svMopp.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span>
+              <span style="font-size:13px;font-weight:700;color:${{svMopp.cor}};">${{svMopp.venc ? svMopp.label : 'PENDENTE'}}</span>
             </div>
             <div style="background:${{bgPorCor(svExTox.cor)}};border:1.5px solid ${{bdPorCor(svExTox.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
               <div style="display:flex;justify-content:space-between;align-items:center;">
                 <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-vial" style="color:${{svExTox.cor}};margin-right:6px"></i>Exame Toxicológico</span>
-                <span style="font-size:13px;font-weight:900;color:${{svExTox.cor}};letter-spacing:.5px;">${{rotuloVenc(svExTox)}}</span>
+                <span style="font-size:15px;font-weight:900;color:${{svExTox.cor}};letter-spacing:.5px;">${{rotuloVenc(svExTox)}}</span>
               </div>
-              <span style="font-size:12px;font-weight:700;color:${{svExTox.cor}};">${{svExTox.venc ? svExTox.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span>
+              <span style="font-size:13px;font-weight:700;color:${{svExTox.cor}};">${{svExTox.venc ? svExTox.label : 'PENDENTE'}}</span>
             </div>
             <div style="background:${{bgPorCor(svExPer.cor)}};border:1.5px solid ${{bdPorCor(svExPer.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
               <div style="display:flex;justify-content:space-between;align-items:center;">
                 <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-stethoscope" style="color:${{svExPer.cor}};margin-right:6px"></i>Exame Periódico</span>
-                <span style="font-size:13px;font-weight:900;color:${{svExPer.cor}};letter-spacing:.5px;">${{rotuloVenc(svExPer)}}</span>
+                <span style="font-size:15px;font-weight:900;color:${{svExPer.cor}};letter-spacing:.5px;">${{rotuloVenc(svExPer)}}</span>
               </div>
-              <span style="font-size:12px;font-weight:700;color:${{svExPer.cor}};">${{svExPer.venc ? svExPer.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span>
+              <span style="font-size:13px;font-weight:700;color:${{svExPer.cor}};">${{svExPer.venc ? svExPer.label : 'PENDENTE'}}</span>
+            </div>
+            <div style="background:${{bgPorCor(svRec.cor)}};border:1.5px solid ${{bdPorCor(svRec.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-recycle" style="color:${{svRec.cor}};margin-right:6px"></i>Reciclagem</span>
+                <span style="font-size:15px;font-weight:900;color:${{svRec.cor}};letter-spacing:.5px;">${{rotuloVenc(svRec)}}</span>
+              </div>
+              <span style="font-size:13px;font-weight:700;color:${{svRec.cor}};">${{svRec.venc ? svRec.label : 'PENDENTE'}}</span>
+            </div>
+            <div style="background:${{bgPorCor(svSim.cor)}};border:1.5px solid ${{bdPorCor(svSim.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-car-side" style="color:${{svSim.cor}};margin-right:6px"></i>Simulador</span>
+                <span style="font-size:15px;font-weight:900;color:${{svSim.cor}};letter-spacing:.5px;">${{rotuloVenc(svSim)}}</span>
+              </div>
+              <span style="font-size:13px;font-weight:700;color:${{svSim.cor}};">${{svSim.venc ? svSim.label : 'PENDENTE'}}</span>
+            </div>
+            <div style="background:${{bgPorCor(svGest.cor)}};border:1.5px solid ${{bdPorCor(svGest.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-clipboard-check" style="color:${{svGest.cor}};margin-right:6px"></i>Gestime</span>
+                <span style="font-size:15px;font-weight:900;color:${{svGest.cor}};letter-spacing:.5px;">${{rotuloVenc(svGest)}}</span>
+              </div>
+              <span style="font-size:13px;font-weight:700;color:${{svGest.cor}};">${{svGest.venc ? svGest.label : 'PENDENTE'}}</span>
+            </div>
+            <div style="background:${{uniformeBg}};border:1.5px solid ${{uniformeBd}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-shirt" style="color:${{uniformeCor}};margin-right:6px"></i>Entrega de Uniforme</span>
+              <span style="font-size:18px;font-weight:900;color:${{uniformeCor}};line-height:1;">${{m.entregaUniforme||'PENDENTE'}}</span>
             </div>
             <div style="background:${{pontosBg}};border:1.5px solid ${{pontosBd}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
               <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-id-card-clip" style="color:${{pontosCor}};margin-right:6px"></i>Pontuação CNH</span>
@@ -2615,31 +2640,6 @@ function abrirFichaMotorista(cpf){{
             <div style="background:${{velBg}};border:1.5px solid ${{velBd}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
               <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-gauge-high" style="color:${{velCor}};margin-right:6px"></i>Exc. Velocidade</span>
               <span style="font-size:32px;font-weight:900;color:${{velCor}};line-height:1;">${{m.excesso||0}}</span>
-            </div>
-            <div style="background:${{bgPorCor(svRec.cor)}};border:1.5px solid ${{bdPorCor(svRec.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-                <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-recycle" style="color:${{svRec.cor}};margin-right:6px"></i>Reciclagem</span>
-                <span style="font-size:13px;font-weight:900;color:${{svRec.cor}};letter-spacing:.5px;">${{rotuloVenc(svRec)}}</span>
-              </div>
-              <span style="font-size:12px;font-weight:700;color:${{svRec.cor}};">${{svRec.venc ? svRec.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span>
-            </div>
-            <div style="background:${{bgPorCor(svSim.cor)}};border:1.5px solid ${{bdPorCor(svSim.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-                <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-car-side" style="color:${{svSim.cor}};margin-right:6px"></i>Simulador</span>
-                <span style="font-size:13px;font-weight:900;color:${{svSim.cor}};letter-spacing:.5px;">${{rotuloVenc(svSim)}}</span>
-              </div>
-              <span style="font-size:12px;font-weight:700;color:${{svSim.cor}};">${{svSim.venc ? svSim.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span>
-            </div>
-            <div style="background:${{bgPorCor(svGest.cor)}};border:1.5px solid ${{bdPorCor(svGest.cor)}};border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;gap:2px;">
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-                <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-clipboard-check" style="color:${{svGest.cor}};margin-right:6px"></i>Gestime</span>
-                <span style="font-size:13px;font-weight:900;color:${{svGest.cor}};letter-spacing:.5px;">${{rotuloVenc(svGest)}}</span>
-              </div>
-              <span style="font-size:12px;font-weight:700;color:${{svGest.cor}};">${{svGest.venc ? svGest.venc.toLocaleDateString('pt-BR') : 'PENDENTE'}}</span>
-            </div>
-            <div style="background:${{uniformeBg}};border:1.5px solid ${{uniformeBd}};border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:12px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;"><i class="fa-solid fa-shirt" style="color:${{uniformeCor}};margin-right:6px"></i>Entrega de Uniforme</span>
-              <span style="font-size:18px;font-weight:900;color:${{uniformeCor}};line-height:1;">${{m.entregaUniforme||'PENDENTE'}}</span>
             </div>
           </div>
         </div>
@@ -2795,10 +2795,15 @@ function abrirFichaMotorista(cpf){{
               <input type="text" id="editNumeroLinha" value="${{esc(m.numeroLinha)}}" placeholder="(00) 00000-0000" ${{m.telefoneCorporativo==='NÃO'?'disabled':''}} style="${{m.telefoneCorporativo==='NÃO'?'background:#eef1f5!important;color:#9aaabb!important;':''}}">
             </div>
             <div class="meta-item">
-              <label>Modelo do Celular</label>
               <div style="display:flex;gap:4px;">
-                <input type="text" id="editModelo" value="${{esc(m.modelo)}}" placeholder="Ex: Samsung A54" style="flex:1;min-width:0;">
-                <input type="text" id="editImei" value="${{esc(m.imei)}}" placeholder="IMEI" style="flex:1;min-width:0;" title="IMEI do celular">
+                <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:0;">
+                  <label>Modelo do Celular</label>
+                  <input type="text" id="editModelo" value="${{esc(m.modelo)}}" placeholder="Ex: Samsung A54" style="width:100%;">
+                </div>
+                <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:0;">
+                  <label>IMEI</label>
+                  <input type="text" id="editImei" value="${{esc(m.imei)}}" placeholder="IMEI" style="width:100%;" title="IMEI do celular">
+                </div>
               </div>
             </div>
           </div>
@@ -3163,6 +3168,20 @@ function gerarFichaPdf(cpf){{
   const hrStr  = now.toLocaleTimeString('pt-BR', {{hour:'2-digit', minute:'2-digit'}});
   const esc    = s => (s||'—').replace(/</g,'&lt;');
   const fotoHtml = `<img src="${{m.foto || AVATAR_PADRAO}}" style="width:100px;height:100px;object-fit:cover;border-radius:6px;border:2px solid #c4d0e4;">`;
+  const codigoDoc = `LUFT-${{(m.cpf||'').replace(/\\D/g,'').slice(-6) || '000000'}}-${{now.getFullYear()}}${{String(now.getMonth()+1).padStart(2,'0')}}${{String(now.getDate()).padStart(2,'0')}}`;
+  const emissor = (typeof usuarioLogado !== 'undefined' && usuarioLogado) ? usuarioLogado.nome : 'Sistema';
+  const afastadoSim = m.afastado === 'SIM';
+
+  const svCnh   = statusVencimentoData(m.validadeCnh);
+  const svMopp  = statusVencimentoData(m.vencimentoCnhMopp);
+  const svExPer = statusVencimento(m.examePeriodico, m.examePeriodicoValidadeMeses);
+  const svExTox = statusVencimento(m.exameToxicologico, m.exameToxicologicoValidadeMeses);
+  const svRec   = statusVencimento(m.reciclagemData, m.reciclagemValidadeMeses);
+  const svSim   = statusVencimento(m.simuladorData, m.simuladorValidadeMeses);
+  const svGest  = statusVencimento(m.gestimeData, m.gestimeValidadeMeses);
+
+  const badgeClasse = sv => !sv.venc ? 'badge-pend' : sv.cor === '#16a34a' ? 'badge-ok' : sv.cor === '#d97706' ? 'badge-alerta' : 'badge-red';
+  const badgeTxt    = sv => rotuloVenc(sv);
 
   const dssLinhas = Object.entries(m.dssAnual||{{}}).map(([mes, sems])=>{{
     const boxes = sems.map((ok,i)=>`<td style="text-align:center;padding:4px;border:1px solid #dde6f4;background:${{ok?'#dcfce7':'#fff5f5'}};color:${{ok?'#16a34a':'#dc2626'}};font-weight:800;font-size:11px;">${{ok?'✓':'✗'}}</td>`).join('');
@@ -3175,23 +3194,30 @@ function gerarFichaPdf(cpf){{
 <style>
   *{{box-sizing:border-box;margin:0;padding:0}}
   body{{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#1a2a44;padding:28px 32px;font-size:12px}}
-  .header{{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1a3a6b;padding-bottom:12px;margin-bottom:16px}}
+  .header{{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1a3a6b;padding-bottom:12px;margin-bottom:10px}}
   .brand-title{{font-size:20px;font-weight:900;color:#1a3a6b}}
   .brand-title span{{color:#22cc88}}
   .brand-sub{{font-size:10px;color:#5a6e8a;letter-spacing:1px;text-transform:uppercase;margin-top:3px}}
-  .doc-info{{text-align:right;font-size:10px;color:#5a6e8a}}
+  .doc-info{{text-align:right;font-size:10px;color:#5a6e8a;line-height:1.6}}
   .doc-info strong{{display:block;font-size:13px;color:#1a3a6b;font-weight:800}}
-  .section{{border:1.5px solid #dde6f4;border-radius:8px;margin-bottom:14px;overflow:hidden}}
+  .doc-code{{font-family:monospace;font-size:10px;color:#3b7dd8;font-weight:700}}
+  .alerta-afastado{{background:#fff5f5;border:1.5px solid #fca5a5;border-radius:8px;padding:8px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;font-size:12px;font-weight:800;color:#dc2626;text-transform:uppercase;letter-spacing:.5px}}
+  .section{{border:1.5px solid #dde6f4;border-radius:8px;margin-bottom:12px;overflow:hidden;page-break-inside:avoid}}
   .section-head{{background:#1a3a6b;color:#fff;font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:6px 12px}}
   .section-body{{padding:12px}}
   .profile-row{{display:flex;gap:18px;align-items:flex-start}}
   .info-grid{{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;flex:1}}
   .info-item label{{font-size:9px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;display:block;margin-bottom:2px}}
   .info-item span{{font-size:13px;font-weight:700;color:#1a2a44}}
-  .badge{{display:inline-block;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:800}}
+  .badge{{display:inline-block;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:800;letter-spacing:.3px}}
   .badge-ok{{background:#dcfce7;color:#16a34a;border:1px solid #86efac}}
-  .badge-pend{{background:#fef9c3;color:#d97706;border:1px solid #fde68a}}
+  .badge-pend{{background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1}}
+  .badge-alerta{{background:#fef9c3;color:#d97706;border:1px solid #fde68a}}
   .badge-red{{background:#fee2e2;color:#dc2626;border:1px solid #fca5a5}}
+  .doc-grid{{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}}
+  .doc-card{{border:1.5px solid #e2e8f0;border-radius:6px;padding:8px 10px;display:flex;flex-direction:column;gap:3px}}
+  .doc-card label{{font-size:9px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px}}
+  .doc-card .valor{{font-size:12px;font-weight:700;color:#1a2a44}}
   .kpi-row{{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}}
   .kpi-box{{border-radius:6px;padding:10px 12px;text-align:center;border:1.5px solid}}
   .kpi-box label{{font-size:9px;text-transform:uppercase;font-weight:700;letter-spacing:.5px;display:block;margin-bottom:4px}}
@@ -3201,11 +3227,7 @@ function gerarFichaPdf(cpf){{
   .kpi-vel{{border-color:#fed7aa;background:#fff7ed}}.kpi-vel span{{color:#ea580c}}
   table.dss{{width:100%;border-collapse:collapse}}
   table.dss th{{background:#eef3fb;color:#1a4fa0;font-size:10px;font-weight:800;text-transform:uppercase;padding:5px 8px;border:1px solid #dde6f4;text-align:center}}
-  .assinatura-row{{display:flex;gap:32px;margin-top:10px;align-items:flex-end}}
-  .assinatura-box{{flex:1}}
-  .assinatura-box .lbl{{font-size:8px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;margin-bottom:20px;display:block}}
-  .assinatura-box .linha{{border:none;border-bottom:1.5px solid #1a3a6b;margin-bottom:5px}}
-  .assinatura-box .sublbl{{font-size:8px;color:#1a3a6b;font-weight:700}}
+  .assinatura-row{{display:flex;gap:32px;align-items:flex-end;margin-top:10px}}
   .footer{{border-top:1px solid #dde6f4;margin-top:10px;padding-top:6px;display:flex;justify-content:space-between;font-size:8px;color:#9aaabb}}
   @media print{{body{{padding:10px 16px}} .no-print{{display:none}} .section{{margin-bottom:8px}} .section-body{{padding:8px 10px}} .kpi-row{{gap:6px}} .kpi-box{{padding:6px 8px}} .kpi-box span{{font-size:20px}} table.dss td,table.dss th{{padding:3px 6px;font-size:10px}}}}
 </style></head>
@@ -3220,13 +3242,15 @@ function gerarFichaPdf(cpf){{
   <div class="doc-info">
     <strong>Ficha do Condutor</strong>
     Emitido em: ${{dtStr}} às ${{hrStr}}<br>
-    CPF: ${{esc(m.cpf)}}
+    Emitido por: ${{esc(emissor)}}<br>
   </div>
 </div>
 
+${{afastadoSim ? `<div class="alerta-afastado"><span>⚠</span> Condutor Afastado${{m.obsAfastado ? ' — ' + esc(m.obsAfastado) : ''}}</div>` : ''}}
+
 <!-- IDENTIFICAÇÃO -->
 <div class="section">
-  <div class="section-head">👤 Identificação do Condutor</div>
+  <div class="section-head">Identificação do Condutor</div>
   <div class="section-body">
     <div class="profile-row">
       <div style="flex-shrink:0">${{fotoHtml}}</div>
@@ -3240,63 +3264,124 @@ function gerarFichaPdf(cpf){{
         <div class="info-item"><label>Admissão</label><span>${{m.admissao ? new Date(m.admissao+'T00:00:00').toLocaleDateString('pt-BR') : '—'}}</span></div>
         <div class="info-item"><label>Telefone</label><span>${{esc(m.telefone)}}</span></div>
         <div class="info-item"><label>E-mail</label><span>${{esc(m.email)}}</span></div>
-        <div class="info-item"><label>CNH Nº</label><span style="font-family:monospace">${{esc(m.cnh)}}</span></div>
-        <div class="info-item"><label>Validade CNH</label><span>${{m.validadeCnh ? new Date(m.validadeCnh+'T00:00:00').toLocaleDateString('pt-BR') : '—'}}</span></div>
-        <div class="info-item" style="grid-column:1/-1;display:flex;gap:20px;padding-top:6px;border-top:1px solid #e8eef8;margin-top:2px;">
-          <div style="display:flex;flex-direction:column;gap:2px;">
-            <label>Reciclagem</label>
-            <span class="badge ${{reciclagemStatus(m)==='OK'?'badge-ok':'badge-pend'}}">${{reciclagemStatus(m)}}</span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:2px;">
-            <label>Simulador</label>
-            <span class="badge ${{simuladorStatus(m)==='OK'?'badge-ok':'badge-pend'}}">${{simuladorStatus(m)}}</span>
-          </div>
-        </div>
+        <div class="info-item"><label>Situação</label><span class="badge ${{afastadoSim?'badge-red':'badge-ok'}}">${{afastadoSim?'AFASTADO':'ATIVO'}}</span></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- DOCUMENTAÇÃO COMPLEMENTAR -->
+<!-- DOCUMENTAÇÃO -->
 <div class="section">
-  <div class="section-head"><i>📋</i> Documentação Complementar & Equipamentos</div>
+  <div class="section-head">Documentação & Validades</div>
   <div class="section-body">
-    <div class="info-grid" style="grid-template-columns:1fr 1fr 1fr;">
-      <div class="info-item"><label>Exame Periódico</label><span>${{m.examePeriodico ? new Date(m.examePeriodico+'T00:00:00').toLocaleDateString('pt-BR') : '—'}}</span></div>
-      <div class="info-item"><label>Exame Toxicológico</label><span>${{m.exameToxicologico ? new Date(m.exameToxicologico+'T00:00:00').toLocaleDateString('pt-BR') : '—'}}</span></div>
-      <div class="info-item"><label>Pontuação CNH</label><span>${{m.pontuacaoCnh||0}} pontos</span></div>
-      <div class="info-item"><label>Vencimento CNH/MOPP</label><span>${{m.vencimentoCnhMopp ? new Date(m.vencimentoCnhMopp+'T00:00:00').toLocaleDateString('pt-BR') : '—'}}</span></div>
-      <div class="info-item"><label>Entrega de Uniforme</label><span class="badge ${{m.entregaUniforme==='OK'?'badge-ok':'badge-pend'}}">${{m.entregaUniforme||'PENDENTE'}}</span></div>
-      <div class="info-item"><label>Telefone Corporativo</label><span class="badge ${{m.telefoneCorporativo==='SIM'?'badge-ok':'badge-pend'}}">${{m.telefoneCorporativo||'NÃO'}}</span></div>
-      <div class="info-item"><label>Número da Linha</label><span style="font-family:monospace">${{esc(m.numeroLinha)}}</span></div>
-      <div class="info-item"><label>Modelo do Celular</label><span>${{esc(m.modelo)}}</span></div>
+    <div class="doc-grid">
+      <div class="doc-card">
+        <label>CNH Nº</label><span class="valor" style="font-family:monospace">${{esc(m.cnh)}}</span>
+      </div>
+      <div class="doc-card">
+        <label>Validade CNH</label>
+        <span class="valor">${{m.validadeCnh ? new Date(m.validadeCnh+'T00:00:00').toLocaleDateString('pt-BR') : '—'}}</span>
+        <span class="badge ${{badgeClasse(svCnh)}}">${{badgeTxt(svCnh)}}</span>
+      </div>
+      <div class="doc-card">
+        <label>Vencimento MOPP</label>
+        <span class="valor">${{m.vencimentoCnhMopp ? new Date(m.vencimentoCnhMopp+'T00:00:00').toLocaleDateString('pt-BR') : '—'}}</span>
+        <span class="badge ${{badgeClasse(svMopp)}}">${{badgeTxt(svMopp)}}</span>
+      </div>
+      <div class="doc-card">
+        <label>Pontuação CNH</label><span class="valor">${{m.pontuacaoCnh||0}} pontos</span>
+      </div>
+      <div class="doc-card">
+        <label>Entrega de Uniforme</label>
+        <span class="badge ${{m.entregaUniforme==='OK'?'badge-ok':'badge-pend'}}">${{m.entregaUniforme||'PENDENTE'}}</span>
+      </div>
+      <div class="doc-card">
+        <label>Telefone Corporativo</label>
+        <span class="badge ${{m.telefoneCorporativo==='SIM'?'badge-ok':'badge-pend'}}">${{m.telefoneCorporativo||'NÃO'}}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EXAMES OCUPACIONAIS -->
+<div class="section">
+  <div class="section-head">Exames Ocupacionais</div>
+  <div class="section-body">
+    <div class="doc-grid">
+      <div class="doc-card">
+        <label>Exame Periódico</label>
+        <span class="valor">${{m.examePeriodico ? new Date(m.examePeriodico+'T00:00:00').toLocaleDateString('pt-BR') : '—'}}</span>
+        <span class="badge ${{badgeClasse(svExPer)}}">${{badgeTxt(svExPer)}}</span>
+      </div>
+      <div class="doc-card">
+        <label>Exame Toxicológico</label>
+        <span class="valor">${{m.exameToxicologico ? new Date(m.exameToxicologico+'T00:00:00').toLocaleDateString('pt-BR') : '—'}}</span>
+        <span class="badge ${{badgeClasse(svExTox)}}">${{badgeTxt(svExTox)}}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TREINAMENTOS -->
+<div class="section">
+  <div class="section-head">Treinamentos</div>
+  <div class="section-body">
+    <div class="doc-grid">
+      <div class="doc-card">
+        <label>Reciclagem</label>
+        <span class="valor">${{m.reciclagemData ? new Date(m.reciclagemData+'T00:00:00').toLocaleDateString('pt-BR') : '—'}}</span>
+        <span class="badge ${{badgeClasse(svRec)}}">${{badgeTxt(svRec)}}</span>
+      </div>
+      <div class="doc-card">
+        <label>Simulador SEST SENAT</label>
+        <span class="valor">${{m.simuladorData ? new Date(m.simuladorData+'T00:00:00').toLocaleDateString('pt-BR') : '—'}}</span>
+        <span class="badge ${{badgeClasse(svSim)}}">${{badgeTxt(svSim)}}</span>
+      </div>
+      <div class="doc-card">
+        <label>Gestime</label>
+        <span class="valor">${{m.gestimeData ? new Date(m.gestimeData+'T00:00:00').toLocaleDateString('pt-BR') : '—'}}</span>
+        <span class="badge ${{badgeClasse(svGest)}}">${{badgeTxt(svGest)}}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EQUIPAMENTOS -->
+<div class="section">
+  <div class="section-head">Equipamentos Corporativos</div>
+  <div class="section-body">
+    <div class="doc-grid">
+      <div class="doc-card"><label>Número da Linha</label><span class="valor" style="font-family:monospace">${{esc(m.numeroLinha)}}</span></div>
+      <div class="doc-card"><label>Modelo do Celular</label><span class="valor">${{esc(m.modelo)}}</span></div>
+      <div class="doc-card"><label>IMEI</label><span class="valor" style="font-family:monospace">${{esc(m.imei)}}</span></div>
     </div>
   </div>
 </div>
 
 <!-- INDICADORES -->
 <div class="section">
-  <div class="section-head"><i>🛡</i> Indicadores de Segurança</div>
+  <div class="section-head">Indicadores de Segurança</div>
   <div class="section-body">
     <div class="kpi-row">
       <div class="kpi-box kpi-acid"><label>Acidentes</label><span>${{m.acidentes||0}}</span></div>
       <div class="kpi-box kpi-mul"><label>Multas</label><span>${{m.multas||0}}</span></div>
       <div class="kpi-box kpi-vel"><label>Exc. Velocidade</label><span>${{m.excesso||0}}</span></div>
     </div>
-    ${{(m.obsAcidente||m.obsMultas||m.obsGerais||m.obsReciclagem||m.obsSimulador) ? `
+    ${{(m.obsAcidente||m.obsMultas||m.obsGerais||m.obsReciclagem||m.obsSimulador||m.obsGestime) ? `
     <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
       ${{m.obsAcidente ? `<div style="background:#fff5f5;border:1px solid #fca5a5;border-radius:5px;padding:7px 10px;"><span style="font-size:9px;color:#dc2626;font-weight:700;text-transform:uppercase;">Obs. Acidentes</span><p style="font-size:11px;margin-top:3px;color:#1a2a44;">${{esc(m.obsAcidente)}}</p></div>` : ''}}
       ${{m.obsMultas  ? `<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:5px;padding:7px 10px;"><span style="font-size:9px;color:#d97706;font-weight:700;text-transform:uppercase;">Obs. Multas</span><p style="font-size:11px;margin-top:3px;color:#1a2a44;">${{esc(m.obsMultas)}}</p></div>` : ''}}
       ${{m.obsGerais  ? `<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:5px;padding:7px 10px;"><span style="font-size:9px;color:#ea580c;font-weight:700;text-transform:uppercase;">Obs. Velocidade</span><p style="font-size:11px;margin-top:3px;color:#1a2a44;">${{esc(m.obsGerais)}}</p></div>` : ''}}
       ${{m.obsReciclagem ? `<div style="background:#f0fef4;border:1px solid #86efac;border-radius:5px;padding:7px 10px;"><span style="font-size:9px;color:#16a34a;font-weight:700;text-transform:uppercase;">Obs. Reciclagem</span><p style="font-size:11px;margin-top:3px;color:#1a2a44;">${{esc(m.obsReciclagem)}}</p></div>` : ''}}
       ${{m.obsSimulador ? `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:5px;padding:7px 10px;"><span style="font-size:9px;color:#1a4fa0;font-weight:700;text-transform:uppercase;">Obs. Simulador</span><p style="font-size:11px;margin-top:3px;color:#1a2a44;">${{esc(m.obsSimulador)}}</p></div>` : ''}}
+      ${{m.obsGestime ? `<div style="background:#f5f0ff;border:1px solid #ddd6fe;border-radius:5px;padding:7px 10px;"><span style="font-size:9px;color:#6d28d9;font-weight:700;text-transform:uppercase;">Obs. Gestime</span><p style="font-size:11px;margin-top:3px;color:#1a2a44;">${{esc(m.obsGestime)}}</p></div>` : ''}}
     </div>` : ''}}
   </div>
 </div>
 
 <!-- DSS -->
 <div class="section">
-  <div class="section-head"><i>📅</i> Controle Semanal DSS — Ano Vigente</div>
+  <div class="section-head">Controle Semanal DSS — Ano Vigente</div>
   <div class="section-body">
     <table class="dss">
       <thead><tr><th style="text-align:left;padding:5px 8px;">Mês</th><th>1ª Sem</th><th>2ª Sem</th><th>3ª Sem</th><th>4ª Sem</th></tr></thead>
@@ -3306,13 +3391,13 @@ function gerarFichaPdf(cpf){{
 </div>
 
 <!-- ASSINATURA -->
-<div style="border:1.5px solid #dde6f4;border-radius:8px;margin-bottom:14px;overflow:hidden;">
-  <div style="background:#1a3a6b;color:#fff;font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:6px 12px;">✍ Declaração e Assinatura</div>
-  <div style="padding:14px 16px;">
+<div class="section">
+  <div class="section-head">Declaração e Assinatura</div>
+  <div class="section-body">
     <p style="font-size:9px;color:#5a6e8a;margin-bottom:16px;line-height:1.6;font-style:italic;border-left:3px solid #1a3a6b;padding-left:8px;">
       Declaro que as informações contidas nesta ficha estão corretas e que estou ciente das normas de segurança e conformidade operacional da empresa.
     </p>
-    <div style="display:flex;gap:32px;align-items:flex-end;margin-top:10px;">
+    <div class="assinatura-row">
       <div style="flex:2;display:flex;flex-direction:column;">
         <span style="font-size:8px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;margin-bottom:28px;display:block;">Assinatura do Condutor</span>
         <div style="border-bottom:1.5px solid #1a3a6b;margin-bottom:5px;"></div>
@@ -3322,7 +3407,6 @@ function gerarFichaPdf(cpf){{
       <div style="flex:1;display:flex;flex-direction:column;">
         <span style="font-size:8px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;margin-bottom:28px;display:block;">Data</span>
         <div style="border-bottom:1.5px solid #1a3a6b;margin-bottom:5px;"></div>
-        
       </div>
       <div style="flex:1;display:flex;flex-direction:column;">
         <span style="font-size:8px;color:#5a6e8a;text-transform:uppercase;font-weight:700;letter-spacing:.5px;margin-bottom:28px;display:block;">Local / Filial</span>
@@ -3333,8 +3417,8 @@ function gerarFichaPdf(cpf){{
 </div>
 
 <div class="footer">
-  <span><strong style="color:#1a3a6b;">LUFT LOGISTICS</strong> — Sistema de Controle de Motoristas</span>
-  <span>Documento gerado em ${{dtStr}} às ${{hrStr}}</span>
+  <span><strong style="color:#1a3a6b;">LUFT LOGISTICS</strong> — Documento interno e confidencial. Uso restrito à gestão operacional.</span>
+  <span>Doc. ${{codigoDoc}} • Emitido por ${{esc(emissor)}} • ${{dtStr}} ${{hrStr}}</span>
 </div>
 
 </body></html>`;
