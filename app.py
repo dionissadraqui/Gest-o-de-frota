@@ -1059,6 +1059,9 @@ let motoristaEmEdicaoCpf = null;
 let fotoTemporariaBase64 = null;
 let filialModalAtiva     = null;
 let fichaOrigemModal     = null;
+let houveEdicaoNaoSalva  = false;
+let autoRefreshInterval  = null;
+const AUTO_REFRESH_MS    = 30000; // intervalo padrão: 30 segundos
 
 function mostrarSpinner(show){{ document.getElementById('spinnerOverlay').classList.toggle('show', show); }}
 
@@ -1932,8 +1935,8 @@ function aplicarEstadoVisualCampos(){{
   }}
 }}
 
-document.addEventListener('input',  e => {{ if(e.target.closest && e.target.closest('#driverProfileContent')) aplicarEstadoVisualCampos(); }});
-document.addEventListener('change', e => {{ if(e.target.closest && e.target.closest('#driverProfileContent')) aplicarEstadoVisualCampos(); }});
+document.addEventListener('input',  e => {{ if(e.target.closest && e.target.closest('#driverProfileContent')){{ aplicarEstadoVisualCampos(); houveEdicaoNaoSalva = true; }} }});
+document.addEventListener('change', e => {{ if(e.target.closest && e.target.closest('#driverProfileContent')){{ aplicarEstadoVisualCampos(); houveEdicaoNaoSalva = true; }} }});
 
 // Mantido por compatibilidade com o HTML já existente (oninput="checarCamposValidade(...)").
 function checarCamposValidade(dataId, anosId){{
@@ -2499,6 +2502,7 @@ function abrirFichaMotorista(cpf){{
   if(!m) return;
   motoristaEmEdicaoCpf = cpf;
   fotoTemporariaBase64 = m.foto || null;
+  houveEdicaoNaoSalva  = false;
   const avatarHtml = `<img src="${{m.foto || AVATAR_PADRAO}}" id="profilePreviewImg">`;
   let matrizHtml = '';
   MESES.forEach(mes => {{
@@ -3107,14 +3111,22 @@ function linhasParaMotoristas(linhas){{
 }}
 
 // ── Botão "Atualizar": busca os dados direto do Sheets, sem salvar nada ──
-async function atualizarDadosDoSheets(){{
-  mostrarSpinner(true);
+async function atualizarDadosDoSheets(silencioso = false){{
+  if(!silencioso) mostrarSpinner(true);
   try{{
     const auth  = `Bearer ${{ACCESS_TOKEN}}`;
     const range = `${{SHEET_NAME_JS}}!A2:ZZ`;
+    const cacheBuster = Date.now(); // ── remove cache antigo da requisição ──
     const resp = await fetch(
-      `${{SHEETS_BASE}}/${{SHEET_ID_JS}}/values/${{encodeURIComponent(range)}}`,
-      {{ headers: {{ 'Authorization': auth }} }}
+      `${{SHEETS_BASE}}/${{SHEET_ID_JS}}/values/${{encodeURIComponent(range)}}?_=${{cacheBuster}}`,
+      {{
+        headers: {{
+          'Authorization': auth,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }},
+        cache: 'no-store'
+      }}
     );
     if(!resp.ok){{
       const err = await resp.text();
@@ -3122,26 +3134,68 @@ async function atualizarDadosDoSheets(){{
         _sessaoExpirouRecarregar();
         return;
       }}
-      toast('Erro ao atualizar dados: ' + err, 'erro');
+      if(!silencioso) toast('Erro ao atualizar dados: ' + err, 'erro');
       return;
     }}
     const data   = await resp.json();
     const linhas = data.values || [];
-    motoristasDB = linhasParaMotoristas(linhas);
+    motoristasDB = linhasParaMotoristas(linhas); // ── troca completa: descarta dados antigos em memória ──
     atualizarDashboardCompleto();
-    if(motoristaEmEdicaoCpf && document.getElementById('driverModal').style.display === 'flex'){{
+
+    const fichaAberta  = document.getElementById('driverModal').style.display === 'flex';
+    const filialAberta = document.getElementById('filialModal').style.display === 'flex';
+    const kpiAberto    = document.getElementById('kpiModal').classList.contains('show');
+
+    // Redesenha a tela em que a pessoa já está, sem tirá-la do lugar
+    if(fichaAberta && motoristaEmEdicaoCpf){{
       const aindaExiste = motoristasDB.some(m => m.cpf === motoristaEmEdicaoCpf);
       if(aindaExiste) abrirFichaMotorista(motoristaEmEdicaoCpf);
     }}
-    if(filialModalAtiva && document.getElementById('filialModal').style.display === 'flex'){{
+    if(filialAberta && filialModalAtiva){{
       expandirFilial(filialModalAtiva);
     }}
-    toast('Dados atualizados com sucesso a partir do Google Sheets!');
+    if(kpiAberto && kpiTipoAtual){{
+      if(kpiTipoAtual === 'vencimentoCategoria' && kpiCategoriaVencAtual && kpiTipoVencAtual){{
+        abrirVencimentoCategoria(kpiCategoriaVencAtual, kpiTipoVencAtual);
+      }} else if(KPI_CONFIG[kpiTipoAtual]){{
+        abrirKpiModal(kpiTipoAtual, kpiMesAtual);
+      }}
+    }}
+
+    if(!silencioso) toast('Dados atualizados com sucesso a partir do Google Sheets!');
   }} catch(e){{
-    toast('Falha de conexão ao atualizar: ' + e.message, 'erro');
+    if(!silencioso) toast('Falha de conexão ao atualizar: ' + e.message, 'erro');
   }} finally{{
-    mostrarSpinner(false);
+    if(!silencioso) mostrarSpinner(false);
   }}
+}}
+
+// ── AUTO-REFRESH PADRÃO ──────────────────────────────────────────
+// Atualiza tudo periodicamente sem sair da tela.
+// Se a ficha do condutor estiver aberta com alterações NÃO salvas,
+// o ciclo é pulado (a pessoa não perde o que digitou).
+async function executarAutoRefresh(){{
+  const fichaAberta   = document.getElementById('driverModal').style.display === 'flex';
+  const salvandoAgora = document.getElementById('spinnerOverlay').classList.contains('show');
+
+  if(salvandoAgora){{
+    console.log('[auto-refresh] Pulado: uma operação de salvamento está em andamento.');
+    return;
+  }}
+  if(fichaAberta && houveEdicaoNaoSalva){{
+    console.log('[auto-refresh] Pulado: existem alterações não salvas na ficha aberta.');
+    return;
+  }}
+  await atualizarDadosDoSheets(true); // true = silencioso (sem spinner nem toast)
+}}
+
+function iniciarAutoRefresh(){{
+  if(autoRefreshInterval) clearInterval(autoRefreshInterval);
+  autoRefreshInterval = setInterval(executarAutoRefresh, AUTO_REFRESH_MS);
+}}
+
+function pararAutoRefresh(){{
+  if(autoRefreshInterval){{ clearInterval(autoRefreshInterval); autoRefreshInterval = null; }}
 }}
 
 function voltarPaginaAnterior(){{
@@ -3156,6 +3210,7 @@ function fecharJanelaDriver(){{
   motoristaEmEdicaoCpf = null;
   fotoTemporariaBase64 = null;
   fichaOrigemModal     = null;
+  houveEdicaoNaoSalva  = false;
   document.getElementById('btnVoltarFicha').style.display = 'none';
 }}
 
@@ -3560,6 +3615,7 @@ function fecharSplashECarregar(total){{
         if(nomeEl) nomeEl.textContent = usuarioLogado.nome;
       }}
       atualizarDashboardCompleto();
+      iniciarAutoRefresh();
     }}, 500);
   }}, 900);
 }}
