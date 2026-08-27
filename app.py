@@ -27,6 +27,7 @@ import google.auth.transport.requests
 # ─── Configurações ────────────────────────────────────────────────────────────
 SHEET_ID   = "1PP0cUAIpQqv7zB0JCYsGxGW9zHsrRw182iRrZ52q8Kg"
 SHEET_NAME = "motoristas_luft"
+SHEET_NAME_ORG = "organograma_luft"
 # Credenciais: arquivo credentials.json na mesma pasta do app.py
 BASE_DIR         = Path(__file__).parent
 CREDENTIALS_PATH = BASE_DIR / "gestao-operacional-499623.json"
@@ -57,6 +58,33 @@ COLUNAS += [
     "gestime", "obsGestime", "gestime_data", "gestime_validade_meses",
     "afastado", "obsAfastado",
 ]
+
+COLUNAS_ORG = ["id", "tipo", "setor_ordem", "setor_titulo", "setor_icone", "pessoa_ordem", "nome", "cargo"]
+
+ORGANOGRAMA_PADRAO = {
+    "supervisor": {"nome": "RAFAELA SILVA", "cargo": "SUPERVISORA"},
+    "setores": [
+        {"titulo": ["CONTROLE DE", "JORNADA"], "icone": "clock", "pessoas": [
+            ["Cristina Calixto", "Assist. Adm."],
+            ["Giselle Freitas", "Assist. Adm."],
+            ["Julia Haro", "Assist. Adm."],
+            ["Dionis Sadraqui", "Assist. Adm."],
+            ["João Eduardo", "Jovem Aprendiz"],
+        ]},
+        {"titulo": ["GESTÃO DE", "MOTORISTAS"], "icone": "wheel", "pessoas": [
+            ["Issac Fernandes", "Analista Adm."],
+            ["Ana", "Assist. Adm."],
+        ]},
+        {"titulo": ["COMPROVANTES", "DE ENTREGA"], "icone": "clipboard", "pessoas": [
+            ["Fabio de Almeida", "Assist. Adm."],
+            ["Jose Souza", "Analista Adm."],
+            ["Geovanna Vitoria", "Analista Adm."],
+        ]},
+        {"titulo": ["ACERTO"], "icone": "calculator", "pessoas": [
+            ["Geisa", "Analista Adm."],
+        ]},
+    ],
+}
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -175,6 +203,56 @@ def salvar_todos_motoristas(lista):
         ws.delete_rows(2, len(existing))
     if all_rows:
         ws.append_rows(all_rows, value_input_option="USER_ENTERED")
+
+
+def get_sheet_org():
+    creds_dict = dict(st.secrets["gcp_service_account"])
+    creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
+    gc = gspread.authorize(creds)
+    sh = gc.open_by_key(SHEET_ID)
+    try:
+        ws = sh.worksheet(SHEET_NAME_ORG)
+    except gspread.WorksheetNotFound:
+        ws = sh.add_worksheet(title=SHEET_NAME_ORG, rows=200, cols=len(COLUNAS_ORG) + 5)
+        ws.append_row(COLUNAS_ORG)
+    return ws
+
+def ler_organograma():
+    ws = get_sheet_org()
+    records = ws.get_all_records(default_blank="")
+    if not records:
+        return ORGANOGRAMA_PADRAO
+    supervisor = {"nome": "", "cargo": ""}
+    setores_map = {}
+    for row in records:
+        tipo = str(row.get("tipo", "")).strip()
+        if tipo == "supervisor":
+            supervisor = {
+                "nome": str(row.get("nome", "")).strip(),
+                "cargo": str(row.get("cargo", "")).strip(),
+            }
+            continue
+        so = int(row.get("setor_ordem", 0) or 0)
+        if so not in setores_map:
+            titulo_bruto = str(row.get("setor_titulo", "")).strip()
+            titulo = titulo_bruto.split("|") if titulo_bruto else [""]
+            setores_map[so] = {
+                "titulo": titulo,
+                "icone": str(row.get("setor_icone", "")).strip() or "clipboard",
+                "pessoas": [],
+            }
+        po = int(row.get("pessoa_ordem", 0) or 0)
+        setores_map[so]["pessoas"].append(
+            (po, str(row.get("nome", "")).strip(), str(row.get("cargo", "")).strip())
+        )
+    setores = []
+    for so in sorted(setores_map.keys()):
+        s = setores_map[so]
+        s["pessoas"] = [[n, c] for _, n, c in sorted(s["pessoas"], key=lambda t: t[0])]
+        setores.append(s)
+    if not setores:
+        return ORGANOGRAMA_PADRAO
+    return {"supervisor": supervisor, "setores": setores}
 
 
 # ─── Gera access token OAuth2 para o JS usar ─────────────────────────────────
@@ -333,6 +411,7 @@ HTML = f"""<!DOCTYPE html>
 .kpi.blue{{background:#f0f6ff;border-color:#3b7dd8;box-shadow:0 0 10px rgba(59,125,216,0.35),inset 0 0 6px rgba(59,125,216,0.06)}}
 .kpi.teal{{background:#f0fbfd;border-color:#0e9cc0;box-shadow:0 0 10px rgba(14,156,192,0.35),inset 0 0 6px rgba(14,156,192,0.06)}}
 .kpi.purple{{background:#f5f0ff;border-color:#7c3aed;box-shadow:0 0 10px rgba(124,58,237,0.35),inset 0 0 6px rgba(124,58,237,0.06)}}
+.kpi.indigo{{background:#eef2ff;border-color:#4f46e5;box-shadow:0 0 10px rgba(79,70,229,0.35),inset 0 0 6px rgba(79,70,229,0.06)}}
 .kpi-lbl{{font-size:14px;letter-spacing:1.5px;text-transform:uppercase;color:#5a6e8a;margin-bottom:6px;font-weight:700}}
 .kpi-val{{font-size:52px;font-weight:900;line-height:1}}
 .kpi.red .kpi-val{{color:#dc2626}}
@@ -341,6 +420,7 @@ HTML = f"""<!DOCTYPE html>
 .kpi.blue .kpi-val{{color:#1a4fa0}}
 .kpi.teal .kpi-val{{color:#0a7a9a}}
 .kpi.purple .kpi-val{{color:#6d28d9}}
+.kpi.indigo .kpi-val{{color:#4338ca}}
 .kpi-sub{{font-size:14px;color:#3b7dd8;margin-top:8px;text-transform:uppercase;letter-spacing:1px;font-weight:600}}
 
 /* ── PAINEL / SEÇÕES ── */
@@ -607,6 +687,18 @@ HTML = f"""<!DOCTYPE html>
 .empty-state i{{font-size:36px;margin-bottom:12px;color:#c4d0e4}}
 .empty-state p{{font-size:15px}}
 
+/* ── MENU RÁPIDO DO ORGANOGRAMA (só dentro do modal Gestão Organograma) ── */
+.org-quick-menu{{position:absolute;left:14px;top:50%;transform:translateY(-50%);z-index:400;display:flex;align-items:flex-start;gap:0}}
+.org-quick-menu-btn{{width:50px;height:50px;border-radius:50%;background:#ffffff;border:2px solid #16a34a;color:#16a34a;font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(20,50,120,0.2);transition:background .2s,color .2s,transform .2s;flex-shrink:0}}
+.org-quick-menu-btn:hover{{background:#16a34a;color:#fff;transform:scale(1.07)}}
+.org-quick-menu-btn.open{{background:#16a34a;color:#fff}}
+.org-quick-menu-panel{{max-height:0;overflow:hidden;opacity:0;transform:translateX(-10px);transition:max-height .3s ease,opacity .25s ease,transform .25s ease,padding .3s ease;background:#ffffff;border:1.5px solid #c4d0e4;border-radius:12px;box-shadow:0 12px 32px rgba(20,50,120,0.2);margin-left:12px;padding:0 14px;width:240px;pointer-events:none}}
+.org-quick-menu-panel.open{{max-height:400px;opacity:1;transform:translateX(0);padding:14px;pointer-events:auto}}
+.org-quick-menu-title{{font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#16a34a;margin-bottom:10px}}
+.org-add-setor-btn{{width:100%;background:#f0fef4;color:#16a34a;border:1.5px solid rgba(22,163,74,0.35);border-radius:6px;padding:9px 10px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;margin-bottom:8px;text-align:left;transition:background .15s,color .15s}}
+.org-add-setor-btn:hover{{background:#16a34a;color:#fff}}
+.org-add-setor-btn:last-child{{margin-bottom:0}}
+
 /* ── RESPONSIVO ── */
 @media (max-width:1024px){{
   .kpi-row{{grid-template-columns:repeat(3,1fr)}}
@@ -648,6 +740,10 @@ HTML = f"""<!DOCTYPE html>
   .admin-panel-body.open{{max-height:420px}}
   .form-grid{{grid-template-columns:1fr 1fr;gap:8px}}
   .charts-row{{grid-template-columns:1fr!important}}
+  .org-quick-menu{{left:8px}}
+  .org-quick-menu-btn{{width:44px;height:44px;font-size:17px}}
+  .org-quick-menu-panel{{width:min(78vw,240px)}}
+  .org-quick-menu-panel.open{{max-height:360px}}
 }}
 
 @media (max-width:900px){{
@@ -883,6 +979,12 @@ HTML = f"""<!DOCTYPE html>
       </div>
       <div class="kpi-sub">Todas as filiais</div>
     </div>
+
+    <div class="kpi indigo" onclick="abrirOrganogramaModal()" title="Ver e editar o organograma da equipe">
+      <div class="kpi-lbl">Gestão Organograma</div>
+      <div class="kpi-val" style="font-size:34px;"><i class="fa-solid fa-sitemap"></i></div>
+      <div class="kpi-sub">Equipe &amp; Estrutura</div>
+    </div>
   </div>
 
  <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px;width:100%;min-width:0;" class="charts-row">
@@ -1037,14 +1139,46 @@ HTML = f"""<!DOCTYPE html>
   </div>
 </div>
 
+<!-- Modal Organograma -->
+<div class="modal-overlay" id="organogramaModal" style="z-index:10000;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);padding:0;">
+  <div class="modal-box" style="max-width:none;width:100%;height:100%;border-radius:0;border:none;background:#f0f4fa;display:flex;flex-direction:column;position:relative;">
+    <div class="modal-header" style="border-color:#d0d8e8;background:#fff;flex-shrink:0;">
+      <div class="modal-title" style="font-size:13px;color:#1a3a6b;"><i class="fa-solid fa-sitemap" style="color:#4338ca"></i> <span style="color:#1a3a6b;">GESTÃO ORGANOGRAMA — ESTRUTURA DA EQUIPE</span></div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button onclick="salvarOrganogramaAPI()" style="background:#1a5c2a;color:#ffffff;border:1px solid #14481f;width:auto;padding:0 22px;height:36px;border-radius:6px;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;">
+          <i class="fa-solid fa-check"></i> Salvar Organograma
+        </button>
+        <button onclick="gerarOrganogramaPdf()" style="background:transparent;color:#1a4fa0;border:1.5px solid #1a4fa0;width:auto;padding:0 16px;height:36px;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .2s,color .2s;" onmouseover="this.style.background='#1a4fa0';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1a4fa0'">
+          <i class="fa-solid fa-file-pdf"></i> Baixar PDF
+        </button>
+        <button onclick="fecharOrganogramaModal()" style="background:#7a1a1a;color:#ffffff;border:1px solid #5c1212;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+    </div>
+    <div id="orgWrapOuter" style="position:relative;width:100%;flex:1;overflow:auto;background:#e9edf3;">
+      <div id="orgWrapInner" style="position:absolute;top:0;left:0;transform-origin:top left;background:#fff;box-shadow:0 4px 24px rgba(20,50,120,0.12);"></div>
+    </div>
+    <div class="org-quick-menu">
+      <button type="button" class="org-quick-menu-btn" id="orgQuickMenuBtn" onclick="toggleOrgQuickMenu()" title="Adicionar colaborador">
+        <i class="fa-solid fa-user-plus"></i>
+      </button>
+      <div class="org-quick-menu-panel" id="orgQuickMenuPanel">
+        <div class="org-quick-menu-title"><i class="fa-solid fa-user-plus"></i> Adicionar em…</div>
+        <div id="orgQuickMenuList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <input type="file" id="hiddenPhotoInput" accept="image/*" style="display:none;" onchange="processarFotoCarregada(this)">
 
 <script>
 const ACCESS_TOKEN = '{_ACCESS_TOKEN}';
 const SHEET_ID_JS  = '{SHEET_ID}';
 const SHEET_NAME_JS= '{SHEET_NAME}';
+const SHEET_NAME_ORG_JS = '{SHEET_NAME_ORG}';
 const SHEETS_BASE  = 'https://sheets.googleapis.com/v4/spreadsheets';
 const DADOS_INICIAIS = {json.dumps(ler_todos_motoristas(), ensure_ascii=False)};
+const DADOS_ORG_INICIAIS = {json.dumps(ler_organograma(), ensure_ascii=False)};
 const CREDENCIAIS     = {json.dumps(CREDENCIAIS_LOGIN, ensure_ascii=False)};
 const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho",
                "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
@@ -1052,6 +1186,7 @@ const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho",
 const AVATAR_PADRAO = 'data:image/jpeg;base64,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';
 
 let motoristasDB         = DADOS_INICIAIS;
+let DADOS_ORG            = DADOS_ORG_INICIAIS;
 let dssChartInstance      = null;
 let filialChartInstance   = null;
 let filialAnualChartInst  = null;
@@ -3581,6 +3716,353 @@ function _gerarRelatorio(mes, lista, realizado){{
   const blob = new Blob([html],{{type:'text/html;charset=utf-8'}});
   const url  = URL.createObjectURL(blob);
   const win  = window.open(url,'_blank');
+  if(win) win.onload = () => {{ win.focus(); win.print(); }};
+}}
+
+// ── ORGANOGRAMA ──────────────────────────────────────────────────
+function escOrg(v){{
+  return String(v==null?'':v).replace(/[&<>"']/g, function(c){{
+    return {{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}}[c];
+  }});
+}}
+
+function iconOrg(type,cx,cy){{
+  const st = 'fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"';
+  if(type === 'clock'){{
+    return '<circle cx="'+cx+'" cy="'+cy+'" r="21" '+st+'/><path d="M'+cx+' '+(cy-15)+'V'+(cy+2)+'L'+(cx+11)+' '+(cy+9)+'" '+st+'/>';
+  }}
+  if(type === 'wheel'){{
+    return '<circle cx="'+cx+'" cy="'+cy+'" r="21" '+st+'/><circle cx="'+cx+'" cy="'+cy+'" r="6" '+st+'/><path d="M'+(cx-20)+' '+(cy-5)+'Q'+cx+' '+(cy-19)+' '+(cx+20)+' '+(cy-5)+'" '+st+'/><path d="M'+(cx-20)+' '+(cy-5)+'H'+(cx-7)+'" '+st+'/><path d="M'+(cx+20)+' '+(cy-5)+'H'+(cx+7)+'" '+st+'/><path d="M'+cx+' '+(cy+6)+'V'+(cy+21)+'" '+st+'/>';
+  }}
+  if(type === 'clipboard'){{
+    return '<rect x="'+(cx-14)+'" y="'+(cy-20)+'" width="28" height="40" rx="3" '+st+'/><rect x="'+(cx-7)+'" y="'+(cy-25)+'" width="14" height="9" rx="3" '+st+'/><path d="M'+(cx-8)+' '+(cy-5)+'l3 3 6-7" '+st+'/><path d="M'+(cx+5)+' '+(cy-5)+'h5" '+st+'/><path d="M'+(cx-8)+' '+(cy+9)+'l3 3 6-7" '+st+'/><path d="M'+(cx+5)+' '+(cy+9)+'h5" '+st+'/>';
+  }}
+  return '<rect x="'+(cx-15)+'" y="'+(cy-20)+'" width="30" height="40" rx="3" '+st+'/><rect x="'+(cx-10)+'" y="'+(cy-14)+'" width="20" height="8" rx="1" '+st+'/><circle cx="'+(cx-7)+'" cy="'+(cy+1)+'" r="1.7" fill="#fff"/><circle cx="'+cx+'" cy="'+(cy+1)+'" r="1.7" fill="#fff"/><circle cx="'+(cx+7)+'" cy="'+(cy+1)+'" r="1.7" fill="#fff"/><circle cx="'+(cx-7)+'" cy="'+(cy+9)+'" r="1.7" fill="#fff"/><circle cx="'+cx+'" cy="'+(cy+9)+'" r="1.7" fill="#fff"/><circle cx="'+(cx+7)+'" cy="'+(cy+9)+'" r="1.7" fill="#fff"/>';
+}}
+
+function personIconOrg(cx,cy){{
+  return '<circle cx="'+cx+'" cy="'+(cy-10)+'" r="8" fill="none" stroke="#176bc2" stroke-width="1.8"/><path d="M'+(cx-15)+' '+(cy+16)+'Q'+(cx-15)+' '+(cy+1)+' '+cx+' '+(cy+1)+'Q'+(cx+15)+' '+(cy+1)+' '+(cx+15)+' '+(cy+16)+'" fill="none" stroke="#176bc2" stroke-width="1.8" stroke-linecap="round"/>';
+}}
+
+function normalizarPessoasOrganograma(){{
+  // Remove entradas totalmente vazias (nome e cargo em branco).
+  // Não cria mais um espaço vazio automático no fim de cada setor.
+  (DADOS_ORG.setores||[]).forEach(function(setor){{
+    if(!setor.pessoas) setor.pessoas = [];
+    setor.pessoas = setor.pessoas.filter(function(p){{
+      return String(p[0]||'').trim() !== '' || String(p[1]||'').trim() !== '';
+    }});
+  }});
+}}
+
+function adicionarPessoaOrganograma(setorIdx){{
+  if(!DADOS_ORG.setores[setorIdx].pessoas) DADOS_ORG.setores[setorIdx].pessoas = [];
+  DADOS_ORG.setores[setorIdx].pessoas.push(['','']);
+  const novoIdx = DADOS_ORG.setores[setorIdx].pessoas.length - 1;
+  fecharOrgQuickMenu();
+  renderizarOrganograma({{tipo:'pessoaNome', setor:setorIdx, pessoa:novoIdx}}, 0);
+}}
+
+function toggleOrgQuickMenu(){{
+  const btn   = document.getElementById('orgQuickMenuBtn');
+  const panel = document.getElementById('orgQuickMenuPanel');
+  const aberto = panel.classList.toggle('open');
+  btn.classList.toggle('open', aberto);
+  if(aberto) renderizarOrgQuickMenuLista();
+}}
+
+function fecharOrgQuickMenu(){{
+  const btn   = document.getElementById('orgQuickMenuBtn');
+  const panel = document.getElementById('orgQuickMenuPanel');
+  if(panel) panel.classList.remove('open');
+  if(btn) btn.classList.remove('open');
+}}
+
+function renderizarOrgQuickMenuLista(){{
+  const cont = document.getElementById('orgQuickMenuList');
+  if(!cont) return;
+  cont.innerHTML = (DADOS_ORG.setores||[]).map(function(s, i){{
+    const titulo = (s.titulo||[]).join(' ');
+    return '<button type="button" class="org-add-setor-btn" onclick="adicionarPessoaOrganograma(' + i + ')"><i class="fa-solid fa-plus"></i> ' + escOrg(titulo) + '</button>';
+  }}).join('');
+}}
+
+function renderizarOrganograma(focoRestaurar, cursorPos){{
+  const W=1536;
+  const Cline='#123d72', Ctext='#071c48', Cbright='#176bc2';
+  const cardH=88, gap=12, firstY=474;
+
+  const maxPessoas     = Math.max(1, ...(DADOS_ORG.setores||[]).map(s => (s.pessoas||[]).length));
+  const lastCardBottom = firstY + (maxPessoas-1)*(cardH+gap) + cardH;
+  const footerTop      = lastCardBottom + 26;
+  const H              = footerTop + 36;
+
+  let svg = '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;width:100%;height:100%;">';
+  svg += '<defs>';
+  svg += '<linearGradient id="orgBackground" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6f8fb"/><stop offset=".48" stop-color="#ffffff"/><stop offset="1" stop-color="#f5f8fc"/></linearGradient>';
+  svg += '<linearGradient id="orgSupervisor" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#112f62"/><stop offset="1" stop-color="#061a40"/></linearGradient>';
+  svg += '<linearGradient id="orgHeader" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#155ba4"/><stop offset="1" stop-color="#06427f"/></linearGradient>';
+  svg += '<linearGradient id="orgCircle" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2d83d6"/><stop offset="1" stop-color="#1762b1"/></linearGradient>';
+  svg += '<filter id="orgBoxShadow" x="-20%" y="-30%" width="140%" height="160%"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#69798d" flood-opacity=".20"/></filter>';
+  svg += '<filter id="orgCardShadow" x="-20%" y="-30%" width="140%" height="160%"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#778599" flood-opacity=".18"/></filter>';
+  svg += '</defs>';
+  svg += '<rect width="'+W+'" height="'+H+'" fill="url(#orgBackground)"/>';
+  svg += '<text x="768" y="90" text-anchor="middle" font-size="55" font-weight="900" letter-spacing="-1" fill="#112d5b">GEST\u00c3O DE FROTA</text>';
+  svg += '<rect x="700" y="112" width="137" height="5" rx="3" fill="#1b6dc2"/>';
+  svg += '<g filter="url(#orgBoxShadow)"><rect x="542" y="144" width="451" height="119" rx="15" fill="url(#orgSupervisor)"/></g>';
+  svg += '<circle cx="611" cy="203" r="41" fill="none" stroke="#fff" stroke-width="2"/>';
+  svg += '<circle cx="611" cy="192" r="12" fill="none" stroke="#fff" stroke-width="2"/>';
+  svg += '<path d="M591 224Q591 207 611 207Q631 207 631 224" fill="none" stroke="#fff" stroke-width="2"/>';
+  svg += '<path d="M202 293H1338" fill="none" stroke="'+Cline+'" stroke-width="3"/>';
+  svg += '<path d="M768 263V293" fill="none" stroke="'+Cline+'" stroke-width="3"/>';
+
+  const xs=[39,422,798,1173], ws=[330,329,325,324];
+  xs.forEach(function(x,i){{
+    const cx=x+ws[i]/2;
+    svg += '<path d="M'+cx+' 293V326" stroke="'+Cline+'" stroke-width="3"/>';
+  }});
+
+  const overlays = [];
+  overlays.push({{tipo:'supervisorNome', x:674, y:198, fs:29, fw:900, color:'#ffffff', w:300}});
+  overlays.push({{tipo:'supervisorCargo', x:674, y:229, fs:20, fw:800, color:'#29a3fb', w:300}});
+
+  (DADOS_ORG.setores||[]).forEach(function(setor,i){{
+    const x=xs[i], w=ws[i], headerY=326, iconX=x+61, iconY=381;
+    const titleX = i===2 ? x+116 : x+120;
+    const titleSize = i===2 ? 23 : 24;
+    svg += '<g><rect x="'+x+'" y="'+headerY+'" width="'+w+'" height="112" rx="14" fill="url(#orgHeader)" filter="url(#orgBoxShadow)"/><circle cx="'+iconX+'" cy="'+iconY+'" r="42" fill="url(#orgCircle)"/>' + iconOrg(setor.icone,iconX,iconY);
+    if((setor.titulo||[]).length === 1){{
+      svg += '<text x="'+titleX+'" y="'+(headerY+66)+'" font-size="'+titleSize+'" font-weight="900" fill="#fff">'+escOrg(setor.titulo[0])+'</text>';
+    }} else {{
+      svg += '<text x="'+titleX+'" y="'+(headerY+50)+'" font-size="'+titleSize+'" font-weight="900" fill="#fff">'+escOrg(setor.titulo[0])+'</text>';
+      svg += '<text x="'+titleX+'" y="'+(headerY+82)+'" font-size="'+titleSize+'" font-weight="900" fill="#fff">'+escOrg(setor.titulo[1])+'</text>';
+    }}
+    svg += '</g>';
+
+    const lineX=x+24, cardX=x+48;
+    const pessoas = setor.pessoas||[];
+    const lastCenter = firstY + (Math.max(pessoas.length,1)-1)*(cardH+gap) + cardH/2;
+    svg += '<path d="M'+lineX+' 438V'+lastCenter+'" stroke="'+Cline+'" stroke-width="2" fill="none"/>';
+
+    pessoas.forEach(function(p,j){{
+      const y = firstY + j*(cardH+gap), cy = y+cardH/2;
+      const nome  = String(p[0]||'').trim();
+      const cargo = String(p[1]||'').trim();
+      const vago  = !nome && !cargo;
+      svg += '<path d="M'+lineX+' '+cy+'H'+cardX+'" stroke="'+(vago?'#a9bad4':Cline)+'" stroke-width="2" stroke-dasharray="'+(vago?'4,3':'0')+'"/>';
+      svg += '<circle cx="'+lineX+'" cy="'+cy+'" r="4" fill="'+(vago?'#a9bad4':Cline)+'"/>';
+      svg += '<rect x="'+cardX+'" y="'+y+'" width="259" height="'+cardH+'" rx="13" fill="'+(vago?'#f6f9fc':'#fff')+'" stroke="'+(vago?'#c7d4e8':'none')+'" stroke-width="'+(vago?'1.5':'0')+'" stroke-dasharray="'+(vago?'6,4':'0')+'" filter="'+(vago?'':'url(#orgCardShadow)')+'"/>';
+      if(vago){{
+        svg += '<circle cx="'+(cardX+38)+'" cy="'+cy+'" r="15" fill="none" stroke="#a9bad4" stroke-width="2" stroke-dasharray="3,3"/>';
+        svg += '<path d="M'+(cardX+38)+' '+(cy-7)+'V'+(cy+7)+'M'+(cardX+31)+' '+cy+'H'+(cardX+45)+'" stroke="#a9bad4" stroke-width="2.4" stroke-linecap="round"/>';
+      }} else {{
+        svg += personIconOrg(cardX+38,cy);
+      }}
+      overlays.push({{tipo:'pessoaNome', setor:i, pessoa:j, x:cardX+78, y:y+41, fs:18, fw:700, color: vago?'#9aa8bd':Ctext, w:171, placeholder:'Nome do colaborador'}});
+      overlays.push({{tipo:'pessoaCargo', setor:i, pessoa:j, x:cardX+78, y:y+64, fs:17, fw:400, color: vago?'#b7c1d6':Cbright, w:171, placeholder:'Cargo (ex: Assist. Adm.)'}});
+    }});
+  }});
+
+  svg += '<rect x="0" y="'+footerTop+'" width="1222" height="23" fill="#07457f"/><path d="M1230 '+(footerTop-8)+'H1536V'+(footerTop+23)+'H1210Z" fill="#176bc0"/><path d="M1225 '+(footerTop-8)+'H1240L1220 '+(footerTop+23)+'H1205Z" fill="#f8fafc"/>';
+  svg += '</svg>';
+
+  const wrap = document.getElementById('orgWrapInner');
+  wrap.innerHTML = svg;
+  wrap.style.width  = W+'px';
+  wrap.style.height = H+'px';
+  wrap.dataset.orgW = W;
+  wrap.dataset.orgH = H;
+
+  overlays.forEach(function(o){{
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    if(o.placeholder) inp.placeholder = o.placeholder;
+    if(o.tipo === 'supervisorNome')  inp.value = DADOS_ORG.supervisor.nome || '';
+    if(o.tipo === 'supervisorCargo') inp.value = DADOS_ORG.supervisor.cargo || '';
+    if(o.tipo === 'pessoaNome')      inp.value = DADOS_ORG.setores[o.setor].pessoas[o.pessoa][0] || '';
+    if(o.tipo === 'pessoaCargo')     inp.value = DADOS_ORG.setores[o.setor].pessoas[o.pessoa][1] || '';
+    inp.dataset.tipo = o.tipo;
+    if(o.setor  !== undefined) inp.dataset.setor  = o.setor;
+    if(o.pessoa !== undefined) inp.dataset.pessoa = o.pessoa;
+    inp.style.position = 'absolute';
+    inp.style.left = o.x + 'px';
+    inp.style.top  = (o.y - o.fs) + 'px';
+    inp.style.width = o.w + 'px';
+    inp.style.fontSize = o.fs + 'px';
+    inp.style.fontWeight = o.fw;
+    inp.style.color = o.color;
+    inp.style.background = 'transparent';
+    inp.style.border = 'none';
+    inp.style.outline = 'none';
+    inp.style.padding = '0';
+    inp.style.fontFamily = 'Arial,Helvetica,sans-serif';
+    inp.onfocus = function(){{ inp.style.background = 'rgba(255,220,80,0.25)'; inp.style.borderRadius = '3px'; }};
+    inp.onblur  = function(){{ inp.style.background = 'transparent'; }};
+    inp.oninput = function(){{
+      if(o.tipo === 'supervisorNome')  DADOS_ORG.supervisor.nome  = inp.value;
+      if(o.tipo === 'supervisorCargo') DADOS_ORG.supervisor.cargo = inp.value;
+      if(o.tipo === 'pessoaNome')      DADOS_ORG.setores[o.setor].pessoas[o.pessoa][0] = inp.value;
+      if(o.tipo === 'pessoaCargo')     DADOS_ORG.setores[o.setor].pessoas[o.pessoa][1] = inp.value;
+    }};
+    wrap.appendChild(inp);
+  }});
+
+  if(focoRestaurar){{
+    const sel = wrap.querySelector('input[data-tipo="'+focoRestaurar.tipo+'"][data-setor="'+focoRestaurar.setor+'"][data-pessoa="'+focoRestaurar.pessoa+'"]');
+    if(sel){{ sel.focus(); if(cursorPos!=null){{ try{{ sel.setSelectionRange(cursorPos,cursorPos); }}catch(e){{}} }} }}
+  }}
+
+  ajustarEscalaOrganograma();
+}}
+
+function ajustarEscalaOrganograma(){{
+  const outer = document.getElementById('orgWrapOuter');
+  const inner = document.getElementById('orgWrapInner');
+  if(!outer || !inner) return;
+  const contentW = parseFloat(inner.dataset.orgW) || 1536;
+  const contentH = parseFloat(inner.dataset.orgH) || 1024;
+  const escala   = (outer.clientWidth / contentW) || 1; // usa toda a largura do modal, expandindo mais para os lados
+  const offsetX  = Math.max(0, (outer.clientWidth  - contentW*escala) / 2);
+  const offsetY  = Math.max(0, (outer.clientHeight - contentH*escala) / 2);
+  inner.style.transform = 'translate(' + offsetX + 'px,' + offsetY + 'px) scale(' + escala + ')';
+}}
+
+function abrirOrganogramaModal(){{
+  document.getElementById('organogramaModal').style.display = 'flex';
+  fecharOrgQuickMenu();
+  renderizarOrganograma();
+  setTimeout(ajustarEscalaOrganograma, 30);
+}}
+
+function fecharOrganogramaModal(){{
+  normalizarPessoasOrganograma();
+  fecharOrgQuickMenu();
+  document.getElementById('organogramaModal').style.display = 'none';
+}}
+
+window.addEventListener('resize', function(){{
+  const m = document.getElementById('organogramaModal');
+  if(m && m.style.display === 'flex') ajustarEscalaOrganograma();
+}});
+
+async function salvarOrganogramaAPI(){{
+  mostrarSpinner(true);
+  try{{
+    normalizarPessoasOrganograma();
+    const auth = 'Bearer ' + ACCESS_TOKEN;
+    const rangeBase = SHEET_NAME_ORG_JS + '!A2:ZZ';
+    const linhas = [];
+    linhas.push(['1','supervisor','','','','', DADOS_ORG.supervisor.nome||'', DADOS_ORG.supervisor.cargo||'']);
+    DADOS_ORG.setores.forEach(function(setor,so){{
+      const tituloStr = (setor.titulo||[]).join('|');
+      let po = 0;
+      (setor.pessoas||[]).forEach(function(p){{
+        const nome  = String(p[0]||'').trim();
+        const cargo = String(p[1]||'').trim();
+        if(!nome && !cargo) return; // não salva a linha vaga ainda não preenchida
+        linhas.push([so+'-'+po,'pessoa',so,tituloStr,setor.icone||'',po,p[0]||'',p[1]||'']);
+        po++;
+      }});
+    }});
+    const clearResp = await fetch(SHEETS_BASE + '/' + SHEET_ID_JS + '/values/' + encodeURIComponent(rangeBase) + ':clear', {{ method:'POST', headers:{{'Authorization':auth}} }});
+    if(!clearResp.ok){{ toast('Erro ao limpar a aba do organograma.', 'erro'); return; }}
+    const resp = await fetch(SHEETS_BASE + '/' + SHEET_ID_JS + '/values/' + encodeURIComponent(rangeBase) + '?valueInputOption=RAW', {{
+      method:'PUT',
+      headers:{{'Authorization':auth,'Content-Type':'application/json'}},
+      body: JSON.stringify({{values: linhas}})
+    }});
+    if(resp.ok) toast('Organograma salvo com sucesso!');
+    else toast('Erro ao salvar organograma.', 'erro');
+  }} catch(e){{ toast('Falha de conexão: ' + e.message, 'erro'); }}
+  finally{{ mostrarSpinner(false); }}
+}}
+
+// ── PDF do Organograma ──
+function gerarOrganogramaSvgTexto(){{
+  const W=1536;
+  const Cline='#123d72', Ctext='#071c48', Cbright='#176bc2';
+  const cardH=88, gap=12, firstY=474;
+  const setoresComPessoas = (DADOS_ORG.setores||[]).map(function(s){{
+    return {{ titulo:s.titulo, icone:s.icone, pessoas:(s.pessoas||[]).filter(function(p){{ return String(p[0]||'').trim() || String(p[1]||'').trim(); }}) }};
+  }});
+  const maxPessoas = Math.max(1, ...setoresComPessoas.map(s => s.pessoas.length));
+  const lastCardBottom = firstY + (maxPessoas-1)*(cardH+gap) + cardH;
+  const footerTop = lastCardBottom + 26;
+  const H = footerTop + 36;
+  let svg = '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'">';
+  svg += '<defs>';
+  svg += '<linearGradient id="orgBackgroundPdf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6f8fb"/><stop offset=".48" stop-color="#ffffff"/><stop offset="1" stop-color="#f5f8fc"/></linearGradient>';
+  svg += '<linearGradient id="orgSupervisorPdf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#112f62"/><stop offset="1" stop-color="#061a40"/></linearGradient>';
+  svg += '<linearGradient id="orgHeaderPdf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#155ba4"/><stop offset="1" stop-color="#06427f"/></linearGradient>';
+  svg += '<linearGradient id="orgCirclePdf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2d83d6"/><stop offset="1" stop-color="#1762b1"/></linearGradient>';
+  svg += '</defs>';
+  svg += '<rect width="'+W+'" height="'+H+'" fill="url(#orgBackgroundPdf)"/>';
+  svg += '<text x="768" y="90" text-anchor="middle" font-size="55" font-weight="900" letter-spacing="-1" fill="#112d5b">GEST\u00c3O DE FROTA</text>';
+  svg += '<rect x="700" y="112" width="137" height="5" rx="3" fill="#1b6dc2"/>';
+  svg += '<rect x="542" y="144" width="451" height="119" rx="15" fill="url(#orgSupervisorPdf)"/>';
+  svg += '<circle cx="611" cy="203" r="41" fill="none" stroke="#fff" stroke-width="2"/>';
+  svg += '<circle cx="611" cy="192" r="12" fill="none" stroke="#fff" stroke-width="2"/>';
+  svg += '<path d="M591 224Q591 207 611 207Q631 207 631 224" fill="none" stroke="#fff" stroke-width="2"/>';
+  svg += '<text x="674" y="198" font-size="29" font-weight="900" fill="#ffffff">'+escOrg(DADOS_ORG.supervisor.nome||'')+'</text>';
+  svg += '<text x="674" y="229" font-size="20" font-weight="800" fill="#29a3fb">'+escOrg(DADOS_ORG.supervisor.cargo||'')+'</text>';
+  svg += '<path d="M202 293H1338" fill="none" stroke="'+Cline+'" stroke-width="3"/>';
+  svg += '<path d="M768 263V293" fill="none" stroke="'+Cline+'" stroke-width="3"/>';
+  const xs=[39,422,798,1173], ws=[330,329,325,324];
+  xs.forEach(function(x,i){{
+    const cx=x+ws[i]/2;
+    svg += '<path d="M'+cx+' 293V326" stroke="'+Cline+'" stroke-width="3"/>';
+  }});
+  setoresComPessoas.forEach(function(setor,i){{
+    const x=xs[i], w=ws[i], headerY=326, iconX=x+61, iconY=381;
+    const titleX = i===2 ? x+116 : x+120;
+    const titleSize = i===2 ? 23 : 24;
+    svg += '<rect x="'+x+'" y="'+headerY+'" width="'+w+'" height="112" rx="14" fill="url(#orgHeaderPdf)"/><circle cx="'+iconX+'" cy="'+iconY+'" r="42" fill="url(#orgCirclePdf)"/>' + iconOrg(setor.icone,iconX,iconY);
+    if((setor.titulo||[]).length === 1){{
+      svg += '<text x="'+titleX+'" y="'+(headerY+66)+'" font-size="'+titleSize+'" font-weight="900" fill="#fff">'+escOrg(setor.titulo[0])+'</text>';
+    }} else {{
+      svg += '<text x="'+titleX+'" y="'+(headerY+50)+'" font-size="'+titleSize+'" font-weight="900" fill="#fff">'+escOrg(setor.titulo[0])+'</text>';
+      svg += '<text x="'+titleX+'" y="'+(headerY+82)+'" font-size="'+titleSize+'" font-weight="900" fill="#fff">'+escOrg(setor.titulo[1])+'</text>';
+    }}
+    const lineX=x+24, cardX=x+48;
+    const listaExibir = setor.pessoas.length ? setor.pessoas : [['','']];
+    const lastCenter = firstY + (Math.max(listaExibir.length,1)-1)*(cardH+gap) + cardH/2;
+    svg += '<path d="M'+lineX+' 438V'+lastCenter+'" stroke="'+Cline+'" stroke-width="2" fill="none"/>';
+    listaExibir.forEach(function(p,j){{
+      const y = firstY + j*(cardH+gap), cy = y+cardH/2;
+      const nome  = String(p[0]||'').trim();
+      const cargo = String(p[1]||'').trim();
+      const vago  = !nome && !cargo;
+      svg += '<path d="M'+lineX+' '+cy+'H'+cardX+'" stroke="'+(vago?'#a9bad4':Cline)+'" stroke-width="2" stroke-dasharray="'+(vago?'4,3':'0')+'"/>';
+      svg += '<circle cx="'+lineX+'" cy="'+cy+'" r="4" fill="'+(vago?'#a9bad4':Cline)+'"/>';
+      svg += '<rect x="'+cardX+'" y="'+y+'" width="259" height="'+cardH+'" rx="13" fill="'+(vago?'#f6f9fc':'#fff')+'" stroke="'+(vago?'#c7d4e8':'#e2e8f0')+'" stroke-width="1.5"/>';
+      if(!vago) svg += personIconOrg(cardX+38,cy);
+      svg += '<text x="'+(cardX+78)+'" y="'+(y+41)+'" font-size="18" font-weight="700" fill="'+(vago?'#9aa8bd':Ctext)+'">'+escOrg(nome||'—')+'</text>';
+      svg += '<text x="'+(cardX+78)+'" y="'+(y+64)+'" font-size="17" font-weight="400" fill="'+(vago?'#b7c1d6':Cbright)+'">'+escOrg(cargo||'')+'</text>';
+    }});
+  }});
+  svg += '<rect x="0" y="'+footerTop+'" width="1222" height="23" fill="#07457f"/><path d="M1230 '+(footerTop-8)+'H1536V'+(footerTop+23)+'H1210Z" fill="#176bc0"/><path d="M1225 '+(footerTop-8)+'H1240L1220 '+(footerTop+23)+'H1205Z" fill="#f8fafc"/>';
+  svg += '</svg>';
+  return svg;
+}}
+
+function gerarOrganogramaPdf(){{
+  const svg   = gerarOrganogramaSvgTexto();
+  const now   = new Date();
+  const dtStr = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR',{{hour:'2-digit',minute:'2-digit'}});
+  const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Organograma — LUFT LOGISTICS</title>
+  <style>*{{box-sizing:border-box;margin:0;padding:0}}body{{font-family:'Segoe UI',Arial,sans-serif;background:#fff;padding:20px}}
+  .header{{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:3px solid #1a3a6b;padding-bottom:10px}}
+  .brand-title{{font-size:20px;font-weight:900;color:#1a3a6b}}.brand-title span{{color:#22cc88}}
+  .doc-dt{{font-size:11px;color:#5a6e8a}}
+  .svg-wrap{{width:100%}}
+  .svg-wrap svg{{width:100%;height:auto;display:block}}
+  @media print{{body{{padding:6px}}}}</style></head><body>
+  <div class="header"><div class="brand-title">LUFT<span> LOGISTICS</span> — Organograma da Equipe</div><div class="doc-dt">Gerado em ${{dtStr}}</div></div>
+  <div class="svg-wrap">${{svg}}</div>
+  </body></html>`;
+  const blob = new Blob([html], {{type:'text/html;charset=utf-8'}});
+  const url  = URL.createObjectURL(blob);
+  const win  = window.open(url, '_blank');
   if(win) win.onload = () => {{ win.focus(); win.print(); }};
 }}
 
