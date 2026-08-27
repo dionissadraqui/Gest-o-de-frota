@@ -83,6 +83,9 @@ ORGANOGRAMA_PADRAO = {
         {"titulo": ["ACERTO"], "icone": "calculator", "pessoas": [
             ["Geisa", "Analista Adm."],
         ]},
+        {"titulo": ["MOTORISTAS"], "icone": "wheel", "pessoas": [
+            ["", ""],
+        ]},
     ],
 }
 
@@ -687,13 +690,14 @@ HTML = f"""<!DOCTYPE html>
 .empty-state i{{font-size:36px;margin-bottom:12px;color:#c4d0e4}}
 .empty-state p{{font-size:15px}}
 
-/* ── MENU RÁPIDO DO ORGANOGRAMA (só dentro do modal Gestão Organograma) ── */
-.org-quick-menu{{position:absolute;left:14px;top:50%;transform:translateY(-50%);z-index:400;display:flex;align-items:flex-start;gap:0}}
-.org-quick-menu-btn{{width:50px;height:50px;border-radius:50%;background:#ffffff;border:2px solid #16a34a;color:#16a34a;font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(20,50,120,0.2);transition:background .2s,color .2s,transform .2s;flex-shrink:0}}
-.org-quick-menu-btn:hover{{background:#16a34a;color:#fff;transform:scale(1.07)}}
-.org-quick-menu-btn.open{{background:#16a34a;color:#fff}}
-.org-quick-menu-panel{{max-height:0;overflow:hidden;opacity:0;transform:translateX(-10px);transition:max-height .3s ease,opacity .25s ease,transform .25s ease,padding .3s ease;background:#ffffff;border:1.5px solid #c4d0e4;border-radius:12px;box-shadow:0 12px 32px rgba(20,50,120,0.2);margin-left:12px;padding:0 14px;width:240px;pointer-events:none}}
-.org-quick-menu-panel.open{{max-height:400px;opacity:1;transform:translateX(0);padding:14px;pointer-events:auto}}
+/* ── BOTÕES DO CABEÇALHO DO ORGANOGRAMA (Salvar / Adicionar) ── */
+.org-save-btn{{background:#1a5c2a;color:#ffffff;border:1px solid #14481f;padding:0 22px;height:36px;border-radius:6px;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .2s,box-shadow .2s}}
+.org-save-btn:hover{{background:#22883a;box-shadow:0 0 10px rgba(34,153,66,0.55),0 0 18px rgba(34,153,66,0.3)}}
+.org-add-btn-wrap{{position:relative;display:inline-block}}
+.org-add-btn{{background:#16a34a;color:#ffffff;border:1px solid #0f7a37;padding:0 22px;height:36px;border-radius:6px;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .2s,box-shadow .2s}}
+.org-add-btn:hover, .org-add-btn.open{{background:#15803d;box-shadow:0 0 10px rgba(22,163,74,0.55),0 0 18px rgba(22,163,74,0.35)}}
+.org-quick-menu-panel{{position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%) translateY(-6px);max-height:0;overflow:hidden;opacity:0;transition:max-height .3s ease,opacity .25s ease,transform .25s ease,padding .3s ease;background:#ffffff;border:1.5px solid #c4d0e4;border-radius:12px;box-shadow:0 12px 32px rgba(20,50,120,0.2);padding:0 14px;width:240px;pointer-events:none;z-index:500}}
+.org-quick-menu-panel.open{{max-height:400px;opacity:1;transform:translateX(-50%) translateY(0);padding:14px;pointer-events:auto}}
 .org-quick-menu-title{{font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#16a34a;margin-bottom:10px}}
 .org-add-setor-btn{{width:100%;background:#f0fef4;color:#16a34a;border:1.5px solid rgba(22,163,74,0.35);border-radius:6px;padding:9px 10px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;margin-bottom:8px;text-align:left;transition:background .15s,color .15s}}
 .org-add-setor-btn:hover{{background:#16a34a;color:#fff}}
@@ -740,8 +744,7 @@ HTML = f"""<!DOCTYPE html>
   .admin-panel-body.open{{max-height:420px}}
   .form-grid{{grid-template-columns:1fr 1fr;gap:8px}}
   .charts-row{{grid-template-columns:1fr!important}}
-  .org-quick-menu{{left:8px}}
-  .org-quick-menu-btn{{width:44px;height:44px;font-size:17px}}
+  .org-save-btn,.org-add-btn{{padding:0 14px;font-size:11px;gap:5px}}
   .org-quick-menu-panel{{width:min(78vw,240px)}}
   .org-quick-menu-panel.open{{max-height:360px}}
 }}
@@ -1145,26 +1148,26 @@ HTML = f"""<!DOCTYPE html>
     <div class="modal-header" style="border-color:#d0d8e8;background:#fff;flex-shrink:0;">
       <div class="modal-title" style="font-size:13px;color:#1a3a6b;"><i class="fa-solid fa-sitemap" style="color:#4338ca"></i> <span style="color:#1a3a6b;">GESTÃO ORGANOGRAMA — ESTRUTURA DA EQUIPE</span></div>
       <div style="display:flex;align-items:center;gap:8px;">
-        <button onclick="salvarOrganogramaAPI()" style="background:#1a5c2a;color:#ffffff;border:1px solid #14481f;width:auto;padding:0 22px;height:36px;border-radius:6px;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;">
+        <button class="org-save-btn" onclick="salvarOrganogramaAPI()">
           <i class="fa-solid fa-check"></i> Salvar Organograma
         </button>
+        <div class="org-add-btn-wrap">
+          <button type="button" class="org-add-btn" id="orgQuickMenuBtn" onclick="toggleOrgQuickMenu()" title="Adicionar colaborador">
+            <i class="fa-solid fa-user-plus"></i> Adicionar Colaborador
+          </button>
+          <div class="org-quick-menu-panel" id="orgQuickMenuPanel">
+            <div class="org-quick-menu-title"><i class="fa-solid fa-user-plus"></i> Adicionar em…</div>
+            <div id="orgQuickMenuList"></div>
+          </div>
+        </div>
         <button onclick="gerarOrganogramaPdf()" style="background:transparent;color:#1a4fa0;border:1.5px solid #1a4fa0;width:auto;padding:0 16px;height:36px;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .2s,color .2s;" onmouseover="this.style.background='#1a4fa0';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='#1a4fa0'">
           <i class="fa-solid fa-file-pdf"></i> Baixar PDF
         </button>
-        <button onclick="fecharOrganogramaModal()" style="background:#7a1a1a;color:#ffffff;border:1px solid #5c1212;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;"><i class="fa-solid fa-xmark"></i></button>
+        <button class="btn-close" onclick="fecharOrganogramaModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </div>
     <div id="orgWrapOuter" style="position:relative;width:100%;flex:1;overflow:auto;background:#e9edf3;">
       <div id="orgWrapInner" style="position:absolute;top:0;left:0;transform-origin:top left;background:#fff;box-shadow:0 4px 24px rgba(20,50,120,0.12);"></div>
-    </div>
-    <div class="org-quick-menu">
-      <button type="button" class="org-quick-menu-btn" id="orgQuickMenuBtn" onclick="toggleOrgQuickMenu()" title="Adicionar colaborador">
-        <i class="fa-solid fa-user-plus"></i>
-      </button>
-      <div class="org-quick-menu-panel" id="orgQuickMenuPanel">
-        <div class="org-quick-menu-title"><i class="fa-solid fa-user-plus"></i> Adicionar em…</div>
-        <div id="orgQuickMenuList"></div>
-      </div>
     </div>
   </div>
 </div>
@@ -1187,7 +1190,19 @@ const AVATAR_PADRAO = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSU
 
 let motoristasDB         = DADOS_INICIAIS;
 let DADOS_ORG            = DADOS_ORG_INICIAIS;
+let orgZoomFactor        = 0.85;
 let dssChartInstance      = null;
+
+// Garante que o setor "Motoristas" exista, mesmo que a planilha já tivesse dados salvos antes dele existir.
+(function garantirSetorMotoristas(){{
+  if(!DADOS_ORG || !Array.isArray(DADOS_ORG.setores)) return;
+  const jaExiste = DADOS_ORG.setores.some(function(s){{
+    return (s.titulo||[]).join(' ').trim().toUpperCase() === 'MOTORISTAS';
+  }});
+  if(!jaExiste){{
+    DADOS_ORG.setores.push({{ titulo:['MOTORISTAS'], icone:'wheel', pessoas:[['','']] }});
+  }}
+}})();
 let filialChartInstance   = null;
 let filialAnualChartInst  = null;
 let motoristaEmEdicaoCpf = null;
@@ -3816,7 +3831,16 @@ function renderizarOrganograma(focoRestaurar, cursorPos){{
   svg += '<path d="M202 293H1338" fill="none" stroke="'+Cline+'" stroke-width="3"/>';
   svg += '<path d="M768 263V293" fill="none" stroke="'+Cline+'" stroke-width="3"/>';
 
-  const xs=[39,422,798,1173], ws=[330,329,325,324];
+  const numSetores  = (DADOS_ORG.setores||[]).length || 1;
+  const margemXOrg  = 39;
+  const gapColOrg   = 53;
+  const largColOrg  = (W - margemXOrg*2 - gapColOrg*(numSetores-1)) / numSetores;
+  const scaleCol    = Math.min(1, largColOrg / 330);
+  const xs = [], ws = [];
+  for(let _i=0; _i<numSetores; _i++){{
+    xs.push(margemXOrg + _i*(largColOrg+gapColOrg));
+    ws.push(largColOrg);
+  }}
   xs.forEach(function(x,i){{
     const cx=x+ws[i]/2;
     svg += '<path d="M'+cx+' 293V326" stroke="'+Cline+'" stroke-width="3"/>';
@@ -3826,11 +3850,23 @@ function renderizarOrganograma(focoRestaurar, cursorPos){{
   overlays.push({{tipo:'supervisorNome', x:674, y:198, fs:29, fw:900, color:'#ffffff', w:300}});
   overlays.push({{tipo:'supervisorCargo', x:674, y:229, fs:20, fw:800, color:'#29a3fb', w:300}});
 
+  const cardW     = Math.round(259 * scaleCol);
+  const cardXOff  = Math.round(48  * scaleCol);
+  const lineXOff  = Math.round(24  * scaleCol);
+  const avatarOff = Math.round(38  * scaleCol);
+  const textXOff  = Math.round(78  * scaleCol);
+  const textW     = Math.round(171 * scaleCol);
+  const nomeFs    = Math.max(11, Math.round(18 * scaleCol));
+  const cargoFs   = Math.max(10, Math.round(17 * scaleCol));
+  const iconXOff  = Math.round(61 * scaleCol);
+  const iconR     = Math.round(42 * scaleCol);
+  const titleSizeBase = Math.max(13, Math.round(24 * scaleCol));
+
   (DADOS_ORG.setores||[]).forEach(function(setor,i){{
-    const x=xs[i], w=ws[i], headerY=326, iconX=x+61, iconY=381;
-    const titleX = i===2 ? x+116 : x+120;
-    const titleSize = i===2 ? 23 : 24;
-    svg += '<g><rect x="'+x+'" y="'+headerY+'" width="'+w+'" height="112" rx="14" fill="url(#orgHeader)" filter="url(#orgBoxShadow)"/><circle cx="'+iconX+'" cy="'+iconY+'" r="42" fill="url(#orgCircle)"/>' + iconOrg(setor.icone,iconX,iconY);
+    const x=xs[i], w=ws[i], headerY=326, iconX=x+iconXOff, iconY=381;
+    const titleX = Math.round(x + (i===2 ? 116 : 120) * scaleCol);
+    const titleSize = i===2 ? titleSizeBase-1 : titleSizeBase;
+    svg += '<g><rect x="'+x+'" y="'+headerY+'" width="'+w+'" height="112" rx="14" fill="url(#orgHeader)" filter="url(#orgBoxShadow)"/><circle cx="'+iconX+'" cy="'+iconY+'" r="'+iconR+'" fill="url(#orgCircle)"/>' + iconOrg(setor.icone,iconX,iconY);
     if((setor.titulo||[]).length === 1){{
       svg += '<text x="'+titleX+'" y="'+(headerY+66)+'" font-size="'+titleSize+'" font-weight="900" fill="#fff">'+escOrg(setor.titulo[0])+'</text>';
     }} else {{
@@ -3839,7 +3875,7 @@ function renderizarOrganograma(focoRestaurar, cursorPos){{
     }}
     svg += '</g>';
 
-    const lineX=x+24, cardX=x+48;
+    const lineX=x+lineXOff, cardX=x+cardXOff;
     const pessoas = setor.pessoas||[];
     const lastCenter = firstY + (Math.max(pessoas.length,1)-1)*(cardH+gap) + cardH/2;
     svg += '<path d="M'+lineX+' 438V'+lastCenter+'" stroke="'+Cline+'" stroke-width="2" fill="none"/>';
@@ -3851,15 +3887,15 @@ function renderizarOrganograma(focoRestaurar, cursorPos){{
       const vago  = !nome && !cargo;
       svg += '<path d="M'+lineX+' '+cy+'H'+cardX+'" stroke="'+(vago?'#a9bad4':Cline)+'" stroke-width="2" stroke-dasharray="'+(vago?'4,3':'0')+'"/>';
       svg += '<circle cx="'+lineX+'" cy="'+cy+'" r="4" fill="'+(vago?'#a9bad4':Cline)+'"/>';
-      svg += '<rect x="'+cardX+'" y="'+y+'" width="259" height="'+cardH+'" rx="13" fill="'+(vago?'#f6f9fc':'#fff')+'" stroke="'+(vago?'#c7d4e8':'none')+'" stroke-width="'+(vago?'1.5':'0')+'" stroke-dasharray="'+(vago?'6,4':'0')+'" filter="'+(vago?'':'url(#orgCardShadow)')+'"/>';
+      svg += '<rect x="'+cardX+'" y="'+y+'" width="'+cardW+'" height="'+cardH+'" rx="13" fill="'+(vago?'#f6f9fc':'#fff')+'" stroke="'+(vago?'#c7d4e8':'none')+'" stroke-width="'+(vago?'1.5':'0')+'" stroke-dasharray="'+(vago?'6,4':'0')+'" filter="'+(vago?'':'url(#orgCardShadow)')+'"/>';
       if(vago){{
-        svg += '<circle cx="'+(cardX+38)+'" cy="'+cy+'" r="15" fill="none" stroke="#a9bad4" stroke-width="2" stroke-dasharray="3,3"/>';
-        svg += '<path d="M'+(cardX+38)+' '+(cy-7)+'V'+(cy+7)+'M'+(cardX+31)+' '+cy+'H'+(cardX+45)+'" stroke="#a9bad4" stroke-width="2.4" stroke-linecap="round"/>';
+        svg += '<circle cx="'+(cardX+avatarOff)+'" cy="'+cy+'" r="15" fill="none" stroke="#a9bad4" stroke-width="2" stroke-dasharray="3,3"/>';
+        svg += '<path d="M'+(cardX+avatarOff)+' '+(cy-7)+'V'+(cy+7)+'M'+(cardX+avatarOff-7)+' '+cy+'H'+(cardX+avatarOff+7)+'" stroke="#a9bad4" stroke-width="2.4" stroke-linecap="round"/>';
       }} else {{
-        svg += personIconOrg(cardX+38,cy);
+        svg += personIconOrg(cardX+avatarOff,cy);
       }}
-      overlays.push({{tipo:'pessoaNome', setor:i, pessoa:j, x:cardX+78, y:y+41, fs:18, fw:700, color: vago?'#9aa8bd':Ctext, w:171, placeholder:'Nome do colaborador'}});
-      overlays.push({{tipo:'pessoaCargo', setor:i, pessoa:j, x:cardX+78, y:y+64, fs:17, fw:400, color: vago?'#b7c1d6':Cbright, w:171, placeholder:'Cargo (ex: Assist. Adm.)'}});
+      overlays.push({{tipo:'pessoaNome', setor:i, pessoa:j, x:cardX+textXOff, y:y+41, fs:nomeFs, fw:700, color: vago?'#9aa8bd':Ctext, w:textW, placeholder:'Nome do colaborador'}});
+      overlays.push({{tipo:'pessoaCargo', setor:i, pessoa:j, x:cardX+textXOff, y:y+64, fs:cargoFs, fw:400, color: vago?'#b7c1d6':Cbright, w:textW, placeholder:'Cargo (ex: Assist. Adm.)'}});
     }});
   }});
 
@@ -3921,10 +3957,16 @@ function ajustarEscalaOrganograma(){{
   if(!outer || !inner) return;
   const contentW = parseFloat(inner.dataset.orgW) || 1536;
   const contentH = parseFloat(inner.dataset.orgH) || 1024;
-  const escala   = (outer.clientWidth / contentW) || 1; // usa toda a largura do modal, expandindo mais para os lados
+  const escalaBase = (outer.clientWidth / contentW) || 1; // usa toda a largura do modal, expandindo mais para os lados
+  const escala   = escalaBase * orgZoomFactor;
   const offsetX  = Math.max(0, (outer.clientWidth  - contentW*escala) / 2);
   const offsetY  = Math.max(0, (outer.clientHeight - contentH*escala) / 2);
   inner.style.transform = 'translate(' + offsetX + 'px,' + offsetY + 'px) scale(' + escala + ')';
+}}
+
+function alterarZoomOrganograma(delta){{
+  orgZoomFactor = Math.min(2.2, Math.max(0.4, +(orgZoomFactor + delta).toFixed(2)));
+  ajustarEscalaOrganograma();
 }}
 
 function abrirOrganogramaModal(){{
@@ -3933,6 +3975,15 @@ function abrirOrganogramaModal(){{
   renderizarOrganograma();
   setTimeout(ajustarEscalaOrganograma, 30);
 }}
+
+document.addEventListener('click', function(e){{
+  const menu = document.getElementById('orgQuickMenuPanel');
+  const btn  = document.getElementById('orgQuickMenuBtn');
+  if(!menu || !btn) return;
+  if(menu.classList.contains('open') && !menu.contains(e.target) && !btn.contains(e.target)){{
+    fecharOrgQuickMenu();
+  }}
+}});
 
 function fecharOrganogramaModal(){{
   normalizarPessoasOrganograma();
@@ -3943,6 +3994,23 @@ function fecharOrganogramaModal(){{
 window.addEventListener('resize', function(){{
   const m = document.getElementById('organogramaModal');
   if(m && m.style.display === 'flex') ajustarEscalaOrganograma();
+}});
+
+document.addEventListener('keydown', function(e){{
+  const modal = document.getElementById('organogramaModal');
+  if(!modal || modal.style.display !== 'flex') return;
+  if(!(e.ctrlKey || e.metaKey)) return;
+  if(e.key === '+' || e.key === '='){{
+    e.preventDefault();
+    alterarZoomOrganograma(0.1);
+  }} else if(e.key === '-' || e.key === '_'){{
+    e.preventDefault();
+    alterarZoomOrganograma(-0.1);
+  }} else if(e.key === '0'){{
+    e.preventDefault();
+    orgZoomFactor = 0.85;
+    ajustarEscalaOrganograma();
+  }}
 }});
 
 async function salvarOrganogramaAPI(){{
@@ -4007,23 +4075,42 @@ function gerarOrganogramaSvgTexto(){{
   svg += '<text x="674" y="229" font-size="20" font-weight="800" fill="#29a3fb">'+escOrg(DADOS_ORG.supervisor.cargo||'')+'</text>';
   svg += '<path d="M202 293H1338" fill="none" stroke="'+Cline+'" stroke-width="3"/>';
   svg += '<path d="M768 263V293" fill="none" stroke="'+Cline+'" stroke-width="3"/>';
-  const xs=[39,422,798,1173], ws=[330,329,325,324];
+  const numSetoresPdf  = setoresComPessoas.length || 1;
+  const margemXOrgPdf  = 39;
+  const gapColOrgPdf   = 53;
+  const largColOrgPdf  = (W - margemXOrgPdf*2 - gapColOrgPdf*(numSetoresPdf-1)) / numSetoresPdf;
+  const scaleColPdf    = Math.min(1, largColOrgPdf / 330);
+  const xs = [], ws = [];
+  for(let _i=0; _i<numSetoresPdf; _i++){{
+    xs.push(margemXOrgPdf + _i*(largColOrgPdf+gapColOrgPdf));
+    ws.push(largColOrgPdf);
+  }}
   xs.forEach(function(x,i){{
     const cx=x+ws[i]/2;
     svg += '<path d="M'+cx+' 293V326" stroke="'+Cline+'" stroke-width="3"/>';
   }});
+  const cardWPdf     = Math.round(259 * scaleColPdf);
+  const cardXOffPdf  = Math.round(48  * scaleColPdf);
+  const lineXOffPdf  = Math.round(24  * scaleColPdf);
+  const avatarOffPdf = Math.round(38  * scaleColPdf);
+  const textXOffPdf  = Math.round(78  * scaleColPdf);
+  const nomeFsPdf    = Math.max(11, Math.round(18 * scaleColPdf));
+  const cargoFsPdf   = Math.max(10, Math.round(17 * scaleColPdf));
+  const iconXOffPdf  = Math.round(61 * scaleColPdf);
+  const iconRPdf     = Math.round(42 * scaleColPdf);
+  const titleSizeBasePdf = Math.max(13, Math.round(24 * scaleColPdf));
   setoresComPessoas.forEach(function(setor,i){{
-    const x=xs[i], w=ws[i], headerY=326, iconX=x+61, iconY=381;
-    const titleX = i===2 ? x+116 : x+120;
-    const titleSize = i===2 ? 23 : 24;
-    svg += '<rect x="'+x+'" y="'+headerY+'" width="'+w+'" height="112" rx="14" fill="url(#orgHeaderPdf)"/><circle cx="'+iconX+'" cy="'+iconY+'" r="42" fill="url(#orgCirclePdf)"/>' + iconOrg(setor.icone,iconX,iconY);
+    const x=xs[i], w=ws[i], headerY=326, iconX=x+iconXOffPdf, iconY=381;
+    const titleX = Math.round(x + (i===2 ? 116 : 120) * scaleColPdf);
+    const titleSize = i===2 ? titleSizeBasePdf-1 : titleSizeBasePdf;
+    svg += '<rect x="'+x+'" y="'+headerY+'" width="'+w+'" height="112" rx="14" fill="url(#orgHeaderPdf)"/><circle cx="'+iconX+'" cy="'+iconY+'" r="'+iconRPdf+'" fill="url(#orgCirclePdf)"/>' + iconOrg(setor.icone,iconX,iconY);
     if((setor.titulo||[]).length === 1){{
       svg += '<text x="'+titleX+'" y="'+(headerY+66)+'" font-size="'+titleSize+'" font-weight="900" fill="#fff">'+escOrg(setor.titulo[0])+'</text>';
     }} else {{
       svg += '<text x="'+titleX+'" y="'+(headerY+50)+'" font-size="'+titleSize+'" font-weight="900" fill="#fff">'+escOrg(setor.titulo[0])+'</text>';
       svg += '<text x="'+titleX+'" y="'+(headerY+82)+'" font-size="'+titleSize+'" font-weight="900" fill="#fff">'+escOrg(setor.titulo[1])+'</text>';
     }}
-    const lineX=x+24, cardX=x+48;
+    const lineX=x+lineXOffPdf, cardX=x+cardXOffPdf;
     const listaExibir = setor.pessoas.length ? setor.pessoas : [['','']];
     const lastCenter = firstY + (Math.max(listaExibir.length,1)-1)*(cardH+gap) + cardH/2;
     svg += '<path d="M'+lineX+' 438V'+lastCenter+'" stroke="'+Cline+'" stroke-width="2" fill="none"/>';
@@ -4034,10 +4121,10 @@ function gerarOrganogramaSvgTexto(){{
       const vago  = !nome && !cargo;
       svg += '<path d="M'+lineX+' '+cy+'H'+cardX+'" stroke="'+(vago?'#a9bad4':Cline)+'" stroke-width="2" stroke-dasharray="'+(vago?'4,3':'0')+'"/>';
       svg += '<circle cx="'+lineX+'" cy="'+cy+'" r="4" fill="'+(vago?'#a9bad4':Cline)+'"/>';
-      svg += '<rect x="'+cardX+'" y="'+y+'" width="259" height="'+cardH+'" rx="13" fill="'+(vago?'#f6f9fc':'#fff')+'" stroke="'+(vago?'#c7d4e8':'#e2e8f0')+'" stroke-width="1.5"/>';
-      if(!vago) svg += personIconOrg(cardX+38,cy);
-      svg += '<text x="'+(cardX+78)+'" y="'+(y+41)+'" font-size="18" font-weight="700" fill="'+(vago?'#9aa8bd':Ctext)+'">'+escOrg(nome||'—')+'</text>';
-      svg += '<text x="'+(cardX+78)+'" y="'+(y+64)+'" font-size="17" font-weight="400" fill="'+(vago?'#b7c1d6':Cbright)+'">'+escOrg(cargo||'')+'</text>';
+      svg += '<rect x="'+cardX+'" y="'+y+'" width="'+cardWPdf+'" height="'+cardH+'" rx="13" fill="'+(vago?'#f6f9fc':'#fff')+'" stroke="'+(vago?'#c7d4e8':'#e2e8f0')+'" stroke-width="1.5"/>';
+      if(!vago) svg += personIconOrg(cardX+avatarOffPdf,cy);
+      svg += '<text x="'+(cardX+textXOffPdf)+'" y="'+(y+41)+'" font-size="'+nomeFsPdf+'" font-weight="700" fill="'+(vago?'#9aa8bd':Ctext)+'">'+escOrg(nome||'—')+'</text>';
+      svg += '<text x="'+(cardX+textXOffPdf)+'" y="'+(y+64)+'" font-size="'+cargoFsPdf+'" font-weight="400" fill="'+(vago?'#b7c1d6':Cbright)+'">'+escOrg(cargo||'')+'</text>';
     }});
   }});
   svg += '<rect x="0" y="'+footerTop+'" width="1222" height="23" fill="#07457f"/><path d="M1230 '+(footerTop-8)+'H1536V'+(footerTop+23)+'H1210Z" fill="#176bc0"/><path d="M1225 '+(footerTop-8)+'H1240L1220 '+(footerTop+23)+'H1205Z" fill="#f8fafc"/>';
