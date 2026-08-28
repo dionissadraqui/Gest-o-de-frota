@@ -57,6 +57,7 @@ COLUNAS += [
     "exame_periodico_validade_meses", "exame_toxicologico_validade_meses",
     "gestime", "obsGestime", "gestime_data", "gestime_validade_meses",
     "afastado", "obsAfastado",
+    "desligado", "obsDesligamento",
 ]
 
 COLUNAS_ORG = ["id", "tipo", "setor_ordem", "setor_titulo", "setor_icone", "pessoa_ordem", "nome", "cargo"]
@@ -165,6 +166,8 @@ def ler_todos_motoristas():
             "gestimeValidadeMeses": max(0, int(row.get("gestime_validade_meses", 0) or 0)),
             "afastado":       str(row.get("afastado", "NÃO")).strip() or "NÃO",
             "obsAfastado":    str(row.get("obsAfastado", "")).strip(),
+            "desligado":      str(row.get("desligado", "NÃO")).strip() or "NÃO",
+            "obsDesligamento": str(row.get("obsDesligamento", "")).strip(),
             "dssAnual":      dss_anual,
         })
     return motoristas
@@ -199,6 +202,7 @@ def salvar_todos_motoristas(lista):
             m.get("gestime", "PENDENTE"), m.get("obsGestime", ""),
             m.get("gestimeData", ""), m.get("gestimeValidadeMeses", 0),
             m.get("afastado", "NÃO"), m.get("obsAfastado", ""),
+            m.get("desligado", "NÃO"), m.get("obsDesligamento", ""),
         ]
         all_rows.append(row_data)
     existing = ws.get_all_values()
@@ -415,6 +419,7 @@ HTML = f"""<!DOCTYPE html>
 .kpi.teal{{background:#f0fbfd;border-color:#0e9cc0;box-shadow:0 0 10px rgba(14,156,192,0.35),inset 0 0 6px rgba(14,156,192,0.06)}}
 .kpi.purple{{background:#f5f0ff;border-color:#7c3aed;box-shadow:0 0 10px rgba(124,58,237,0.35),inset 0 0 6px rgba(124,58,237,0.06)}}
 .kpi.indigo{{background:#eef2ff;border-color:#4f46e5;box-shadow:0 0 10px rgba(79,70,229,0.35),inset 0 0 6px rgba(79,70,229,0.06)}}
+.kpi.gray{{background:repeating-linear-gradient(45deg,#eef1f5,#eef1f5 10px,#e0e4ea 10px,#e0e4ea 20px);border-color:#94a3b8;box-shadow:0 0 10px rgba(100,116,139,0.30),inset 0 0 6px rgba(100,116,139,0.08)}}
 .kpi-lbl{{font-size:14px;letter-spacing:1.5px;text-transform:uppercase;color:#5a6e8a;margin-bottom:6px;font-weight:700}}
 .kpi-val{{font-size:52px;font-weight:900;line-height:1}}
 .kpi.red .kpi-val{{color:#dc2626}}
@@ -424,6 +429,7 @@ HTML = f"""<!DOCTYPE html>
 .kpi.teal .kpi-val{{color:#0a7a9a}}
 .kpi.purple .kpi-val{{color:#6d28d9}}
 .kpi.indigo .kpi-val{{color:#4338ca}}
+.kpi.gray .kpi-val{{color:#475569}}
 .kpi-sub{{font-size:14px;color:#3b7dd8;margin-top:8px;text-transform:uppercase;letter-spacing:1px;font-weight:600}}
 
 /* ── PAINEL / SEÇÕES ── */
@@ -592,6 +598,10 @@ HTML = f"""<!DOCTYPE html>
 .week-checkbox-label input{{cursor:pointer;accent-color:#16a34a}}
 .btn-delete-driver{{background:#fff0f0;color:#cc2222;border:1px solid #e8aaaa;padding:8px;border-radius:7px;font-size:10px;font-weight:700;text-transform:uppercase;cursor:pointer;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:6px;transition:.18s;width:100%}}
 .btn-delete-driver:hover{{background:#cc2222;color:#fff;border-color:#cc2222}}
+.btn-desligar-driver{{background:#fff7ed;color:#c2410c;border:1px solid #fbbf7a;padding:8px;border-radius:7px;font-size:10px;font-weight:700;text-transform:uppercase;cursor:pointer;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:6px;transition:.18s;width:100%}}
+.btn-desligar-driver:hover{{background:#c2410c;color:#fff;border-color:#c2410c}}
+.btn-reativar-driver{{background:#f0fef4;color:#16a34a;border:1px solid #86efac;padding:8px;border-radius:7px;font-size:10px;font-weight:700;text-transform:uppercase;cursor:pointer;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:6px;transition:.18s;width:100%}}
+.btn-reativar-driver:hover{{background:#16a34a;color:#fff;border-color:#16a34a}}
 #btnConfirmarFicha:hover{{background:#2ea84a!important;border-color:#22883a!important}}
 #btnFecharFicha:hover{{background:#b52222!important;border-color:#8a1818!important}}
 #btnVoltarFicha:hover{{background:#b52222!important;border-color:#8a1818!important}}
@@ -923,6 +933,18 @@ HTML = f"""<!DOCTYPE html>
       <div class="kpi-sub">Afastado = SIM</div>
     </div>
 
+    <div class="kpi gray" onclick="abrirKpiModal('desligados')" title="Ver motoristas desligados (não contam nos demais indicadores)">
+      <div class="kpi-lbl" style="color:#475569;">Motoristas Desligados</div>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;">
+        <div class="kpi-val" id="kpiDesligados">—</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;padding-bottom:4px;gap:1px;">
+          <div style="font-size:10px;color:#475569;font-weight:700;text-transform:uppercase;letter-spacing:.5px;opacity:.8;">do total geral</div>
+          <div id="kpiDesligadosPct" style="font-size:17px;font-weight:900;color:#475569;font-family:'Courier New',monospace;letter-spacing:1px;">—</div>
+        </div>
+      </div>
+      <div class="kpi-sub" style="color:#475569;">Desligado = SIM · Fora dos demais indicadores</div>
+    </div>
+
     <div class="kpi teal" onclick="abrirKpiModal('telCorp')" title="Ver motoristas com celular corporativo">
       <div class="kpi-lbl">Celulares Corporativos</div>
       <div style="display:flex;align-items:flex-end;justify-content:space-between;">
@@ -1189,6 +1211,8 @@ const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho",
 const AVATAR_PADRAO = 'data:image/jpeg;base64,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';
 
 let motoristasDB         = DADOS_INICIAIS;
+function listaAtiva(){{ return motoristasDB.filter(m => m.desligado !== 'SIM'); }}
+function listaDesligados(){{ return motoristasDB.filter(m => m.desligado === 'SIM'); }}
 let DADOS_ORG            = DADOS_ORG_INICIAIS;
 let orgZoomFactor        = 0.85;
 let dssChartInstance      = null;
@@ -1250,7 +1274,8 @@ function motoristasParaLinhas(lista){{
       m.examePeriodicoValidadeMeses||0, m.exameToxicologicoValidadeMeses||0,
       m.gestime||'PENDENTE', m.obsGestime||'',
       m.gestimeData||'', m.gestimeValidadeMeses||0,
-      m.afastado||'NÃO', m.obsAfastado||''
+      m.afastado||'NÃO', m.obsAfastado||'',
+      m.desligado||'NÃO', m.obsDesligamento||''
     );
     return row;
   }});
@@ -1370,6 +1395,7 @@ const KPI_CONFIG = {{
   gestimeTodos:    {{ label:'Gestime — Status Geral',          icon:'fa-clipboard-check', cor:'#16a34a', bg:'rgba(22,163,74,0.15)', filtro: m => true }},
   telCorp:  {{ label:'Celulares Corporativos',      icon:'fa-mobile-screen-button', cor:'#0eb8e0', bg:'rgba(14,156,192,0.15)', filtro: m => m.telefoneCorporativo === 'SIM' }},
   afastados:{{ label:'Motoristas Afastados',        icon:'fa-user-slash',        cor:'#dc2626', bg:'rgba(220,38,38,0.15)',  filtro: m => m.afastado === 'SIM' }},
+  desligados:{{ label:'Motoristas Desligados',      icon:'fa-user-xmark',        cor:'#64748b', bg:'rgba(100,116,139,0.15)', filtro: m => m.desligado === 'SIM' }},
   prontuario:{{ label:'Prontuário — Exames & Complementares', icon:'fa-file-medical', cor:'#a78bfa', bg:'rgba(124,58,237,0.15)', filtro: m => true }},
 }};
 
@@ -1442,7 +1468,7 @@ function abrirVencimentoMenu(tipo){{ // tipo: 'alerta' | 'vencido'
   const grid = document.getElementById('kpiCardsGrid');
   grid.innerHTML = Object.keys(VENCIMENTO_CATEGORIAS).map(catKey => {{
     const cat = VENCIMENTO_CATEGORIAS[catKey];
-    const qtd = motoristasDB.filter(m => isAlerta ? categoriaEmAlerta30(m, catKey) : categoriaVencida(m, catKey)).length;
+    const qtd = listaAtiva().filter(m => isAlerta ? categoriaEmAlerta30(m, catKey) : categoriaVencida(m, catKey)).length;
     return `<div class="categoria-glass-panel" onclick="abrirVencimentoCategoria('${{catKey}}','${{tipo}}')">
       <div class="cgp-header">
         <div class="cgp-icon" style="background:${{bg}};color:${{cor}}"><i class="fa-solid ${{cat.icon}}"></i></div>
@@ -1472,7 +1498,7 @@ function abrirVencimentoCategoria(catKey, tipo){{
   kpiTipoVencAtual = tipo;
   kpiMesAtual = null;
 
-  kpiListaAtual = motoristasDB.filter(m => isAlerta ? categoriaEmAlerta30(m, catKey) : categoriaVencida(m, catKey));
+  kpiListaAtual = listaAtiva().filter(m => isAlerta ? categoriaEmAlerta30(m, catKey) : categoriaVencida(m, catKey));
 
   document.getElementById('kpiModalIcon').innerHTML = `<i class="fa-solid ${{cat.icon}}" style="color:${{cor}}"></i>`;
   document.getElementById('kpiModalIcon').style.background = bg;
@@ -1515,14 +1541,15 @@ function abrirCursosMenu(){{
   if(btnPdf) btnPdf.style.display = 'none';
 
   const _mes    = mesCorrente();
-  const totalM  = motoristasDB.length;
-  const nComDss = motoristasDB.filter(m => dssOkNoMes(m, _mes)).length;
+  const _ativosCursos = listaAtiva();
+  const totalM  = _ativosCursos.length;
+  const nComDss = _ativosCursos.filter(m => dssOkNoMes(m, _mes)).length;
   const nSemDss = totalM - nComDss;
-  const nRecOk  = motoristasDB.filter(m => reciclagemStatus(m) === 'OK').length;
+  const nRecOk  = _ativosCursos.filter(m => reciclagemStatus(m) === 'OK').length;
   const nRecPend= totalM - nRecOk;
-  const nSimOk  = motoristasDB.filter(m => simuladorStatus(m) === 'OK').length;
+  const nSimOk  = _ativosCursos.filter(m => simuladorStatus(m) === 'OK').length;
   const nSimPend= totalM - nSimOk;
-  const nGestOk  = motoristasDB.filter(m => gestimeStatus(m) === 'OK').length;
+  const nGestOk  = _ativosCursos.filter(m => gestimeStatus(m) === 'OK').length;
   const nGestPend= totalM - nGestOk;
 
   const grupos = [
@@ -1604,7 +1631,8 @@ function trocarMesKpi(mes){{
 
 function _aplicarFiltroKpi(){{
   const cfg = KPI_CONFIG[kpiTipoAtual];
-  kpiListaAtual = motoristasDB.filter(m => cfg.filtro(m, kpiMesAtual));
+  const base = kpiTipoAtual === 'desligados' ? listaDesligados() : listaAtiva();
+  kpiListaAtual = base.filter(m => cfg.filtro(m, kpiMesAtual));
   document.getElementById('kpiModalCount').textContent = `${{kpiListaAtual.length}} motorista${{kpiListaAtual.length !== 1 ? 's' : ''}}`;
   renderizarCardsKpi(kpiListaAtual);
 }}
@@ -1646,6 +1674,7 @@ function renderizarCardsKpi(lista){{
   const isInfracao   = isExcesso || isMultas || isAcidentes;
   const isTelCorp    = kpiTipoAtual === 'telCorp';
   const isAfastados  = kpiTipoAtual === 'afastados';
+  const isDesligados = kpiTipoAtual === 'desligados';
   const isProntuario = kpiTipoAtual === 'prontuario';
   const isReciclagemOk = kpiTipoAtual === 'reciclagemOk';
   const isReciclagemPend = kpiTipoAtual === 'reciclagemPend';
@@ -1680,6 +1709,14 @@ function renderizarCardsKpi(lista){{
         <div class="dmc-cpf">${{m.cpf}}</div>
         <div class="dmc-badges"><span class="dmc-badge pend"><i class="fa-solid fa-user-slash"></i> Afastado</span></div>
         ${{m.obsAfastado ? `<div style="font-size:14px;color:#5a6e8a;font-style:italic;margin-top:4px;">${{m.obsAfastado}}</div>` : ''}}
+      </div>`;
+    }}
+    if(isDesligados){{
+      return `<div class="driver-mini-card" style="border-color:#94a3b8;background:repeating-linear-gradient(45deg,#f8fafc,#f8fafc 8px,#eef1f5 8px,#eef1f5 16px);" onclick="irParaFichaViaKpi('${{m.cpf}}')" title="Abrir ficha de ${{m.nome}}">
+        <div class="dmc-top"><div class="dmc-avatar">${{avatar}}</div><div class="dmc-info"><div class="dmc-nome">${{m.nome}}</div><div class="dmc-filial">${{m.filial||'—'}}</div></div></div>
+        <div class="dmc-cpf">${{m.cpf}}</div>
+        <div class="dmc-badges"><span class="dmc-badge" style="background:#e2e8f0;color:#475569;border:1px solid #cbd5e1;"><i class="fa-solid fa-user-xmark"></i> Desligado</span></div>
+        ${{m.obsDesligamento ? `<div style="font-size:14px;color:#5a6e8a;font-style:italic;margin-top:4px;">${{m.obsDesligamento}}</div>` : ''}}
       </div>`;
     }}
     if(isProntuario){{
@@ -2097,11 +2134,12 @@ function obterChaveFilial(m){{
   return (m.filial||'').toUpperCase().trim() || 'AGUARDANDO FILIAL';
 }}
 
-function agruparPorFilial(){{
+function agruparPorFilial(lista){{
+  lista = lista || listaAtiva();
   const mapa = {{}};
   const mesAtual  = MESES[new Date().getMonth()];
   const semAtual  = Math.min(3, Math.floor((new Date().getDate() - 1) / 7));
-  motoristasDB.forEach(m => {{
+  lista.forEach(m => {{
     const f = obterChaveFilial(m);
     if(!mapa[f]) mapa[f] = {{ name:f, total:0, comDss:0, dssMax:0, recOk:0, simOk:0, acid:0, multas:0, excVel:0, acidMot:0, multasMot:0, excVelMot:0, examePerOk:0, exameToxOk:0, telCorpOk:0 }};
     mapa[f].total++;
@@ -2123,14 +2161,16 @@ function agruparPorFilial(){{
 }}
 
 function atualizarDashboardCompleto(){{
-  const filiais    = agruparPorFilial();
-  const totalM     = motoristasDB.length;
+  const ativos     = listaAtiva();
+  const desligados = listaDesligados();
+  const filiais    = agruparPorFilial(ativos);
+  const totalM     = ativos.length;
   const _mesDash   = MESES[new Date().getMonth()];
-  const totalComDss= motoristasDB.filter(m => dssOkNoMes(m, _mesDash)).length;
+  const totalComDss= ativos.filter(m => dssOkNoMes(m, _mesDash)).length;
   const totalPend  = totalM - totalComDss;
-  const totalExc   = motoristasDB.reduce((acc,m) => acc + Math.max(0, parseInt(m.excesso)   || 0), 0);
-  const totalMul   = motoristasDB.reduce((acc,m) => acc + Math.max(0, parseInt(m.multas)    || 0), 0);
-  const totalAcid  = motoristasDB.reduce((acc,m) => acc + Math.max(0, parseInt(m.acidentes) || 0), 0);
+  const totalExc   = ativos.reduce((acc,m) => acc + Math.max(0, parseInt(m.excesso)   || 0), 0);
+  const totalMul   = ativos.reduce((acc,m) => acc + Math.max(0, parseInt(m.multas)    || 0), 0);
+  const totalAcid  = ativos.reduce((acc,m) => acc + Math.max(0, parseInt(m.acidentes) || 0), 0);
   document.getElementById('kpiTotal').textContent    = totalM;
   document.getElementById('kpiExcesso').textContent  = totalExc;
   document.getElementById('kpiMultas').textContent   = totalMul;
@@ -2142,16 +2182,16 @@ function atualizarDashboardCompleto(){{
   if(cursosTotalEl) cursosTotalEl.textContent = totalM;
   if(cursosSubEl)   cursosSubEl.textContent   = pct;
 
-  const totalDssAnual = motoristasDB.reduce((acc, m) => {{
+  const totalDssAnual = ativos.reduce((acc, m) => {{
     MESES.forEach(mes => {{
       if(m.dssAnual && m.dssAnual[mes]) acc += m.dssAnual[mes].filter(Boolean).length;
     }});
     return acc;
   }}, 0);
   const totalSessoesAnual = totalM * MESES.length * 4;
-  const motExcesso = motoristasDB.filter(m => Math.max(0,parseInt(m.excesso)||0) > 0).length;
-  const motMultas  = motoristasDB.filter(m => Math.max(0,parseInt(m.multas)||0)  > 0).length;
-  const motAcident = motoristasDB.filter(m => Math.max(0,parseInt(m.acidentes)||0) > 0).length;
+  const motExcesso = ativos.filter(m => Math.max(0,parseInt(m.excesso)||0) > 0).length;
+  const motMultas  = ativos.filter(m => Math.max(0,parseInt(m.multas)||0)  > 0).length;
+  const motAcident = ativos.filter(m => Math.max(0,parseInt(m.acidentes)||0) > 0).length;
   const _s = (id,v) => {{ const e=document.getElementById(id); if(e) e.textContent=v; }};
   _s('kpiTotalAnual',   totalM);
   _s('kpiRecOkAnual',   totalDssAnual);
@@ -2160,8 +2200,8 @@ function atualizarDashboardCompleto(){{
   _s('kpiMultasMot',    motMultas);
   _s('kpiAcidentesMot', motAcident);
 
-  const totalTelCorp      = motoristasDB.filter(m => m.telefoneCorporativo === 'SIM').length;
-  const totalProntuarioOk = motoristasDB.filter(m =>
+  const totalTelCorp      = ativos.filter(m => m.telefoneCorporativo === 'SIM').length;
+  const totalProntuarioOk = ativos.filter(m =>
     exameOk(m.examePeriodico, m.examePeriodicoValidadeMeses) &&
     exameOk(m.exameToxicologico, m.exameToxicologicoValidadeMeses)
   ).length;
@@ -2170,16 +2210,20 @@ function atualizarDashboardCompleto(){{
   _s('kpiProntuario',  totalM);
   _s('kpiProntuarioOk',totalProntuarioOk);
 
-  const totalAfastados = motoristasDB.filter(m => m.afastado === 'SIM').length;
+  const totalAfastados = ativos.filter(m => m.afastado === 'SIM').length;
   _s('kpiAfastados',    totalAfastados);
   _s('kpiAfastadosPct', totalM > 0 ? Math.round(totalAfastados/totalM*100) + '%' : '—');
 
-  const totalRecOk  = motoristasDB.filter(m => reciclagemStatus(m) === 'OK').length;
-  const totalRecPend = motoristasDB.filter(m => reciclagemStatus(m) === 'PENDENTE').length;
+  const totalRecOk  = ativos.filter(m => reciclagemStatus(m) === 'OK').length;
+  const totalRecPend = ativos.filter(m => reciclagemStatus(m) === 'PENDENTE').length;
   _s('kpiReciclagemOk', totalRecOk);
   _s('kpiReciclagemOkPct', totalM > 0 ? Math.round(totalRecOk/totalM*100) + '%' : '—');
   _s('kpiReciclagemPend', totalRecPend);
   _s('kpiReciclagemPendPct', totalM > 0 ? Math.round(totalRecPend/totalM*100) + '%' : '—');
+
+  const totalGeral = motoristasDB.length;
+  _s('kpiDesligados',    desligados.length);
+  _s('kpiDesligadosPct', totalGeral > 0 ? Math.round(desligados.length/totalGeral*100) + '%' : '—');
 
   renderizarGridFiliais(filiais);
   renderizarGraficos(filiais);
@@ -2233,7 +2277,7 @@ function renderizarGraficos(filiais){{
     [0,1,2,3].forEach(wi => {{
       dssLabels.push(`${{wi+1}}ª ${{m}}`);
       const mesFull = MESES[mi];
-      const count = motoristasDB.filter(mot => mot.dssAnual && mot.dssAnual[mesFull] && mot.dssAnual[mesFull][wi]).length;
+      const count = listaAtiva().filter(mot => mot.dssAnual && mot.dssAnual[mesFull] && mot.dssAnual[mesFull][wi]).length;
       const isCurrent = mi === mesAtualIdx && wi === semAtualIdx;
       const isPast    = !isCurrent && (mi < mesAtualIdx || (mi === mesAtualIdx && wi <= semAtualIdx));
       dssData.push(count);
@@ -2286,7 +2330,7 @@ function renderizarGraficos(filiais){{
               const i=ctx.dataIndex; const mi=Math.floor(i/4); const wi=i%4;
               const isFut = mi > mesAtualIdx || (mi === mesAtualIdx && wi > semAtualIdx);
               if(isFut) return ' Ainda não realizado';
-              const real=dssData[i]; const total=motoristasDB.length;
+              const real=dssData[i]; const total=listaAtiva().length;
               const pct=total>0?Math.round(real/total*100):0;
               return [` ${{real}} de ${{total}} motorista${{total!==1?'s':''}}`, ` Adesão: ${{pct}}%`];
             }}
@@ -2334,10 +2378,10 @@ function renderizarGraficos(filiais){{
   if(window._statusAnualChartInstance) window._statusAnualChartInstance.destroy();
   const statusLabels   = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
   const mesAtualIdxS   = new Date().getMonth();
-  const totalMotS      = motoristasDB.length;
+  const totalMotS      = listaAtiva().length;
   const statusDssMes   = MESES.map(mes => {{
     let n = 0;
-    motoristasDB.forEach(m => {{ if(dssOkNoMes(m, mes)) n++; }});
+    listaAtiva().forEach(m => {{ if(dssOkNoMes(m, mes)) n++; }});
     return n;
   }});
   const statusBarCors  = MESES.map((mes, mi) => {{
@@ -2376,7 +2420,7 @@ function renderizarGraficos(filiais){{
   const filialAnualLabels = filiais.map(f => f.name);
   const filialAnualDss    = filiais.map(f => {{
     let total = 0;
-    motoristasDB.filter(m => (m.filial||'').toUpperCase() === f.name).forEach(m => {{
+    listaAtiva().filter(m => (m.filial||'').toUpperCase() === f.name).forEach(m => {{
       MESES.forEach(mes => {{ if(m.dssAnual && m.dssAnual[mes]) total += m.dssAnual[mes].filter(Boolean).length; }});
     }});
     return total;
@@ -2473,6 +2517,7 @@ async function adicionarNovoMotorista(){{
     pontuacaoCnh:0, vencimentoCnhMopp:'', entregaUniforme:'PENDENTE',
     telefoneCorporativo:'NÃO', numeroLinha:'', modelo:'', imei:'',
     afastado:'NÃO', obsAfastado:'',
+    desligado:'NÃO', obsDesligamento:'',
     dssAnual: gerarMatrizDssEmBranco()
   }};
   mostrarSpinner(true);
@@ -2498,7 +2543,7 @@ async function adicionarNovoMotorista(){{
 function expandirFilial(nomeFilial){{
   filialModalAtiva = nomeFilial;
   document.getElementById('mUnidadeName').textContent = nomeFilial;
-  const listagem = motoristasDB.filter(m => obterChaveFilial(m) === nomeFilial.toUpperCase());
+  const listagem = listaAtiva().filter(m => obterChaveFilial(m) === nomeFilial.toUpperCase());
   document.getElementById('mTotalDrivers').textContent = listagem.length;
   const totalDss = listagem.reduce((acc,m) => acc + contarDssSessoes(m), 0);
   document.getElementById('mWithDss').textContent = totalDss;
@@ -2568,7 +2613,7 @@ function filtrarFilialPorIndicador(tipo){{
     tr.style.display = '';
   }});
   document.getElementById('filialSearchInput').value = '';
-  const listagem = motoristasDB.filter(m => obterChaveFilial(m) === (filialModalAtiva||'').toUpperCase());
+  const listagem = listaAtiva().filter(m => obterChaveFilial(m) === (filialModalAtiva||'').toUpperCase());
   const filtrados = listagem.filter(m => {{
    if(tipo==='todos')     return true;
     if(tipo==='dss')       return contarDssSessoes(m) > 0;
@@ -2800,6 +2845,13 @@ function abrirFichaMotorista(cpf){{
         <button onclick="gerarFichaPdf('${{m.cpf}}')" style="background:#fff0f8;color:#1a4fa0;border:1px solid #b0c8e8;padding:8px;border-radius:7px;font-size:10px;font-weight:700;text-transform:uppercase;cursor:pointer;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:6px;width:100%;transition:.18s;" onmouseover="this.style.background='#1a4fa0';this.style.color='#fff'" onmouseout="this.style.background='#fff0f8';this.style.color='#1a4fa0'">
           <i class="fa-solid fa-file-pdf"></i> Baixar Ficha em PDF
         </button>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px dashed #d0d8e8;display:flex;flex-direction:column;gap:6px;">
+          ${{m.desligado === 'SIM'
+            ? `<button class="btn-reativar-driver" onclick="reativarMotoristaAtual('${{m.cpf}}')"><i class="fa-solid fa-rotate-left"></i> Reativar Motorista</button>`
+            : `<button class="btn-desligar-driver" onclick="desligarMotoristaAtual('${{m.cpf}}')"><i class="fa-solid fa-user-xmark"></i> Desligar Motorista</button>`
+          }}
+          <input type="text" id="editObsDesligamento" class="obs-input" placeholder="Observação do desligamento" value="${{esc(m.obsDesligamento)}}">
+        </div>
         <button class="btn-delete-driver" onclick="deletarMotoristaAtual('${{m.cpf}}','${{esc(m.nome)}}')">
           <i class="fa-solid fa-trash-can"></i> Excluir Condutor permanentemente
         </button>
@@ -3177,6 +3229,55 @@ async function deletarMotoristaAtual(cpf, nome){{
   finally{{ mostrarSpinner(false); }}
 }}
 
+async function desligarMotoristaAtual(cpf){{
+  const idx = motoristasDB.findIndex(x => x.cpf === cpf);
+  if(idx === -1) return;
+  if(!confirm('Confirma o desligamento deste motorista? Ele deixará de contar em todos os indicadores, exceto no KPI de Desligados.')) return;
+  const obsEl = document.getElementById('editObsDesligamento');
+  const obs = obsEl ? obsEl.value : (motoristasDB[idx].obsDesligamento || '');
+  mostrarSpinner(true);
+  try{{
+    const anterior = {{...motoristasDB[idx]}};
+    motoristasDB[idx].desligado = 'SIM';
+    motoristasDB[idx].obsDesligamento = obs;
+    const res = await salvarTodosNaSheetsAPI(motoristasDB);
+    if(res.ok){{
+      fecharJanelaDriver();
+      atualizarDashboardCompleto();
+      if(filialModalAtiva) expandirFilial(filialModalAtiva);
+      toast('Motorista desligado com sucesso.');
+    }} else {{
+      motoristasDB[idx] = anterior;
+      toast(res.erro || 'Erro ao desligar motorista.', 'erro');
+    }}
+  }} catch(e){{ toast('Falha de conexão: ' + e.message, 'erro'); }}
+  finally{{ mostrarSpinner(false); }}
+}}
+
+async function reativarMotoristaAtual(cpf){{
+  const idx = motoristasDB.findIndex(x => x.cpf === cpf);
+  if(idx === -1) return;
+  if(!confirm('Confirma a reativação deste motorista?')) return;
+  mostrarSpinner(true);
+  try{{
+    const anterior = {{...motoristasDB[idx]}};
+    const obsEl = document.getElementById('editObsDesligamento');
+    motoristasDB[idx].desligado = 'NÃO';
+    motoristasDB[idx].obsDesligamento = obsEl ? obsEl.value : motoristasDB[idx].obsDesligamento;
+    const res = await salvarTodosNaSheetsAPI(motoristasDB);
+    if(res.ok){{
+      fecharJanelaDriver();
+      atualizarDashboardCompleto();
+      if(filialModalAtiva) expandirFilial(filialModalAtiva);
+      toast('Motorista reativado com sucesso.');
+    }} else {{
+      motoristasDB[idx] = anterior;
+      toast(res.erro || 'Erro ao reativar motorista.', 'erro');
+    }}
+  }} catch(e){{ toast('Falha de conexão: ' + e.message, 'erro'); }}
+  finally{{ mostrarSpinner(false); }}
+}}
+
 async function salvarTudoNoSheets(){{
   mostrarSpinner(true);
   try{{
@@ -3242,6 +3343,8 @@ function linhasParaMotoristas(linhas){{
     const gestimeValidadeMeses = Math.max(0, parseInt(next())||0);
     const afastado = String(next()).trim() || 'NÃO';
     const obsAfastado = String(next()).trim();
+    const desligado = String(next()).trim() || 'NÃO';
+    const obsDesligamento = String(next()).trim();
     return {{
       cpf, nome, filial, telefone, email, foto,
       reciclagem, simulador, excesso, multas, acidentes,
@@ -3255,6 +3358,7 @@ function linhasParaMotoristas(linhas){{
       examePeriodicoValidadeMeses, exameToxicologicoValidadeMeses,
       gestime, obsGestime, gestimeData, gestimeValidadeMeses,
       afastado, obsAfastado,
+      desligado, obsDesligamento,
       dssAnual
     }};
   }});
@@ -3461,7 +3565,8 @@ function gerarFichaPdf(cpf){{
   table.dss th{{background:#eef3fb;color:#1a4fa0;font-size:10px;font-weight:800;text-transform:uppercase;padding:5px 8px;border:1px solid #dde6f4;text-align:center}}
   .assinatura-row{{display:flex;gap:32px;align-items:flex-end;margin-top:10px}}
   .footer{{border-top:1px solid #dde6f4;margin-top:10px;padding-top:6px;display:flex;justify-content:space-between;font-size:8px;color:#9aaabb}}
-  @media print{{body{{padding:10px 16px}} .no-print{{display:none}} .section{{margin-bottom:8px}} .section-body{{padding:8px 10px}} .kpi-row{{gap:6px}} .kpi-box{{padding:6px 8px}} .kpi-box span{{font-size:20px}} table.dss td,table.dss th{{padding:3px 6px;font-size:10px}}}}
+  @page{{margin:0}}
+  @media print{{body{{padding:14mm 16mm}} .no-print{{display:none}} .section{{margin-bottom:8px}} .section-body{{padding:8px 10px}} .kpi-row{{gap:6px}} .kpi-box{{padding:6px 8px}} .kpi-box span{{font-size:20px}} table.dss td,table.dss th{{padding:3px 6px;font-size:10px}}}}
 </style></head>
 <body>
 
@@ -3664,16 +3769,16 @@ ${{afastadoSim ? `<div class="alerta-afastado"><span>⚠</span> Condutor Afastad
 // ── Relatório PDF Pendentes ──
 function gerarRelatorioPdfPendentes(){{
   const mes   = kpiMesAtual || mesCorrente();
-  const lista = motoristasDB.filter(m => !dssOkNoMes(m, mes));
+  const lista = listaAtiva().filter(m => !dssOkNoMes(m, mes));
   _gerarRelatorio(mes, lista, false);
 }}
 function gerarRelatorioPdfRealizados(){{
   const mes   = kpiMesAtual || mesCorrente();
-  const lista = motoristasDB.filter(m => dssOkNoMes(m, mes));
+  const lista = listaAtiva().filter(m => dssOkNoMes(m, mes));
   _gerarRelatorio(mes, lista, true);
 }}
 function _gerarRelatorio(mes, lista, realizado){{
-  const total = motoristasDB.length;
+  const total = listaAtiva().length;
   const now   = new Date();
   const dtStr = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR',{{hour:'2-digit',minute:'2-digit'}});
   const semanas = ['1ª Sem','2ª Sem','3ª Sem','4ª Sem'];
@@ -3721,7 +3826,7 @@ function _gerarRelatorio(mes, lista, realizado){{
   <div style="text-align:right"><div class="report-tag">${{realizado?'✓ DSS Realizados':'⚠ Pendentes DSS'}}</div><div class="report-mes">${{mes.toUpperCase()}} ${{now.getFullYear()}}</div><div class="report-dt">Gerado em ${{dtStr}}</div></div></div>
   <div class="summary-box">
     <div class="s-card"><div class="s-val">${{total}}</div><div class="s-lbl">Total de Motoristas</div></div>
-    <div class="s-card"><div class="s-val" style="color:#22aa66">${{motoristasDB.filter(m=>dssOkNoMes(m,mes)).length}}</div><div class="s-lbl">DSS Realizados</div></div>
+    <div class="s-card"><div class="s-val" style="color:#22aa66">${{listaAtiva().filter(m=>dssOkNoMes(m,mes)).length}}</div><div class="s-lbl">DSS Realizados</div></div>
     <div class="s-card"><div class="s-val" style="color:${{realizado?'#22aa66':'#cc4444'}}">${{lista.length}}</div><div class="s-lbl">${{realizado?'Realizaram no Mês':'Pendentes no Mês'}}</div></div>
     <div class="s-card"><div class="s-val" style="color:#1a3a5c">${{filialKeys.length}}</div><div class="s-lbl">Filiais</div></div>
   </div>
