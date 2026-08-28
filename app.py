@@ -3828,8 +3828,6 @@ function renderizarOrganograma(focoRestaurar, cursorPos){{
   svg += '<circle cx="611" cy="203" r="41" fill="none" stroke="#fff" stroke-width="2"/>';
   svg += '<circle cx="611" cy="192" r="12" fill="none" stroke="#fff" stroke-width="2"/>';
   svg += '<path d="M591 224Q591 207 611 207Q631 207 631 224" fill="none" stroke="#fff" stroke-width="2"/>';
-  svg += '<path d="M202 293H1338" fill="none" stroke="'+Cline+'" stroke-width="3"/>';
-  svg += '<path d="M768 263V293" fill="none" stroke="'+Cline+'" stroke-width="3"/>';
 
   const numSetores  = (DADOS_ORG.setores||[]).length || 1;
   const margemXOrg  = 39;
@@ -3841,8 +3839,16 @@ function renderizarOrganograma(focoRestaurar, cursorPos){{
     xs.push(margemXOrg + _i*(largColOrg+gapColOrg));
     ws.push(largColOrg);
   }}
-  xs.forEach(function(x,i){{
-    const cx=x+ws[i]/2;
+
+  const centrosSetores = xs.map(function(x,i){{ return x+ws[i]/2; }});
+  const barraX1     = centrosSetores[0];
+  const barraX2     = centrosSetores[centrosSetores.length-1];
+  const barraCentro = (barraX1+barraX2)/2;
+
+  svg += '<path d="M'+barraX1+' 293H'+barraX2+'" fill="none" stroke="'+Cline+'" stroke-width="3"/>';
+  svg += '<path d="M'+barraCentro+' 263V293" fill="none" stroke="'+Cline+'" stroke-width="3"/>';
+
+  centrosSetores.forEach(function(cx){{
     svg += '<path d="M'+cx+' 293V326" stroke="'+Cline+'" stroke-width="3"/>';
   }});
 
@@ -4046,7 +4052,8 @@ async function salvarOrganogramaAPI(){{
 }}
 
 // ── PDF do Organograma ──
-function gerarOrganogramaSvgTexto(){{
+function gerarOrganogramaSvgTexto(incluirTituloTopo){{
+  if(incluirTituloTopo === undefined) incluirTituloTopo = true;
   const W=1536;
   const Cline='#123d72', Ctext='#071c48', Cbright='#176bc2';
   const cardH=88, gap=12, firstY=474;
@@ -4065,16 +4072,17 @@ function gerarOrganogramaSvgTexto(){{
   svg += '<linearGradient id="orgCirclePdf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2d83d6"/><stop offset="1" stop-color="#1762b1"/></linearGradient>';
   svg += '</defs>';
   svg += '<rect width="'+W+'" height="'+H+'" fill="url(#orgBackgroundPdf)"/>';
-  svg += '<text x="768" y="90" text-anchor="middle" font-size="55" font-weight="900" letter-spacing="-1" fill="#112d5b">GEST\u00c3O DE FROTA</text>';
-  svg += '<rect x="700" y="112" width="137" height="5" rx="3" fill="#1b6dc2"/>';
+  if(incluirTituloTopo){{
+    svg += '<text x="768" y="90" text-anchor="middle" font-size="55" font-weight="900" letter-spacing="-1" fill="#112d5b">GEST\u00c3O DE FROTA</text>';
+    svg += '<rect x="700" y="112" width="137" height="5" rx="3" fill="#1b6dc2"/>';
+  }}
   svg += '<rect x="542" y="144" width="451" height="119" rx="15" fill="url(#orgSupervisorPdf)"/>';
   svg += '<circle cx="611" cy="203" r="41" fill="none" stroke="#fff" stroke-width="2"/>';
   svg += '<circle cx="611" cy="192" r="12" fill="none" stroke="#fff" stroke-width="2"/>';
   svg += '<path d="M591 224Q591 207 611 207Q631 207 631 224" fill="none" stroke="#fff" stroke-width="2"/>';
   svg += '<text x="674" y="198" font-size="29" font-weight="900" fill="#ffffff">'+escOrg(DADOS_ORG.supervisor.nome||'')+'</text>';
   svg += '<text x="674" y="229" font-size="20" font-weight="800" fill="#29a3fb">'+escOrg(DADOS_ORG.supervisor.cargo||'')+'</text>';
-  svg += '<path d="M202 293H1338" fill="none" stroke="'+Cline+'" stroke-width="3"/>';
-  svg += '<path d="M768 263V293" fill="none" stroke="'+Cline+'" stroke-width="3"/>';
+
   const numSetoresPdf  = setoresComPessoas.length || 1;
   const margemXOrgPdf  = 39;
   const gapColOrgPdf   = 53;
@@ -4085,10 +4093,19 @@ function gerarOrganogramaSvgTexto(){{
     xs.push(margemXOrgPdf + _i*(largColOrgPdf+gapColOrgPdf));
     ws.push(largColOrgPdf);
   }}
-  xs.forEach(function(x,i){{
-    const cx=x+ws[i]/2;
+
+  const centrosSetoresPdf = xs.map(function(x,i){{ return x+ws[i]/2; }});
+  const barraX1Pdf     = centrosSetoresPdf[0];
+  const barraX2Pdf     = centrosSetoresPdf[centrosSetoresPdf.length-1];
+  const barraCentroPdf = (barraX1Pdf+barraX2Pdf)/2;
+
+  svg += '<path d="M'+barraX1Pdf+' 293H'+barraX2Pdf+'" fill="none" stroke="'+Cline+'" stroke-width="3"/>';
+  svg += '<path d="M'+barraCentroPdf+' 263V293" fill="none" stroke="'+Cline+'" stroke-width="3"/>';
+
+  centrosSetoresPdf.forEach(function(cx){{
     svg += '<path d="M'+cx+' 293V326" stroke="'+Cline+'" stroke-width="3"/>';
   }});
+
   const cardWPdf     = Math.round(259 * scaleColPdf);
   const cardXOffPdf  = Math.round(48  * scaleColPdf);
   const lineXOffPdf  = Math.round(24  * scaleColPdf);
@@ -4133,20 +4150,46 @@ function gerarOrganogramaSvgTexto(){{
 }}
 
 function gerarOrganogramaPdf(){{
-  const svg   = gerarOrganogramaSvgTexto();
-  const now   = new Date();
-  const dtStr = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR',{{hour:'2-digit',minute:'2-digit'}});
+  const svg       = gerarOrganogramaSvgTexto(false);
+  const now       = new Date();
+  const dtStr     = now.toLocaleDateString('pt-BR');
+  const hrStr     = now.toLocaleTimeString('pt-BR', {{hour:'2-digit', minute:'2-digit'}});
+  const emissor   = (typeof usuarioLogado !== 'undefined' && usuarioLogado) ? usuarioLogado.nome : 'Sistema';
+
   const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Organograma — LUFT LOGISTICS</title>
-  <style>*{{box-sizing:border-box;margin:0;padding:0}}body{{font-family:'Segoe UI',Arial,sans-serif;background:#fff;padding:20px}}
-  .header{{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:3px solid #1a3a6b;padding-bottom:10px}}
-  .brand-title{{font-size:20px;font-weight:900;color:#1a3a6b}}.brand-title span{{color:#22cc88}}
-  .doc-dt{{font-size:11px;color:#5a6e8a}}
-  .svg-wrap{{width:100%}}
-  .svg-wrap svg{{width:100%;height:auto;display:block}}
-  @media print{{body{{padding:6px}}}}</style></head><body>
-  <div class="header"><div class="brand-title">LUFT<span> LOGISTICS</span> — Organograma da Equipe</div><div class="doc-dt">Gerado em ${{dtStr}}</div></div>
-  <div class="svg-wrap">${{svg}}</div>
+  <style>
+    *{{box-sizing:border-box;margin:0;padding:0}}
+    body{{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#1a2a44;padding:28px 32px}}
+    .header{{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1a3a6b;padding-bottom:12px;margin-bottom:16px}}
+    .brand-title{{font-size:20px;font-weight:900;color:#1a3a6b}}
+    .brand-title span{{color:#22cc88}}
+    .brand-sub{{font-size:10px;color:#5a6e8a;letter-spacing:1px;text-transform:uppercase;margin-top:3px}}
+    .doc-info{{text-align:right;font-size:10px;color:#5a6e8a;line-height:1.6}}
+    .doc-info strong{{display:block;font-size:13px;color:#1a3a6b;font-weight:800}}
+    .svg-wrap{{width:100%}}
+    .svg-wrap svg{{width:100%;height:auto;display:block}}
+    .footer{{border-top:1px solid #dde6f4;margin-top:16px;padding-top:6px;display:flex;justify-content:space-between;font-size:8px;color:#9aaabb}}
+    @media print{{body{{padding:10px 16px}}}}
+  </style></head><body>
+    <div class="header">
+      <div>
+        <div class="brand-title">LUFT<span> LOGISTICS</span></div>
+        <div class="brand-sub">Sistema de Controle de Motoristas</div>
+        <div class="brand-sub">Organograma da Equipe — Gestão de Frota</div>
+      </div>
+      <div class="doc-info">
+        <strong>Organograma Oficial</strong>
+        Emitido em: ${{dtStr}} às ${{hrStr}}<br>
+        Emitido por: ${{emissor}}<br>
+      </div>
+    </div>
+    <div class="svg-wrap">${{svg}}</div>
+    <div class="footer">
+      <span><strong style="color:#1a3a6b;">LUFT LOGISTICS</strong> — Documento interno e confidencial. Uso restrito à gestão operacional.</span>
+      <span>Emitido por ${{emissor}} • ${{dtStr}} ${{hrStr}}</span>
+    </div>
   </body></html>`;
+
   const blob = new Blob([html], {{type:'text/html;charset=utf-8'}});
   const url  = URL.createObjectURL(blob);
   const win  = window.open(url, '_blank');
